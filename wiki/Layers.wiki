@@ -1,11 +1,14 @@
 =Layers=
 Layers are where you actually provide the layout of the template. Each layer is a comma-delimited grid, with each block in the grid containing a rule. If you want the block blanked out use 0, which represents the Air-block rule. Each layer must have "layer" before the rule grid and terminate with "endlayer".
-Example 1, a layer:
+
+===Example 1, a layer:===
+{{{
 layer
 0,1,0
 1,1,1
 2,2,2
 endlayer
+}}}
 
 How the layers are laid out depends on what the template used for. There are two types:
 
@@ -18,11 +21,13 @@ This layout is used for wall templates. Here each layer represents a vertical sl
        
 ==Named Layers==
 Named layers are not part of a layout, but are rather used for special purposes by the code. Named layers are distinguished by a label after the "layer" tag, separated by a colon. E.g.
-Example 2, named layer:
+===Example 2, named layer:===
+{{{
 layer:shifted_right
 1,1,1,1,1
 1,0,0,0,1
 endlayer
+}}}
 
 
 The following named layers are currently recognized:
