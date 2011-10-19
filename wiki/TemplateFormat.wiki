@@ -26,4 +26,4 @@ All template directories are in the located in the resources folder. All templat
   * Street Building Templates: resources/walledcity/streets
 
 ==Converting to the Template Format==
-A <a href=http://code.google.com/p/formivore-minecraft-mods/downloads/detail?name=schematic%20converter.zip&can=2&q=#makechanges>script to convert MCEdit .schematics </a> to template files is available.
+A <a href=http://code.google.com/p/formivore-minecraft-mods/downloads/detail?name=schematic%20converter.zip&can=2&q=>script to convert MCEdit .schematics </a> to template files is available.
