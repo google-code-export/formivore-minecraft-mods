@@ -1,7 +1,9 @@
 =Variables=
 Variables control the size, shape, frequency, material, and many other aspects of structures. In particular buildings like the default procedurally generated towers do not have any layers associated with them and are instead totally determined by variable settings. 
 Variables have a simple format, with one line per variable:
-\<variable name\>=\<value\>
+*<font color=#800080>variable name</font>*
+
+=<font color=#800080>value</font>
 The order variables appear in the template file does not matter.
 ==Standard Variables==
 These variables should be provided for all template files used by the Great Wall Mod and the Walled City Mod.
