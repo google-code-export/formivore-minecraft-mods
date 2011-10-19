@@ -3,11 +3,11 @@
 The Great Wall Mod and the Walled City Generator use the .tml (template) format adapted from d00dv4d3r’s ruins mod to define the look of walls and buildings. The format combines both variables the control parts of structures that are automatically generated and a block by block grid schematic. Template files can be edited in any text editor.
 Each template file has three sections, for variables, block rules, and layers. This guide describes each of these sections.
 
-  * Variables – control things like width, frequency, and material of parts of structures that are automatically generated.
-  * Block Rules – Lists of blocks that can be generated in layers.
-  * Layers – A block by block grid used to generate custom buildings and wall cross sections.
+  * [Variables] – control things like width, frequency, and material of parts of structures that are automatically generated.
+  * [BlockRules] – Lists of blocks that can be generated in layers.
+  * [Layers] – A block by block grid used to generate custom buildings and wall cross sections.
 
-Also the customization section of the F.A.Q. answers some common questions regarding things you can do with the template files.
+Also the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Customization>customization section</a> of the F.A.Q. answers some common questions regarding things you can do with the template files.
 ===How The Mods Use Template Files===
 Both the Walled City Mod and the Great Wall Mod are designed around walls; in this case walls can mean either great walls, the outer walls of a city, or the (zero height) streets inside a city. Walls will generate buildings alongside, these can be either the default procedurally generated towers or building templates. The mods use template files for two purposes that are somewhat different but similar enough that I decided to maintain them in a single format:
 
