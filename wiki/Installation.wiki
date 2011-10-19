@@ -1,5 +1,5 @@
 ===INSTALLATION – SSP===
-NOTE – a <a href=http://www.youtube.com/watch?v=vCpVlrUu2Po&feature=player_embedded>video tutorial</a> for installation is also available – thanks HELLYERRR.
+NOTE – a [http://www.youtube.com/watch?v=vCpVlrUu2Po&feature=player_embedded video tutorial] for installation is also available – thanks HELLYERRR.
   #1Install the most recent version of ModLoader. You can [http://www.minecraftforum.net/topic/75440-v181-risugamis-mods-everything-updated/ get it here].
   #2Locate the main Minecraft directory (e.g. C:\Users\Administrator\AppData\Roaming\.minecraft\).<br>
   #3Open bin\minecraft.jar using 7-zip or Winrar.
