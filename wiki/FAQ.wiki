@@ -67,10 +67,8 @@ An infinite city means a city that stretches on forever; these are created using
   #3Place the road templates for your infinite city in the /resources/greatwall/ folder.
   #4In GreatWallModSettings.txt set ChunkTryProb to 0.5 or higher. You can try increasing TriesPerChunk as well to get even denser cities.
 
-
-
 <font color=#632423>*_Q: If infinite dragons devour infinite cities, how many cities do I have left?*_</font><br>
 Undefined.
 
 <font color=#632423>*_Q: Is there any way I can import buildings from MCEdit schematics?*_</font><br>
-If you want to import Minecraft structures from the popular MCEdit schematic format, you can use this <a href=http://code.google.com/p/formivore-minecraft-mods/downloads/detail?name=schematic%20converter.zip&can=2&q=#makechanges>script </a> written by the creator of the ruins mod.
+If you want to import Minecraft structures from the popular MCEdit schematic format, you can use this <a href=http://code.google.com/p/formivore-minecraft-mods/downloads/detail?name=Casbah.tml&can=2&q=>script </a> written by the creator of the ruins mod.
