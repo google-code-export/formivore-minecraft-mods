@@ -29,3 +29,43 @@ I’m very interested in receiving crash reports so I can fix bugs. Post crash r
 
 <font color=#632423>*_Q: LAGGGG_*</font><br>
 The Walled City Generator in particular can cause bad slowdowns because of the large number of chunks that have to be generated in order to plan a city. This slowdown will only occur while Minecraft is generating new terrain; it will cease after a while if you are not exploring. It seems that this affects some machines more than others. Decreasing spawn frequency or increasing city separation will reduce slowdown, see above on how to do this. It may be helpful to increase java’s memory allocation. There are tutorials online about how to do this. This problem is something I am trying to improve but to a certain extent it is inherent in the design of the mod.
+
+===Customization===
+
+
+<font color=#632423>*_Q: How can I create custom walls and cities?*_</font><br>
+All the walls and cities you see are generated from template (.tml) files located in the resources folder. You can edit these files using a text editor. Note that cities are comprised of two wall templates, one for the outer walls and one for the inner streets. The template format is a modified version of the format used in the ruins mod and is described in the template format documentation. Try just making some minor modifications to the materials or ornamentation of a building to learn the format.
+
+<font color=#632423>*_Q: Wow, I love this one city/wall, how do I get it to spawn all the time?*_</font><br> 
+Each structure has a weight listed in the first line of its template file that controls how likely it is to spawn relative to other structures. Change the weight of the structure you like to something big like 1000 and it will always be chosen. For cities, the template file you want to modify are the city/outer wall templates in the /resources/walledcity folder. Note that the absolute frequency that any type of walls/cities will spawn are controlled by the ChunkTryProb values in the global settings file, the weights control how much of this absolute frequency is taken up by a single type of wall/city.
+
+<font color=#632423>*_Q: How can I change the materials a wall or building is made from?*_</font><br>
+The materials a wall or building template is built from are given in the block rules. You will first need to locate the rule that’s used as the majority block for the template (if that’s what you want to change). You can do this by scanning the layers at the bottom of the template. For walls, the other important block rule is the one used for the tower_block variable which controls the body of the towers. Once you have found the block rule, change the third number in the rule to the block ID you want. For example, change:
+      rule1=0,100,24         #rule1 is to build sandstone
+to
+     rule1=0,100,4         #rule1 is now to build cobblestone
+
+<font color=#632423>*_Q: How can I change how the hostile mobs/zombie pigmen spawn?*_</font><br>
+You will have to modify the templates for this. Each wall template has a variables you can adjust for mob_probability (zombies, skellies, and creepers), zombie_pigman_probability, enderman_probability, and cave_spider probability. 
+
+<font color=#632423>*_Q: Is there an option to change <X feature>?*_</font><br>
+There are a large number of options that can adjust the size, density, frequency, and material, and style of walls and cities. Most of these are specified in the template files for each individual wall or city. Scan through the variables in the template documentation to see if the option that does what you want exists. There are also a few global options that you can adjust for all walls/cities in the WalledCitySettings.txt and GreatWallModSettings.txt files.
+
+<font color=#632423>*_Q: What are infinite cities and how do I make them?*_</font><br> 
+An infinite city means a city that stretches on forever; these are created using the Great Wall Mod (not the Walled City Generator). You can have the Walled City Generator running at the same time, but it may not get a chance to build much. To make an infinite city follow these steps.
+  #1Choose one or more road template you like for your infinite city. The Casbah.tml template provided is a good choice. The street templates in the /resources/walledcity/streets/ folder are also good with perhaps some modification as described below.
+  #2Place the road templates for your infinite city in the /resources/greatwall/ folder.
+  #3In GreatWallModSettings.txt set ChunkTryProb to 0.5 or higher. You can try increasing TriesPerChunk as well to get even denser cities.
+  #4Edit the road template files if necessary to have the following variable values. If you don’t see a line for a variable, add it.
+  * merge_walls=1 #this will make the roads merge together
+  * biomes=ALL #will generate in any biome
+  * make_gatehouse_towers=0 #gatehouse towers will obstruct roads
+  * building_interval=15 #something fairly short like 15 will make dense cities, tweak this to your liking
+  * weight=1000 #only if you have other templates in the /resources/greatwall/ folder that you want to be ignored for your city.
+
+
+<font color=#632423>*_Q: If infinite dragons devour infinite cities, how many cities do I have left?*_</font><br>
+Undefined.
+
+<font color=#632423>*_Q: Is there any way I can import buildings from MCEdit schematics?*_</font><br>
+If you want to import Minecraft structures from the popular MCEdit schematic format, you can use this script written by the creator of the ruins mod.
