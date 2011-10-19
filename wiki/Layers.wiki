@@ -1,0 +1,37 @@
+=Layers=
+Layers are where you actually provide the layout of the template. Each layer is a comma-delimited grid, with each block in the grid containing a rule. If you want the block blanked out use 0, which represents the Air-block rule. Each layer must have "layer" before the rule grid and terminate with "endlayer".
+Example 1, a layer:
+layer
+0,1,0
+1,1,1
+2,2,2
+endlayer
+
+How the layers are laid out depends on what the template used for. There are two types:
+
+==Standard Layout=
+This is the layout used for templates in the ruins mod and is used for building templates in the Walled City and Great Wall mods. Here each layer represents a horizontal slice and there are as many layers as the height. In each layer, there are as many rows as the length and as many columns as the width. To orient directional blocks like stairs, the orientation of layers in the text file is as North pointing towards the top of the file. When templates are built alongside a wall, the building will be rotated so that North will become the direction pointing away from the wall, and South face will be touching the wall.
+        
+==Wall Cross Section Layout==
+This layout is used for wall templates. Here each layer represents a vertical slice. During wall generation layers are used in order and repeated from the beginning once the last layer is reached. In each layer there as many rows as the wall height and as many columns as the wall width. The default orientation of a layer is that the top of the grid corresponds to up, and left of the grid corresponds to west. The default direction the wall will be propagated, and hence the order of the layers is south to north. The wall cross-section layout can be thought of as the standard layout flipped over onto its southern face.
+ 
+       
+==Named Layers==
+Named layers are not part of a layout, but are rather used for special purposes by the code. Named layers are distinguished by a label after the "layer" tag, separated by a colon. E.g.
+Example 2, named layer:
+layer:shifted_right
+1,1,1,1,1
+1,0,0,0,1
+endlayer
+
+
+The following named layers are currently recognized:
+layer:base
+A horizontal slice used as a repeatable base. This layer is used to fill in air or water below the template until solid blocks are reached. Maximum number of layers that can be filled is given by the max_leveling variable. In the standard layout, the dimensions of the base layer should be the same as unnamed layers. In the cross-section layout there should only be one row; this row will be used as the base of each vertical unnamed slice.
+ 
+layer:shifted
+layer:shifted_right
+layer:shifted_left
+layer:shifted_up
+layer:shifted_down
+These named layers are used by wall templates to provide layers when a wall deviates from a straight line. For various reasons you may not want to use the unnamed layers in this case. If the specific layer:shifted_right, layer:shifted_left etc. are not given layer:shifted will be used. If layer:shifted is not given the first unnamed layer will be used.
