@@ -26,66 +26,7 @@ A script is available that can convert MCEdit schematics to templates files: Sch
 
 
 
-=Block Rules=  
-(Note – this sections adapted from d00dv4d3r's Ruins Mod)
-Rules are lists of blocks that are used to populate layers, the flexibility of allowing more than one type of block in a given location allows for a “ruined” look, mottled textures, and more variable designs.
-Each rule must be formatted carefully, the format is:
-rule<number>=<condition>,<chance to appear>,<list of blocks>
 
-rule<number>
-The mod does not care what you call these and will number the rules in the order they are loaded (sequentially from 1), so long as the line starts with "rule".  I suggest using "rule#" as a mnemonic, such as "rule1", "rule2", "rule12", etc...  Once the templates are loaded, the first rule in the list becomes rule #1 for the purposes of building a layer, the second becomes rule #2, and so on.
-The mod uses a special rule, 0, which defines the Air block with a 100% spawn rate and no conditional.  You can use this rule in the layers to "blank out" certain areas (providing space for mobs, for instance).
-<condition>
-A conditional to the block being placed, aside from randomness.
-0 - The block always attempts to spawn.
-1 - There must be a block below it to attempt to spawn.
-2 - There must be an adjacent block at the same level for a spawn attempt.
-3 - There must be a block above this one in order for it to attempt to spawn.
-5 – Choose and fix the blocktype for this rule once per template.
-
-Adjacent in this case is not diagonal, only along the cardinal directions.
-Adjacent blocks are processed after 0 and 1 conditionals have been placed, and "under blocks" are processed after all other blocks have been placed. Please note that these blocks are still processed in an order dependent on the rotation of the site.  For a normal, north-facing site, the block rules are processed for each line from the left and from the bottom template to the top.
-<chance to appear>
-The chance that this block will appear, out of 100, depending on whether the condition above is met.
-
-<list of blocks>
-A comma-delimited set of minecraft blockIDs.  This will determine what block will actually spawn in the location.  Each blockID is given the same weight, so you can skew the odds of a certain blockID appearing by adding it multiple times.  You can specify block metadata by adding a "-<metadata>" after the blockID.  For instance, to place a cobblestone stairs block ascending to the east, use 67-3.  To place a wood half-block (slab), use 44-2.
-
-Special blockIDs – These are block IDs that instead of creating the correspondingly numbered block in the world, tell the mod to make certain things that can’t be coded by a single block ID. These include mob spawners, chests with different loot, and steps/stairs.
-    300 = Leave existing world block alone
-    301 = Mob Spawner (Zombie)
-    302 = Mob Spawner (Skeleton) 
-    303 = Mob Spawner (Spider)
-    304 = Mob Spawner (Creeper)
-    305 = Mob Spawner (Zombie, Skeleton, Creeper)
-    306 = Mob Spawner (Easy, zombies and skeletons)
-    307 = Mob Spawner (Medium, zombies, skeletons, and spiders)
-    308 = Mob Spawner (Hard, all mobs)
-    309 = Easy Chest (For Easy rewards)
-    310 = Medium Chest (For Medium rewards)
-    311 = Hard Chest (For Hard rewards)
-    312 = Tower Chest;
-    313 = Mob Spawner (Pig Zombie);
-    314 = Mob Spawner (Enderman);
-    315 = Mob Spawner (Cave Spider);
-    316 = Mob Spawner (Ghast);
-    319 = Compact/Half Stair – For wall templates. This will build either nothing, a half step, or a compact step depending on how the z-level of the wall is changing. Takes the same meta values as half-step blocks and will choose a matching compact step.
-
-Rule Examples
-Example 1, this spawns either air, cobblestone, or a mossy cobblestone 100% of the time:
-rule1=0,100,0,4,48
-
-Example 2, this spawns a mossy cobblestone 50% of the time but only if another block is underneath it:
-rule1=1,50,48
-
-Example 3, this spawns either a wood slab or a plank block, but only if there is an adjacent block on the same level:
-rule1=2,100,44-2,5
-
-Example 4, this spawns a torch standing on the ground:
-rule1=0,100,50-5
-
-Example 5, this spawns a Medium Chest (see special blockID above) 25% of the time:
-rule1=0,25,310
 
 =Layers=
 Layers are where you actually provide the layout of the template. Each layer is a comma-delimited grid, with each block in the grid containing a rule. If you want the block blanked out use 0, which represents the Air-block rule. Each layer must have "layer" before the rule grid and terminate with "endlayer".
