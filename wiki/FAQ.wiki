@@ -1,6 +1,8 @@
 ===Troubleshooting and General Questions===
 <font color=#632423>*_Q: How/where are the walls/cities generated?_*</font><br>
-Cities and walls have a chance to spawn with every new bit of terrain Minecraft generates.  It works the same way as terrain features like lakes, just a lot bigger. Minecraft generates new terrain on the fly as you explore, so the mod will do the same with structures.
+Cities and walls have a chance to spawn with every new bit of terrain Minecraft generates. It works the same way as terrain features like lakes, just a lot bigger. Minecraft generates new terrain on the fly as you explore, so the mod will do the same with structures.
+
+[FAQ]
 
 *_<font color=#632423>Q: Help! I can’t find any cities/walls.</font>_*<br>
 You should now receive a message onscreen announcing that a city has spawned with directions to the site. Otherwise you have to explore a bit. Structures will be generated in random locations, but not in certain types of terrain like steep mountains or underwater.  If you didn’t get anything, it’s possible you just got unlucky; try generating another world. You can adjust the frequency of cities/walls by modifying the settings file, see below. 
