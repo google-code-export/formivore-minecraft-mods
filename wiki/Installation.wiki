@@ -1,0 +1,17 @@
+===INSTALLATION – SSP===
+NOTE – a video tutorial for installation is also available – thanks HELLYERRR.
+1. Install the most recent version of ModLoader. You can get it here: ModLoader.
+2. Locate the main Minecraft directory (e.g. C:\Users\Administrator\AppData\Roaming\.minecraft\).
+3. Open bin\minecraft.jar using 7-zip or Winrar.
+4. Drag the class files from inside the mod distribution’s class_files folder into the Minecraft jar.
+5. Delete META-INF directory within minecraft.jar.
+6. Close 7-zip or Winrar.
+7. Drag the mod distribution’s resources folder into the main Minecraft directory (drag the resources folder, not its contents). Select the option to merge the folders if prompted. This should add e.g. a resources/greatwall directory.
+8. Enjoy.
+
+===INSTALLATION – SMP server===
+1. Open your minecraft_server.jar using 7-zip or Winrar.
+2. Drag the mod class files from the class_files folder into the minecraft_server.jar
+3. Close 7-zip or Winrar.
+4. Drag the mod resources folder into the folder that contains minecraft_server.jar.
+5. Enjoy. Clients do not have to install anything to connect to a server running this mod.
