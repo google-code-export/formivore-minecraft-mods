@@ -71,4 +71,4 @@ An infinite city means a city that stretches on forever; these are created using
 Undefined.
 
 <font color=#632423>*_Q: Is there any way I can import buildings from MCEdit schematics?*_</font><br>
-If you want to import Minecraft structures from the popular MCEdit schematic format, you can use this <a href=http://code.google.com/p/formivore-minecraft-mods/downloads/detail?name=Casbah.tml&can=2&q=>script </a> written by the creator of the ruins mod.
+If you want to import Minecraft structures from the popular MCEdit schematic format, you can use this <a href=http://code.google.com/p/formivore-minecraft-mods/downloads/detail?name=schematic%20converter.zip&can=2&q=>script </a> written by the creator of the ruins mod.
