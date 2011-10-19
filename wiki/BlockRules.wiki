@@ -12,11 +12,11 @@ The mod does not care what you call these and will number the rules in the order
 The mod uses a special rule, 0, which defines the Air block with a 100% spawn rate and no conditional.  You can use this rule in the layers to "blank out" certain areas (providing space for mobs, for instance).
 
 *`<condition>`*<br>
-A conditional to the block being placed, aside from randomness.
-0 - The block always attempts to spawn.
-1 - There must be a block below it to attempt to spawn.
-2 - There must be an adjacent block at the same level for a spawn attempt.
-3 - There must be a block above this one in order for it to attempt to spawn.
+A conditional to the block being placed, aside from randomness.<br>
+0 - The block always attempts to spawn.<br>
+1 - There must be a block below it to attempt to spawn.<br>
+2 - There must be an adjacent block at the same level for a spawn attempt.<br>
+3 - There must be a block above this one in order for it to attempt to spawn.<br>
 5 – Choose and fix the blocktype for this rule once per template.
 
 Adjacent in this case is not diagonal, only along the cardinal directions.
@@ -26,7 +26,7 @@ Adjacent blocks are processed after 0 and 1 conditionals have been placed, and "
 The chance that this block will appear, out of 100, depending on whether the condition above is met.
 
 *`<list of blocks>`*<br>
-A comma-delimited set of minecraft blockIDs.  This will determine what block will actually spawn in the location.  Each blockID is given the same weight, so you can skew the odds of a certain blockID appearing by adding it multiple times.  You can specify block metadata by adding a "-(metadata)" after the blockID.  For instance, to place a cobblestone stairs block ascending to the east, use 67-3.  To place a wood half-block (slab), use 44-2.
+A comma-delimited set of minecraft blockIDs.  This will determine what block will actually spawn in the location.  Each blockID is given the same weight, so you can skew the odds of a certain blockID appearing by adding it multiple times.  You can specify block metadata by adding a "-`<metadata>`" after the blockID.  For instance, to place a cobblestone stairs block ascending to the east, use 67-3.  To place a wood half-block (slab), use 44-2.
 
 ===Special blockIDs===
 These are block IDs that instead of creating the correspondingly numbered block in the world, tell the mod to make certain things that can’t be coded by a single block ID. These include mob spawners, chests with different loot, and steps/stairs.
@@ -49,18 +49,28 @@ These are block IDs that instead of creating the correspondingly numbered block 
   * 316 = Mob Spawner (Ghast);
   * 319 = Compact/Half Stair – For wall templates. This will build either nothing, a half step, or a compact step depending on how the z-level of the wall is changing. Takes the same meta values as half-step blocks and will choose a matching compact step.
 
-Rule Examples
-Example 1, this spawns either air, cobblestone, or a mossy cobblestone 100% of the time:
+==Rule Examples==
+*Example 1*, this spawns either air, cobblestone, or a mossy cobblestone 100% of the time:
+{{{
 rule1=0,100,0,4,48
+}}}
 
-Example 2, this spawns a mossy cobblestone 50% of the time but only if another block is underneath it:
+*Example 2*, this spawns a mossy cobblestone 50% of the time but only if another block is underneath it:
+{{{
 rule1=1,50,48
+}}}
 
-Example 3, this spawns either a wood slab or a plank block, but only if there is an adjacent block on the same level:
+*Example 3*, this spawns either a wood slab or a plank block, but only if there is an adjacent block on the same level:
+{{{
 rule1=2,100,44-2,5
+}}}
 
-Example 4, this spawns a torch standing on the ground:
+*Example 4*, this spawns a torch standing on the ground:
+{{{
 rule1=0,100,50-5
+}}}
 
-Example 5, this spawns a Medium Chest (see special blockID above) 25% of the time:
+*Example 5*, this spawns a Medium Chest (see special blockID above) 25% of the time:
+{{{
 rule1=0,25,310
+}}}
