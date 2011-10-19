@@ -8,7 +8,7 @@ You should now receive a message onscreen announcing that a city has spawned wit
 If you don’t find any walls or receive any notices about cities, there is likely a problem with installation. When the Minecraft starts up the mod should create log files great_wall_log.txt and walled_city_log.txt in the main Minecraft folder. These log files are currently created in the same folder as your Minecraft launcher. Open these up and see if there are any reports of errors. If you can’t find the log files, you may not have installed the mod correctly. It’s possible there was a conflict with another mod. You can try reporting this on the forum (see guidelines for crash reports) and see if any solutions are available.
 
 <font color=#632423>*_Q: How can I control how frequently walls/cities are generated?_*</font><br>
-You can control this by adjusting the value of <a href=http://code.google.com/p/formivore-minecraft-mods/w/GlobalSettingFiles>`ChunkTryProb` </a> in the *WalledCitySettings.txt*/*GreatWallModSettings.txt* files located in the main Minecraft folder. `ChunkTryProb` is the probability a structure will be attempted per each chunk; it takes a value between 0.0 and 1.0 with 1.0 being max frequency. 
+You can control this by adjusting the value of <a href=http://code.google.com/p/formivore-minecraft-mods/w/GlobalSettingFiles>`ChunkTryProb` </a> in the `WalledCitySettings.txt`/`GreatWallModSettings.txt` files located in the main Minecraft folder. `ChunkTryProb` is the probability a structure will be attempted per each chunk; it takes a value between 0.0 and 1.0 with 1.0 being max frequency. 
 
 For cities you can also adjust <a href=http://code.google.com/p/formivore-minecraft-mods/w/GlobalSettingFiles>`MinCitySeparation` </a>. If you are having problems with slowdown, it may be good to increase this which will prevent the mod from attempting to create new cities after one has already been created. Note that since the mod doesn’t save city locations, it is still possible to get cities that don’t obey `MinCitySeparation` if you quit and then restart Minecraft. This is a minor bug that I don’t plan to fix.
 
@@ -41,12 +41,16 @@ Each structure has a <a href=http://code.google.com/p/formivore-minecraft-mods/w
 
 <font color=#632423>*_Q: How can I change the materials a wall or building is made from?*_</font><br>
 The materials a wall or building template is built from are given in the BlockRules. You will first need to locate the rule that’s used as the majority block for the template (if that’s what you want to change). You can do this by scanning the layers at the bottom of the template. For walls, the other important block rule is the one used for the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Variables#Default_Tower_Variables>tower_block </a>variable which controls the body of the towers. Once you have found the block rule, change the third number in the rule to the <a href=http://www.minecraftwiki.net/wiki/Data_values>block ID</a> you want. For example, change:
-      rule1=0,100,24         #rule1 is to build sandstone
+{{{
+rule1=0,100,24         #rule1 is to build sandstone
+}}}
 to
-     rule1=0,100,4         #rule1 is now to build cobblestone
+{{{
+rule1=0,100,4         #rule1 is now to build cobblestone
+}}}
 
 <font color=#632423>*_Q: How can I change how the hostile mobs/zombie pigmen spawn?*_</font><br>
-You will have to modify the templates for this. Each wall template has a variables you can adjust for mob_probability (zombies, skellies, and creepers), zombie_pigman_probability, enderman_probability, and cave_spider probability. 
+You will have to modify the templates for this. Each <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#How_The_Mods_Use_Template_Files>wall template</a> has a variables you can adjust for mob_probability (zombies, skellies, and creepers), zombie_pigman_probability, enderman_probability, and cave_spider probability. 
 
 <font color=#632423>*_Q: Is there an option to change <X feature>?*_</font><br>
 There are a large number of options that can adjust the size, density, frequency, and material, and style of walls and cities. Most of these are specified in the template files for each individual wall or city. Scan through the variables in the template documentation to see if the option that does what you want exists. There are also a few global options that you can adjust for all walls/cities in the WalledCitySettings.txt and GreatWallModSettings.txt files.
