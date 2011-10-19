@@ -1,5 +1,5 @@
 =Global Settings Files=
-`WalledCitySettings.txt` and `GreatWallModSettings.txt` are the global settings files for the Walled City Generator and the Great Wall Mod respectively. These files are located in the main Minecraft directory and will be automatically generated if not present. Below is a description of the different settings.
+*WalledCitySettings.txt* and *GreatWallModSettings.txt* are the global settings files for the Walled City Generator and the Great Wall Mod respectively. These files are located in the main Minecraft directory and will be automatically generated if not present. Below is a description of the different settings.
 
 *`ChunkTryProb`*<br>
 *`ChunkUndergroundTryProb`*(Walled City Mod)<br>
