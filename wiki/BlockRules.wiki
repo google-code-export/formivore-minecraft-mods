@@ -1,6 +1,6 @@
 =Block Rules=  
 (Note – this sections adapted from d00dv4d3r's Ruins Mod)
-Rules are lists of blocks that are used to populate layers, the flexibility of allowing more than one type of block in a given location allows for a “ruined” look, mottled textures, and more variable designs.
+Rules are lists of blocks that are used to populate [Layers], the flexibility of allowing more than one type of block in a given location allows for a “ruined” look, mottled textures, and more variable designs.
 Each rule must be formatted carefully, the format is:
 {{{
 rule<number>=<condition>,<chance to appear>,<list of blocks>
@@ -26,7 +26,7 @@ Adjacent blocks are processed after 0 and 1 conditionals have been placed, and "
 The chance that this block will appear, out of 100, depending on whether the condition above is met.
 
 *`<list of blocks>`*<br>
-A comma-delimited set of minecraft blockIDs.  This will determine what block will actually spawn in the location.  Each blockID is given the same weight, so you can skew the odds of a certain blockID appearing by adding it multiple times.  You can specify block metadata by adding a "-`<metadata>`" after the blockID.  For instance, to place a cobblestone stairs block ascending to the east, use 67-3.  To place a wood half-block (slab), use 44-2.
+A comma-delimited set of <a href=http://www.minecraftwiki.net/wiki/Data_values>minecraft blockIDs</a>.  This will determine what block will actually spawn in the location.  Each blockID is given the same weight, so you can skew the odds of a certain blockID appearing by adding it multiple times.  You can specify block metadata by adding a "-`<metadata>`" after the blockID.  For instance, to place a cobblestone stairs block ascending to the east, use 67-3.  To place a wood half-block (slab), use 44-2.
 
 ===Special blockIDs===
 These are block IDs that instead of creating the correspondingly numbered block in the world, tell the mod to make certain things that can’t be coded by a single block ID. These include mob spawners, chests with different loot, and steps/stairs.
