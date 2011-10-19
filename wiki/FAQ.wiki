@@ -1,31 +1,31 @@
 ===Troubleshooting and General Questions===
-_Q: How/where are the walls/cities generated?_
+<font color=#632423>*_Q: How/where are the walls/cities generated?_*</font><br>
 Cities and walls have a chance to spawn with every new bit of terrain Minecraft generates.  It works the same way as terrain features like lakes, just a lot bigger. Minecraft generates new terrain on the fly as you explore, so the mod will do the same with structures.
 
-Q: Help! I can’t find any cities/walls.
+*_<font color=#632423>Q: Help! I can’t find any cities/walls.</font>_*<br>
 You should now receive a message onscreen announcing that a city has spawned with directions to the site. Otherwise you have to explore a bit. Structures will be generated in random locations, but not in certain types of terrain like steep mountains or underwater.  If you didn’t get anything, it’s possible you just got unlucky; try generating another world. You can adjust the frequency of cities/walls by modifying the settings file, see below. 
 
 If you don’t find any walls or receive any notices about cities, there is likely a problem with installation. When the Minecraft starts up the mod should create log files great_wall_log.txt and walled_city_log.txt in the main Minecraft folder. These log files are currently created in the same folder as your Minecraft launcher. Open these up and see if there are any reports of errors. If you can’t find the log files, you may not have installed the mod correctly. It’s possible there was a conflict with another mod. You can try reporting this on the forum (see guidelines for crash reports) and see if any solutions are available.
 
-Q: How can I control how frequently walls/cities are generated?
+<font color=#632423>*_Q: How can I control how frequently walls/cities are generated?_*</font><br>
 You can control this by adjusting the value of ChunkTryProb in the WalledCitySettings.txt/GreatWallModSettings.txt file located in the main Minecraft folder. ChunkTryProb is the probability a structure will be attempted per each chunk; it takes a value between 0.0 and 1.0 with 1.0 being max frequency. 
 
 For cities you can also adjust MinCitySeparation. If you are having problems with slowdown, it may be good to increase this which will prevent the mod from attempting to create new cities after one has already been created. Note that since the mod doesn’t save city locations, it is still possible to get cities that don’t obey MinCitySeparation if you quit and then restart Minecraft. This is a minor bug that I don’t plan to fix.
 
 Finally the city/wall length variable also has a big effect on frequency. Shorter walls/cities will be much more likely to spawn. The variables are located in the individual .tml files for each wall/city style. I wouldn’t recommend altering these to try to control frequency unless you have exhausted ChunkTryProb first though.
 
-Q: Will the mod work on old saves?
+<font color=#632423>*_Q: Will the mod work on old saves?_*</font><br>
 Yes, but you will have to explore new terrain. There’s no way to generate structures with origins in terrain you’ve already explored. However, structures are huge and so can originate in virgin terrain but cross over onto already explored land. Backup your saves!
 
-Q: Can I run both mods at once?
+<font color=#632423>*_Q: Can I run both mods at once?_*</font><br>
 Yes.  When you install both mods you will be overwriting a lot of the code that they share in common, but there should be no problem as long as both mods are from the same version.
 
-Q: The mod crashed!
+<font color=#632423>*_Q: The mod crashed!_*</font><br>
 I’m very interested in receiving crash reports so I can fix bugs. Post crash reports on the forum. I need the following information if I can respond to a report:
-•	Your OS
-•	Whether you were running any other mods (besides modloader).
-•	When the crash occurred (e.g. before the menu screen, while generating a world, while doing something in-game).
-•	Minecraft’s crash report. Minecraft may quit or blackscreen before you can view the error report. In this case the Minecraft error test batch file should allow you to retrieve the log file.
+  * Your OS
+  * Whether you were running any other mods (besides modloader).
+  * When the crash occurred (e.g. before the menu screen, while generating a world, while doing something in-game).
+  * Minecraft’s crash report. Minecraft may quit or blackscreen before you can view the error report. In this case the Minecraft error test batch file should allow you to retrieve the log file.
 
-Q: LAGGGG
+<font color=#632423>*_Q: LAGGGG_*</font><br>
 The Walled City Generator in particular can cause bad slowdowns because of the large number of chunks that have to be generated in order to plan a city. This slowdown will only occur while Minecraft is generating new terrain; it will cease after a while if you are not exploring. It seems that this affects some machines more than others. Decreasing spawn frequency or increasing city separation will reduce slowdown, see above on how to do this. It may be helpful to increase java’s memory allocation. There are tutorials online about how to do this. This problem is something I am trying to improve but to a certain extent it is inherent in the design of the mod.
