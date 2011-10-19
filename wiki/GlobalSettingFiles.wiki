@@ -1,0 +1,23 @@
+=Global Settings Files=
+WalledCitySettings.txt and GreatWallModSettings.txt are the global settings files for the Walled City Generator and the Great Wall Mod respectively. These files are located in the main Minecraft directory and will be automatically generated if not present. Below is a description of the different settings.
+
+*ChunkTryProb*<br>
+*ChunkUndergroundTryProb*(Walled City Mod)<br>
+*TriesPerChunk*<br>
+These settings control how frequently walls or cities will be generated in Minecraft. ChunkTryProb takes a value 0.0 and 1.0. Lower it make less common. You should always first try to control frequency with ChunkTryProb. TriesPerChunk is only provided in case you want very dense generation, increasing it can have a large effect on performance.
+
+*MinCitySeparation*(Walled City Mod)<br>
+*MinUndergroundCitySeparation*(Walled City Mod)<br>
+The minimum separation allowed between above-ground and underground city spawns. Note however that city locations will not be remembered after you quit Minecraft.
+
+*CityBuiltMessage* (Walled City Mod)<br>
+Toggles whether you receive a chat message when a city spawns.
+
+*Smooth1*<br>
+*Smooth2*<br>
+*Backtrack*<br>
+Smooth1 and Smooth2 control the length scales of concave and convex smoothing respectively.  Backtrack control the distance to backtrack to look for an alternate path if a wall reaches a dead end.
+
+*CurveBias*(Great Wall Mod)<br>
+*LengthBiasNorm*(Great Wall Mod)<br>
+Specify a bias towards curvier and longer walls respectively. CurveBias should take a value between 0.0 and 1.0 while LengthBiasNorm is the length above which there is no penalty. Note that these settings work by culling potential walls so increasing them will decrease build frequency. You can increase ChunkTryProb to compensate.
