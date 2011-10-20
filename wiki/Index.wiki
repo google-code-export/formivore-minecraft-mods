@@ -1,10 +1,18 @@
 ==Wiki Contents==
-  * Installation
+  * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Installation>Installation </a>
   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ>Frequently Asked Questions</a>
    * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Troubleshooting_and_General_Questions>Troubleshooting and General Problems</a>
    * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Customization>Customization </a>
-  * Global Settings
+  * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/GlobalSettingFiles>Global Settings</a>
   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat>The Template Format</a>
    * [Variables]
    * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules>Block Rules</a>
    * [Layers]
+  * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Changelog>Full Changelog</a>
+
+==Acknowledgements==
+  * The creators of Modloader and the Minecraft Coder Pack for making this possible.
+  * d00dv4d3r for the excellent Ruins mod, template format, and parts of his code that were adopted.
+  * denkbert for his roof designs.
+  * croweshand8 and any others for some of the templates used.
+  * Rytho for the suggestion for underground cities.
