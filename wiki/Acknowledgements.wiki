@@ -1,0 +1,6 @@
+=Acknowledgements=
+  * The creators of Modloader and the Minecraft Coder Pack for making this possible.
+  * d00dv4d3r for the excellent Ruins mod, template format, and parts of his code that were adopted.
+  * denkbert for his roof designs.
+  * croweshand8 and any others for some of the templates used.
+  * Rytho for the suggestion for underground cities.
