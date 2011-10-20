@@ -60,9 +60,9 @@ There are a large number of options that can adjust the size, density, frequency
 
 <font color=#632423>*_Q: What are infinite cities and how do I make them?*_</font><br> 
 An infinite city means a city that stretches on forever; these are created using the Great Wall Mod (not the Walled City Generator). You can have the Walled City Generator running at the same time, but it may not get a chance to build much. To make an infinite city follow these steps.
-  #1Choose one or more road template you like for your infinite city. The <a href=http://formivore-minecraft-mods.googlecode.com/files/Casbah.tml>Casbah.tml </a> template provided is a good choice. The street templates in the /resources/walledcity/streets/ folder are also good with perhaps some modification as described below.
-  #2Edit the road template files if necessary to have the following variable values. If you don’t see a line for a variable, add it.
+  #1Choose one or more <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#Wall_Templates_and_Road_Templates>road template</a> you like for your infinite city. The <a href=http://formivore-minecraft-mods.googlecode.com/files/Casbah.tml>Casbah.tml </a> template I've created is a good choice. The street templates that come with the Walled City Mod in the /resources/walledcity/streets/ folder are also good. You should make some modifications to the [Variables] so they work better for infinite cities:
    * <font color= #800080>`merge_walls `</font>`= 1` #this will make the roads merge together
+   * <font color= #800080>`min_length `</font>`= 10` #shorter roads are much more likely to spawn
    * <font color= #800080>`biomes `</font>`= ALL` #will generate in any biome
    * <font color= #800080>`make_gatehouse_towers `</font>`= 0` #gatehouse towers will obstruct roads
    * <font color= #800080>`building_interval `</font>`= 15` #something fairly short like 15 will make dense cities, tweak this to your liking.
