@@ -12,13 +12,13 @@ endlayer
 
 How the layers are laid out depends on what the template used for. There are two types:
 
-==Standard Layout=
-This is the layout used for templates in the ruins mod and is used for <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#How_The_Mods_Use_Template_Files>building templates</a> in the Walled City and Great Wall mods. Here each layer represents a horizontal slice and there are as many layers as the height. In each layer, there are as many rows as the length and as many columns as the width. To orient directional blocks like stairs, the orientation of layers in the text file is as North pointing towards the top of the file. When templates are built alongside a wall, the building will be rotated so that North will become the direction pointing away from the wall, and South face will be touching the wall.
+==Building Template Layout=
+This is the layout used for templates in the ruins mod and is used for <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#Building_Templates>building templates</a> in the Walled City and Great Wall mods. Here each layer represents a horizontal slice and there are as many layers as the height. In each layer, there are as many rows as the length and as many columns as the width. To orient directional blocks like stairs, the orientation of layers in the text file is as North pointing towards the top of the file. When templates are built alongside a wall, the building will be rotated so that North will become the direction pointing away from the wall, and South face will be touching the wall.
 
 [http://img189.imageshack.us/img189/7497/orientbuilding.jpg]
         
 ==Wall Cross Section Layout==
-This layout is used for <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#How_The_Mods_Use_Template_Files>wall templates</a>. Here each layer represents a vertical slice. During wall generation layers are used in order and repeated from the beginning once the last layer is reached. In each layer there as many rows as the wall height and as many columns as the wall width. The default orientation of a layer is that the top of the grid corresponds to up, and left of the grid corresponds to west. The default direction the wall will be propagated, and hence the order of the layers is south to north. The wall cross-section layout can be thought of as the standard layout flipped over onto its southern face.
+This layout is used for <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#Wall_Templates_and_Road_Templates>wall templates</a>. Here each layer represents a vertical slice. During wall generation layers are used in order and repeated from the beginning once the last layer is reached. In each layer there as many rows as the wall height and as many columns as the wall width. The default orientation of a layer is that the top of the grid corresponds to up, and left of the grid corresponds to west. The default direction the wall will be propagated, and hence the order of the layers is south to north. The wall cross-section layout can be thought of as the standard layout flipped over onto its southern face.
 
 [http://img708.imageshack.us/img708/4883/orientwalls.jpg]
        
