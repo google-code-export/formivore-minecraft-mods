@@ -30,7 +30,7 @@ unique, acceptable_target_block, allowable_overhang, leveling_buffer ,cut_in_buf
 
 
 ==Wall Template Variables==
-A number of additional variables are required from <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#How_The_Mods_Use_Template_Files>wall templates</a>.
+A number of additional variables are required from <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#Wall_Templates_and_Road_Templates>wall templates</a>.
 
 <font color= #800080>`biomes` </font>= `biome1,biome2,biome3,...`<br>
 A comma-separated list of the biomes that can spawn this wall or city type. Should only be used for top-level templates (not child templates). Instead of a list, you may have <font color= #800080>`biomes` </font>`= ALL` to allow spawning in all biomes. Listing the Underground biome for city templates indicates that this city type will only spawn underground. Allowable biomes are: Rainforest, Swampland, Seasonal Forest, Forest, Savanna, Shrubland, Taiga, Desert, Plains, Ice Desert, Tundra, Hell, Sky, Hills, Ocean, Underground
@@ -79,7 +79,7 @@ Defaults to `1`.
 
 
 ==Default Tower Variables==
-These variables control the style of the default resizable towers. These variables should also be provided in each wall template file.
+These variables control the style of the default resizable towers. These variables should also be provided in each <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#Wall_Templates_and_Road_Templates>wall template</a> file.
 
 <font color= #800080>`tower_rule` </font>= `<rule definition>`<br>
 or <font color= #800080>`tower_rule` </font>= `rule number`<br>
