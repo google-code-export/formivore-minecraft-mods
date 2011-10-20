@@ -28,13 +28,23 @@ public class TemplateRule {
     public TemplateRule ( String rule ) throws Exception {
         String[] items = rule.split( "," );
         int numblocks = items.length - 2;
-        if( numblocks < 1 ) { throw new Exception( "No blockIDs specified for rule!" ); }
+        if( numblocks < 1 ) { throw new Exception( "Error reading rule: No blockIDs specified for rule!" ); }
         condition = Integer.parseInt( items[0].trim() );
         chance = Integer.parseInt( items[1].trim() );
         blockIDs = new int[numblocks];
         blockMDs = new int[numblocks];
+        
 		String[] data;
         for( int i = 0; i < numblocks; i++ ) {
+        	data = items[i + 2].trim().split( "-" );
+        	blockIDs[i]=Integer.parseInt( data[0] );
+        	if(Building.isInvalidRuleBlock(blockIDs[i])){
+        		throw new Exception("Error reading rule: BlockID "+blockIDs[i]+" not registered!");
+        	}
+        	blockMDs[i]= data.length>1 ? Integer.parseInt( data[1]) : 0;
+        	
+        	
+        	/*
 			data = items[i + 2].trim().split( "-" );
 			if( data.length > 1 ) {
 				blockIDs[i] = Integer.parseInt( data[0] );
@@ -47,9 +57,14 @@ public class TemplateRule {
 				blockIDs[i] = Integer.parseInt( items[i + 2].trim() );
 				blockMDs[i] = 0;
 			}
+			*/
         }
         
         setPrimaryBlock();
+    }
+    
+    public void readBlockID() throws Exception{
+    	
     }
     
 

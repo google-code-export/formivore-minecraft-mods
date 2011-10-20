@@ -59,14 +59,43 @@ public class mod_GreatWall extends BuildingExplorationHandler
 
 	//****************************  CONSTRUCTOR - mod_GreatWall*************************************************************************************//
 	public mod_GreatWall() {
+		//ModLoader.RegisterBlock(surveyorsRod);
+	    //magicWall.blockIndexInTexture = ModLoader.addOverride("/terrain.png", "/texturetest.png");
+			
+		//ModLoader.AddRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
+		
+		ModLoader.SetInGameHook(this,true,true);
+		
+		//MP PORT - uncomment
+		//loadDataFiles();
+	}
+	
+	@Override
+	public String toString(){
+		return GREAT_WALL_MOD_STRING;
+	}
+	
+	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
+	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
+	public void ModsLoaded(){
+		//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
+		for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
+			if(mod.toString().equals(WALLED_CITY_MOD_STRING)){
+				BuildingExplorationHandler wcp=(BuildingExplorationHandler)mod;
+				if(!wcp.dataFilesLoaded) wcp.loadDataFiles();
+				if(!wcp.errFlag){
+					walledCityMod=wcp;
+					System.out.println("Combining chunk explorers for "+toString()+" and "+walledCityMod.toString()+".");
+				}
+				break;
+		}}
+		
+		loadDataFiles();
+	}
+	
+	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
+	public void loadDataFiles(){
 		try {
-			ModLoader.SetInGameHook(this,true,true);
-			
-			//ModLoader.RegisterBlock(surveyorsRod);
-		    //magicWall.blockIndexInTexture = ModLoader.addOverride("/terrain.png", "/texturetest.png");
-				
-			//ModLoader.AddRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
-			
 			//read and check values from file
 			lw= new PrintWriter( new BufferedWriter( new FileWriter(LOG_FILE) ) );
 			loadingMessage="Generating walls";
@@ -86,26 +115,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 			lw.println( "There was a problem loading the great wall mod: "+ e.getMessage() );
 			e.printStackTrace();
 		}finally{ if(lw!=null) lw.close(); }
-		
-		////see if the walled city mod is loaded and if so combine explorers
-		for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
-			if(mod.toString().equals(WALLED_CITY_MOD_STRING))
-				combineExploreThreads(((mod_WalledCity)mod));
-		}
-	}
-	
-	//****************************  FUNCTION - combineExploreThreads *************************************************************************************//
-	@Override
-	public void combineExploreThreads(BuildingExplorationHandler that){
-		if(!that.errFlag){
-			walledCityMod=that;
-			System.out.println("Combining chunk explorers for "+toString()+" and "+walledCityMod.toString()+".");
-		}
-	}
-	
-	@Override
-	public String toString(){
-		return GREAT_WALL_MOD_STRING;
+		dataFilesLoaded=true;
 	}
 
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
