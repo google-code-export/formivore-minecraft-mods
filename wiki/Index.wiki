@@ -1,0 +1,10 @@
+==Wiki Contents==
+  * Installation
+  * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ>Frequently Asked Questions</a>
+   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Troubleshooting_and_General_Questions>Troubleshooting and General Problems</a>
+   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Customization>Customization </a>
+  * Global Settings
+  * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat>The Template Format</a>
+   * [Variables]
+   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules>Block Rules</a>
+   * [Layers]
