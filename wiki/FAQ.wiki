@@ -68,7 +68,7 @@ An infinite city means a city that stretches on forever; these are created using
    * <font color= #800080>`building_interval `</font>`= 15` #something fairly short like 15 will make dense cities, tweak this to your liking.
    * <font color= #800080>`weight `</font>`= 1000` #only if you have other templates in the /resources/greatwall/ folder that you want to be ignored for your city.
   #3Place the road templates for your infinite city in the /resources/greatwall/ folder.
-  #4In GreatWallModSettings.txt set ChunkTryProb to 0.5 or higher. You can try increasing TriesPerChunk as well to get even denser cities.
+  #4In `GreatWallModSettings.txt` set `ChunkTryProb` to 0.5 or higher. You can try increasing TriesPerChunk as well to get even denser cities.
 
 <font color=#632423>*_Q: If infinite dragons devour infinite cities, how many cities do I have left?*_</font><br>
 Undefined.
