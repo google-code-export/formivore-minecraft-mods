@@ -94,7 +94,6 @@ public class Building
 			setOrigin(pt[0],pt[1],pt[2]);
 		}
 		delayedBuildQueue=new LinkedList<int[]>();
-		int q=42;
 	}
     
     //******************** ORIENTATION FUNCTIONS *************************************************************************************************************//
