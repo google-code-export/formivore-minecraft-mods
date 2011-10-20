@@ -1,18 +1,29 @@
+=Melon Farm - an Example Template=
 {{{
+#specifies the chance of this template being built against other templates that could be built in it's place.
 weight=10
-embed_into_distance=1
+
+#these dimension (height, length, width) should match the layers below
 dimensions=2,6,11
+
+#this variable makes the template embed one block into the ground when built.
+embed_into_distance=1 
+
+#this variable controls how many block down from the template will be filled in if necessary
 max_leveling=2
+
+#this variable controls how many blocks above will be cleared (made air) if necessary
 max_cut_in=6
 
+#The block rules.
+rule1=0,100,2,2,3 #grass and dirt around the edges of the farm
+rule2=0,100,8 #a water block to irrigate the melons
+rule3=0,100,60 #farmland
+rule4=5,70,104-6,105-6 #pumpkin/melon stems, the -6 is metadata specifying growth stage
+rule5=0,100,85 #fence
+rule6=0,100,107-1 #fence gate, rotated to face south
 
-rule1=0,100,2,2,3
-rule2=0,100,8
-rule3=0,100,60
-rule4=5,70,104-6,105-6
-rule5=0,100,85
-rule6=0,100,107-1
-
+#the below ground layer
 layer
 1,1,1,1,1,1,1,1,1,1,1
 1,3,3,3,3,2,3,3,3,3,1
@@ -22,6 +33,7 @@ layer
 1,1,1,1,1,1,1,1,1,1,1
 endlayer
 
+#the above ground layers with melons
 layer
 5,5,5,5,5,5,5,5,5,5,5
 5,4,4,4,4,0,4,4,4,4,5
