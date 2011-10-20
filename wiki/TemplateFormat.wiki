@@ -7,7 +7,8 @@ Each template file has three sections, for variables, block rules, and layers. T
   * [BlockRules] – Lists of blocks that can be generated in layers.
   * [Layers] – A block by block grid used to generate custom buildings and wall cross sections.
 
-Also the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Customization>customization section</a> of the F.A.Q. answers some common questions regarding things you can do with the template files.
+Also the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Customization>customization section</a> of the F.A.Q. answers some common questions regarding things you can do with the template files. See also the [ExampleTemplate].
+
 ==How The Mods Use Template Files==
 Both the Walled City Mod and the Great Wall Mod are designed around walls; in this case walls can mean either great walls, the outer walls of a city, or the (zero height) streets inside a city. Walls will generate buildings alongside, these can be either the default procedurally generated towers or building templates. The mods use template files for two purposes that are somewhat different but similar enough that I decided to maintain them in a single format:
 
