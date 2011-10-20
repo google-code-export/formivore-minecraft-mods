@@ -1,4 +1,7 @@
-===Troubleshooting and General Questions===
+==Frequently Asked Questions==
+<wiki:toc max_depth="1" />
+
+=Troubleshooting and General Questions=
 <font color=#632423>*_Q: How/where are the walls/cities generated?_*</font><br>
 Cities and walls have a chance to spawn with every new bit of terrain Minecraft generates. It works the same way as terrain features like lakes, just a lot bigger. Minecraft generates new terrain on the fly as you explore, so the mod will do the same with structures.
 
@@ -30,7 +33,7 @@ I’m very interested in receiving crash reports so I can fix bugs. Post crash r
 <font color=#632423>*_Q: LAGGGG_*</font><br>
 The Walled City Generator in particular can cause bad slowdowns because of the large number of chunks that have to be generated in order to plan a city. This slowdown will only occur while Minecraft is generating new terrain; it will cease after a while if you are not exploring. It seems that this affects some machines more than others. Decreasing `ChunkTryProb` or increasing `MinCitySeparation` will reduce slowdown, see above on how to do this. It may be helpful to increase java’s memory allocation. There are tutorials online about how to do this. This problem is something I am trying to improve but to a certain extent it is inherent in the design of the mod.
 
-===Customization===
+=Customization=
 
 
 <font color=#632423>*_Q: How can I create custom walls and cities?*_</font><br>
