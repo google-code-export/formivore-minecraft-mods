@@ -28,7 +28,7 @@ public class TemplateTML
 
 	public TemplateTML( File file, PrintWriter lw_) throws Exception{
 		// load in the given file as a template
-		BufferedReader br =null;
+		BufferedReader br=null;
 		try {
 			name=file.getName();
 			lw=lw_;

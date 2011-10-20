@@ -57,16 +57,34 @@ public class mod_WalledCity extends BuildingExplorationHandler
 
 	//****************************  CONSTRUCTOR - mod_WalledCity  *************************************************************************************//
 	public mod_WalledCity() {
+		ModLoader.SetInGameHook(this,true,true);
+		loadingMessage="Generating cities";
+		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
+		
+		//MP PORT - uncomment
+		//loadDataFiles();
+	}
+	
+	@Override
+	public String toString(){
+		return WALLED_CITY_MOD_STRING;
+	}
+	
+	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
+	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
+	public void ModsLoaded(){
+		if(!dataFilesLoaded) loadDataFiles();
+	}
+	
+	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
+	public void loadDataFiles(){
 		try {
-			ModLoader.SetInGameHook(this,true,true);
-			
 			//read and check values from file
 			lw= new PrintWriter( new BufferedWriter( new FileWriter(LOG_FILE ) ));
-			loadingMessage="Generating cities";
+			
 			logOrPrint("Loading options and templates for the Walled City Generator.");
 			getGlobalOptions();
 			
-			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 
 			cityStyles=WallStyle.loadWallStylesFromDir(STYLES_DIRECTORY,lw);
 			WallStyle.loadStreets(cityStyles,STREETS_DIRECTORY,lw);
@@ -89,24 +107,15 @@ public class mod_WalledCity extends BuildingExplorationHandler
 		}finally{ if(lw!=null) lw.close(); }
 
 		//see if the great wall mod is loaded and if so combine explorers
+		/*
 		if(!errFlag){
 			for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
 				if(mod.toString().equals(GREAT_WALL_MOD_STRING))
 					((BuildingExplorationHandler)mod).combineExploreThreads(this);
 			}
 		}
-	}
-	
-	//****************************  FUNCTION - combineExploreThreads *************************************************************************************//
-	@Override
-	public void combineExploreThreads(BuildingExplorationHandler that){
-		if(!that.toString().equals(WALLED_CITY_MOD_STRING))  //check against infinite recursion!
-			that.combineExploreThreads(this); //the Walled City Generator will host the exploreThreads
-	}
-	
-	@Override
-	public String toString(){
-		return WALLED_CITY_MOD_STRING;
+		*/
+		dataFilesLoaded=true;
 	}
 	
 	//****************************  FUNCTION - cityIsSeparated *************************************************************************************//

@@ -60,7 +60,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	public int Smooth1=10, Smooth2=20, Backtrack=9;
 	
 	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
-	protected boolean errFlag=false;
+	protected boolean errFlag=false, dataFilesLoaded=false;
 	protected LinkedList<int[]> lightingList=new LinkedList<int[]>();
 	protected int max_exploration_distance;
 	protected int chunksExploredThisTick=0, chunksExploredFromStart=0;
@@ -76,7 +76,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	public String Version(){ return VERSION_STRING;}	
 	abstract public void updateWorldExplored(World world);
 	abstract public boolean isGeneratorStillValid(WorldGeneratorThread wgt);
-	abstract public void combineExploreThreads(BuildingExplorationHandler that);
+	abstract public void loadDataFiles();
 	public boolean OnTickInGame() { return true;} //for the  multiplayer port, don't have to do anything here
 	
 	int[] chestTries=new int[]{4,6,6,6};

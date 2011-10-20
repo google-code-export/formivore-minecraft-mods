@@ -1301,7 +1301,7 @@ public class Building
     
     public final static int[] STEP_TO_STAIRS={WOOD_STAIRS_ID,WOOD_STAIRS_ID,WOOD_STAIRS_ID,COBBLESTONE_STAIRS_ID,BRICK_STAIRS_ID,STONE_BRICK_STAIRS_ID,WOOD_STAIRS_ID };
     
-    public static int blockToStepMeta(int[] idAndMeta){
+    public final static int blockToStepMeta(int[] idAndMeta){
     	if(!IS_WALL_BLOCK[idAndMeta[0]]) return 3;
     	switch(idAndMeta[0]){
 			case SANDSTONE_ID:					return 1; 
@@ -1313,7 +1313,11 @@ public class Building
     	}
     }
     
-	public static void circleShape(int diam){
+    public final static boolean isInvalidRuleBlock(int blockID){
+    	return (blockID <  SPECIAL_BLOCKID_START || blockID > SPECIAL_BLOCKID_END) && blockID!=AIR_ID && Block.blocksList[blockID]==null;
+    }
+    
+	public final static void circleShape(int diam){
 		float rad=(float)diam/2.0F;
 		float[][] shape_density=new float[diam][diam];
 		for(int x=0;x<diam;x++)
