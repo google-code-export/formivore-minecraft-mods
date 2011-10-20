@@ -16,7 +16,7 @@ Wall Templates define walls and roads. Road templates are just a different name 
 In wall templates the layers specify cross sections of a wall which are repeated for as long as the wall runs. Wall templates have a number of additional variables that can define the construction of the default towers and any building templates that spawn alongside the road.
 
 ===Building Templates===
-Building Templates create custom buildings, ruins, and doodads that will be generated in place of default towers alongside walls. Unlike wall templates the layers in a Building Template specifiy a full block-to-block 3D schematic of the building.
+Building Templates create custom buildings, ruins, and doodads that will be generated in place of default towers alongside walls. Unlike wall templates, the layers in a building template specifiy a full block-to-block 3D schematic of the building.
 
 =File Locations=
 All template directories are in the located in the resources folder. All templates are loaded when minecraft launches.
