@@ -5,6 +5,7 @@
    * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Customization>Customization </a>
   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/GlobalSettingFiles>Global Settings</a>
   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat>The Template Format</a>
+   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/ExampleTemplate>Melon Farm - an Example Template</a>
    * [Variables]
    * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules>Block Rules</a>
    * [Layers]
