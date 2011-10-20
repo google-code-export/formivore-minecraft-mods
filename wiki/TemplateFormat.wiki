@@ -11,9 +11,11 @@ Also the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Cust
 ===How The Mods Use Template Files===
 Both the Walled City Mod and the Great Wall Mod are designed around walls; in this case walls can mean either great walls, the outer walls of a city, or the (zero height) streets inside a city. Walls will generate buildings alongside, these can be either the default procedurally generated towers or building templates. The mods use template files for two purposes that are somewhat different but similar enough that I decided to maintain them in a single format:
 
-*Wall Templates* – Here the template variables define the wall and the default towers built alongside the wall. The layers specify cross sections of the wall which are repeated for as long as the wall runs.
+===Wall Templates and Road Templates===
+Here the template variables define the wall and the default towers built alongside the wall. The layers specify cross sections of the wall which are repeated for as long as the wall runs.
 
-*Building Templates* – Here the layers specify the full 3D schematic of custom buildings that can be built alongside walls.
+===Building Templates===
+Here the layers specify the full 3D schematic of custom buildings that can be built alongside walls.
 ==File Locations==
 All template directories are in the located in the resources folder. All templates are loaded when minecraft launches.
 ===File Locations - Great Wall Mod===
