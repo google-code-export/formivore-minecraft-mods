@@ -8,15 +8,17 @@ Each template file has three sections, for variables, block rules, and layers. T
   * [Layers] – A block by block grid used to generate custom buildings and wall cross sections.
 
 Also the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Customization>customization section</a> of the F.A.Q. answers some common questions regarding things you can do with the template files.
-===How The Mods Use Template Files===
+==How The Mods Use Template Files==
 Both the Walled City Mod and the Great Wall Mod are designed around walls; in this case walls can mean either great walls, the outer walls of a city, or the (zero height) streets inside a city. Walls will generate buildings alongside, these can be either the default procedurally generated towers or building templates. The mods use template files for two purposes that are somewhat different but similar enough that I decided to maintain them in a single format:
 
 ===Wall Templates and Road Templates===
-Here the template variables define the wall and the default towers built alongside the wall. The layers specify cross sections of the wall which are repeated for as long as the wall runs.
+Wall Templates define walls and roads. Road templates are just a different name for wall templates with that have <font color= #800080>`walk_height` </font>`= 0`.
+In wall templates the layers specify cross sections of a wall which are repeated for as long as the wall runs. Wall templates have a number of additional variables that can define the construction of the default towers and any building templates that spawn alongside the road.
 
 ===Building Templates===
-Here the layers specify the full 3D schematic of custom buildings that can be built alongside walls.
-==File Locations==
+Building Templates create custom buildings, ruins, and doodads that will be generated in place of default towers alongside walls. Unlike wall templates the layers in a Building Template specifiy a full block-to-block 3D schematic of the building.
+
+=File Locations=
 All template directories are in the located in the resources folder. All templates are loaded when minecraft launches.
 ===File Locations - Great Wall Mod===
   * Wall Templates: /resources/greatwall
@@ -27,5 +29,5 @@ All template directories are in the located in the resources folder. All templat
   * Street Templates: resources/walledcity/streets
   * Street Building Templates: resources/walledcity/streets
 
-==Converting to the Template Format==
+=Converting to the Template Format=
 A <a href=http://formivore-minecraft-mods.googlecode.com/files/schematic%20converter.zip>script to convert MCEdit .schematics </a> to template files is available.
