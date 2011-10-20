@@ -1,4 +1,4 @@
-==Wiki Contents==
+===Wiki Contents===
   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Installation>Installation </a>
   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ>Frequently Asked Questions</a>
    * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Troubleshooting_and_General_Questions>Troubleshooting and General Problems</a>
@@ -10,7 +10,7 @@
    * [Layers]
   * <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Changelog>Full Changelog</a>
 
-==Acknowledgements==
+===Acknowledgements===
   * The creators of Modloader and the Minecraft Coder Pack for making this possible.
   * d00dv4d3r for the excellent Ruins mod, template format, and parts of his code that were adopted.
   * denkbert for his roof designs.
