@@ -32,7 +32,7 @@ A comma-delimited set of <a href=http://www.minecraftwiki.net/wiki/Data_values>m
 Rules can use blockIDs that are added by other mods and not part of default minecraft! If you include non-vanilla block, a check will be done at the time of loading to see if that block has been registered by another mod. If the blockID is unregistered an error will be given.
 
 ===Special blockIDs===
-These are block IDs that instead of creating the correspondingly numbered block in the world, tell the mod to make certain things that can’t be coded by a single block ID. These include mob spawners, chests with different loot, and steps/stairs.
+These are block IDs that instead of creating the correspondingly numbered block in the world, tell the mod to make certain things that can’t be coded by a single block ID. These include mob spawners, chests with different loot, and steps/stairs. The numerical range of these special blockIDs actually overlaps vanilla Minecraft's itemIDs so there should be conflicts with blocks registered in other mods.
   * 300 = Leave existing world block alone
   * 301 = Mob Spawner (Zombie)
   * 302 = Mob Spawner (Skeleton) 
