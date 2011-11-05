@@ -159,38 +159,42 @@ public class WallStyle extends TemplateTML{
 	//****************************************  FUNCTION - loadChildTemplates *************************************************************************************//
 	public ArrayList<TemplateTML> loadChildTemplates(String listVarString,HashMap<String,TemplateTML> childTemplateMap){
 		ArrayList<TemplateTML> childTemplates=new ArrayList<TemplateTML>();
+		if(!extraOptions.containsKey(listVarString)) return childTemplates;
+		String[] names = (((String)extraOptions.get(listVarString)).split("="))[1].split(",");
+		
 		String templateListStr=(String)extraOptions.get(listVarString);
+		if(templateListStr==null) return childTemplates;
+		
 
-		if(templateListStr==null || templateListStr!=null && templateListStr.equals(listVarString+"="+NO_TEMPLATES)) return childTemplates;
-		if(templateListStr.equals(listVarString+"="+ALL_TEMPLATES)){
-			childTemplates.addAll(childTemplateMap.values());
-		}
-		else{
-			String[] names = (templateListStr.split("="))[1].split(",");
-			for(String name : names)
-				if(childTemplateMap.containsKey(name.trim()))
-					childTemplates.add((TemplateTML) childTemplateMap.get(name.trim()) );
+		for(String name : names){
+			name=name.trim();
+			if(name.toUpperCase().equals(NO_TEMPLATES)) return new ArrayList<TemplateTML>();
+			if(name.toUpperCase().equals(ALL_TEMPLATES)){
+				childTemplates.addAll(childTemplateMap.values());
+				break;
+			}
+			if(childTemplateMap.containsKey(name.trim()))
+				childTemplates.add((TemplateTML) childTemplateMap.get(name.trim()) );
 		}
 		return childTemplates;
 	}
 
-	//because Java generics just have to suck so hard
 	public ArrayList<WallStyle> loadChildStyles(String listVarString,HashMap<String,WallStyle> childTemplateMap){
 		ArrayList<WallStyle> childTemplates=new ArrayList<WallStyle>();
-		String templateListStr=(String)extraOptions.get(listVarString);
-
-		if(templateListStr==null || templateListStr!=null && templateListStr.equals(listVarString+"="+NO_TEMPLATES)) return childTemplates;
-		if(templateListStr.equals(listVarString+"="+ALL_TEMPLATES) ){
-			childTemplates.addAll(childTemplateMap.values());
-		}
-		else{
-			String[] names = templateListStr.split("=")[1].split(",");
-			for(String name : names){
-				if(childTemplateMap.containsKey(name.trim())){
-					WallStyle ws=childTemplateMap.get(name.trim());
-					ws.Biomes=ALL_BIOMES;
-					childTemplates.add(ws );
-				}
+		if(!extraOptions.containsKey(listVarString)) return childTemplates;
+		String[] names = (((String)extraOptions.get(listVarString)).split("="))[1].split(",");
+		
+		for(String name : names){
+			name=name.trim();
+			if(name.toUpperCase().equals(NO_TEMPLATES)) return new ArrayList<WallStyle>();
+			if(name.toUpperCase().equals(ALL_TEMPLATES)){
+				childTemplates.addAll(childTemplateMap.values());
+				break;
+			}
+			if(childTemplateMap.containsKey(name.trim())){
+				WallStyle ws=childTemplateMap.get(name.trim());
+				ws.Biomes=ALL_BIOMES;
+				childTemplates.add(ws );
 			}
 		}
 		return childTemplates;
@@ -250,7 +254,7 @@ public class WallStyle extends TemplateTML{
 		try{
 			int[] newVals=new int[names.length];
 			for(int i=0;i<newVals.length;i++) newVals[i]=0;
-			if((read.split(splitString)[1]).trim().equals(allStr)){
+			if((read.split(splitString)[1]).trim().toUpperCase().equals(allStr)){
 				for(int i=0;i<newVals.length;i++) newVals[i]=1;
 			}else{
 				for(String check : (read.split(splitString)[1]).split(",")){
