@@ -10,7 +10,7 @@ Each template file has three sections, for variables, block rules, and layers. T
 Also the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/FAQ#Customization>customization section</a> of the F.A.Q. answers some common questions regarding things you can do with the template files. See also the [ExampleTemplate].
 
 ==How The Mods Use Template Files==
-Both the Walled City Mod and the Great Wall Mod are designed around walls; a wall can be either a great wall, an outer wall of a city, or a (zero height) street inside a city. Walls will generate buildings alongside, these can be either the default procedurally generated towers or building templates. The mods use template files for two purposes that are somewhat different but similar enough that I decided to maintain them in a single format:
+Both the Walled City Mod and the Great Wall Mod are designed around walls. A wall can be either a great wall, an outer wall of a city, or a (zero height) street inside a city. Buildings will be generated alongside the walls. These buildings can be either the default procedurally generated towers or custom buildings made from their own templates. So template files are used in two slightly different ways to generate walls and buildings, but these uses are similar enough that they have been unified in a single format.
 
 ===Wall Templates and Road Templates===
 Wall Templates define walls and roads. Road templates are just a different name for wall templates with that have <font color= #800080>`walk_height` </font>`= 0`.
