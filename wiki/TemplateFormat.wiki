@@ -3,7 +3,7 @@
 The Great Wall Mod and the Walled City Generator use the .tml (template) format adapted from d00dv4d3r’s ruins mod to define the look of walls and buildings. The format combines a block by block grid schematic with variables that control parts of structures that are procedurally generated. Template files can be edited in any text editor.
 Each template file has three sections, for variables, block rules, and layers. This guide describes each of these sections.
 
-  * [Variables] – control things like width, frequency, and material of parts of structures that are automatically generated.
+  * [Variables] – control things like width, frequency, and material of parts of structures that are procedurally generated.
   * [BlockRules] – Lists of blocks that can be generated in layers.
   * [Layers] – A block by block grid used to generate custom buildings and wall cross sections.
 
