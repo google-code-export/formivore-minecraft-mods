@@ -201,7 +201,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 				midpointAvenue.setTarget(cityCenter);
 				midpointAvenue.plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,true);
 				if(midpointAvenue.bLength > 20){
-					System.out.println("Built a non-gateway avenue for dir="+w.bDir+" wall.");
+					if(BuildingWall.DEBUG > 1) System.out.println("Built a non-gateway avenue for dir="+w.bDir+" wall.");
 					midpointAvenue.smooth(10,10,true);
 					//midpointAvenue.buildFromTML(true);
 					interiorAvenues.add(midpointAvenue);

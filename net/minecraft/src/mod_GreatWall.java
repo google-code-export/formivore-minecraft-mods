@@ -77,12 +77,13 @@ public class mod_GreatWall extends BuildingExplorationHandler
 	
 	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
 	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
+	//MP PORT - comment out function
 	public void ModsLoaded(){
 		//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
 		for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
 			if(mod.toString().equals(WALLED_CITY_MOD_STRING)){
 				BuildingExplorationHandler wcp=(BuildingExplorationHandler)mod;
-				if(!wcp.dataFilesLoaded) wcp.loadDataFiles();
+				if(!wcp.dataFilesLoaded) wcp.ModsLoaded();
 				if(!wcp.errFlag){
 					walledCityMod=wcp;
 					System.out.println("Combining chunk explorers for "+toString()+" and "+walledCityMod.toString()+".");
@@ -90,6 +91,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 				break;
 		}}
 		
+		initializeHumansPlusReflection();
 		loadDataFiles();
 	}
 	

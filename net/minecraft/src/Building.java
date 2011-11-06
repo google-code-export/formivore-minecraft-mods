@@ -3,25 +3,25 @@ package net.minecraft.src;
 //  By formivore 2011 for Minecraft Beta.
 //	A general class for buildings. Classes can inherit from Building to build from a local frame of reference.
 //  Local frame of reference description:
-//  i_,j_,k_ etc. describe global coordinates, x_,z_,y_ descibe local coordinates.
+//  i_,j_,k_ etc. describe global coordinates, x_,z_,y_ describe local coordinates.
 //  1)Set origin with i1,j1,k1. The child class may want to move the origin as it progress to use as a "cursor" position.
 //  2)axY and EW determine the Y axis. E.g. EW=0,axY=-1 => Y-axis points north.
-//  3)axXHand =-1,1 determines whether X-axis points left or right respsectively when facing along Y-axis.
+//  3)axXHand =-1,1 determines whether X-axis points left or right respectively when facing along Y-axis.
 //  4)Z-axis always points up.
 //
-//			             (EW=0,axY=-1,dir=-2)
-//												   (-i)
+//			         (EW=0,axY=-1,dir=-2)
+//							(-i)
 //                            n
 //                            n
 //  (EW=1,axY=1,dir=1) (+k)www*eee(-k)  (EW=1,axY=-1,dir=-1)
 //                            s
 //                            s
-//												   (+i)
+//							(+i)
 //                    (EW=0,axY=1,dir=2)
 //
 //
 //
-//			           axY=1
+//			       axY=1
 //
 //                   ^
 //                   |
@@ -32,9 +32,12 @@ package net.minecraft.src;
 //                axY=-1
 */
 		
+
 import java.util.Random;
 import java.lang.Math;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 
 //BUKKIT PORT
@@ -141,8 +144,20 @@ public class Building
     		return EW==0 ? -axY*metaDir : -axY*metaDir/2;
     	return EW==0 ? -axY*bHand*metaDir : axY*bHand*metaDir*2;
     }
+    
+    protected final void setOrigin(int i1_,int j1_, int k1_){
+		i1=i1_;
+		j1=j1_;
+		k1=k1_;
+    }
+    
+    protected final void shiftOrigin(int gradX, int gradZ, int gradY){
+		i1+=EW*axX*gradX + NS*axY*gradY;
+		j1+=gradZ;
+		k1+=NS*axX*gradX + EW*axY*gradY;
+	}
   	
-    //******************** LOCAL COORDINATE FUNCTIONS *************************************************************************************************************//
+  //******************** LOCAL COORDINATE FUNCTIONS - ACCESSORS *************************************************************************************************************//
     //Use these instead of World.java functions when to build from a local reference frame
     //when i1,j1,k1 are set to working values.
     
@@ -190,18 +205,6 @@ public class Building
     	return wgt.queryExplorationHandler(getI(x,y),getK(x,y));
     }
     
-    protected final void setOrigin(int i1_,int j1_, int k1_){
-		i1=i1_;
-		j1=j1_;
-		k1=k1_;
-    }
-    
-    protected final void shiftOrigin(int gradX, int gradZ, int gradY){
-		i1+=EW*axX*gradX + NS*axY*gradY;
-		j1+=gradZ;
-		k1+=NS*axX*gradX + EW*axY*gradY;
-	}
-    
     protected final int getBlockIdLocal(int x, int z, int y){
     	if(bDir==DIR_NORTH) return (axX==1 ? world.getBlockId(i1-y,j1+z,k1+x) : world.getBlockId(i1-y, j1+z,k1-x));
   		if(bDir==DIR_EAST) return  (axX==1 ? world.getBlockId(i1+x,j1+z,k1-y) : world.getBlockId(i1-x, j1+z,k1-y));
@@ -209,19 +212,9 @@ public class Building
   		return (axX==1 ? world.getBlockId(i1+x,j1+z,k1+y) : world.getBlockId(i1-x, j1+z,k1+y));
     }
     
-    protected final void flushDelayed(){
-    	while(delayedBuildQueue.size()>0){
-    		int[] block=(delayedBuildQueue.poll());
-    		if(block[3]!=TORCH_ID || Block.torchWood.canPlaceBlockAt(world,block[0],block[1],block[2]))
-    			world.setBlockAndMetadata(block[0],block[1],block[2],block[3],block[4]);
-    		//if(block[3]==TORCH_ID)
-    		//	wgt.explorationHandler.queueLighting(new int[]{block[0],block[1],block[2],block[0],block[1],block[2]});
-    	}
-    }
-    
-    
+  //******************** LOCAL COORDINATE FUNCTIONS - SET BLOCK FUNCTIONS *************************************************************************************************************//
     protected final void setBlockLocal(int x, int z, int y, int blockID){
-    	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID); return; }
+    	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,0); return; }
     	
     	int[] pt=getIJKPt(x,z,y);
     	if(blockID==AIR_ID && world.getBlockId(pt[0], pt[1], pt[2])==AIR_ID) return;
@@ -233,7 +226,7 @@ public class Building
     }
     
     protected final void setBlockAndMetadataLocal(int x, int z, int y, int blockID, int metadata){
-     	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID); return; }
+     	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
      	if(blockID==TemplateRule.HOLE_ID) blockID=AIR_ID;
      	
     	int[] pt=getIJKPt(x,z,y);
@@ -250,7 +243,7 @@ public class Building
     protected final void setBlockAndMetadataLocal(int x, int z, int y, TemplateRule rule){
     	int [] idAndMeta=rule.getBlock(random);
     	if(idAndMeta[0]==TemplateRule.HOLE_ID) idAndMeta[0]=AIR_ID;
-     	if(idAndMeta[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,idAndMeta[0]); return; } 	
+     	if(idAndMeta[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,idAndMeta[0],idAndMeta[1]); return; } 	
      	
     	int[] pt=getIJKPt(x,z,y);
     	if(idAndMeta[0]==AIR_ID && world.getBlockId(pt[0], pt[1], pt[2])==AIR_ID) return;
@@ -265,7 +258,7 @@ public class Building
      
     //allows control of lighting. Also will build even if replacing air with air.
     protected final void setBlockAndMetadataLocal(int x, int z, int y, int blockID, int metadata, boolean lighting){
-    	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID); return; }
+    	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
      	if(blockID==TemplateRule.HOLE_ID) blockID=AIR_ID;
      	
     	int[] pt=getIJKPt(x,z,y);
@@ -278,30 +271,50 @@ public class Building
     	}
     }
     
-    protected final void setSpecialBlockLocal(int x, int z, int y, int blockID){
-      switch(blockID) {
-			case PRESERVE_ID: break; // preserve existing world block
-      case ZOMBIE_SPAWNER_ID: setMobSpawner(x,z,y,1,0); break;
-      case SKELETON_SPAWNER_ID: setMobSpawner(x,z,y,1,1); break;
-      case SPIDER_SPAWNER_ID: setMobSpawner(x,z,y,1,2); break;
-      case CREEPER_SPAWNER_ID: setMobSpawner(x,z,y,1,3); break;
-      case UPRIGHT_SPAWNER_ID: if(random.nextInt(3)==0) setMobSpawner(x,z,y,1,3); else setMobSpawner(x,z,y,2,0); break;
-      case EASY_SPAWNER_ID: setMobSpawner(x,z,y,2,0); break; 
-      case MEDIUM_SPAWNER_ID: setMobSpawner(x,z,y,3,0); break; 
-      case HARD_SPAWNER_ID: setMobSpawner(x,z,y,4,0); break; 
-      case EASY_CHEST_ID: setLootChest(x,z,y,EASY_CHEST); break;
-      case MEDIUM_CHEST_ID: setLootChest(x,z,y,MEDIUM_CHEST); break;
-      case HARD_CHEST_ID: setLootChest(x,z,y,HARD_CHEST); break;
-      case TOWER_CHEST_ID: setLootChest(x,z,y,TOWER_CHEST); break;
-      case PIG_ZOMBIE_SPAWNER_ID: setMobSpawner(x,z,y,1,4); break;
-      case ENDERMAN_SPAWNER_ID: setMobSpawner(x,z,y,1,6); break;
-      case CAVE_SPIDER_SPAWNER_ID: setMobSpawner(x,z,y,1,7); break;
-      case WALL_STAIR_ID: setBlockAndMetadataLocal(x,z,y,STEP_ID,0); break;
-      }
+    protected final void flushDelayed(){
+    	while(delayedBuildQueue.size()>0){
+    		int[] block=(delayedBuildQueue.poll());
+    		if(block[3]==PAINTING_SPECIAL_ID) setPainting(block, block[4]);
+    		else if(IS_HUMANS_PLUS_FLAG[block[3]]) setHumansPlusFactionFlag(block, block[3],block[4]);
+    		else if(block[3]!=TORCH_ID || Block.torchWood.canPlaceBlockAt(world,block[0],block[1],block[2]))
+    			world.setBlockAndMetadata(block[0],block[1],block[2],block[3],block[4]);
+    		//if(block[3]==TORCH_ID)
+    		//	wgt.explorationHandler.queueLighting(new int[]{block[0],block[1],block[2],block[0],block[1],block[2]});
+    	}
+    }
+  
+  //******************** LOCAL COORDINATE FUNCTIONS - SPECIAL BLOCK FUNCTIONS *************************************************************************************************************//
+ 
+  //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setSpecialBlockLocal &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
+    protected final void setSpecialBlockLocal(int x, int z, int y, int blockID, int metadata){
+    	if(blockID==PRESERVE_ID) return; // preserve existing world block
+    	int[] pt=getIJKPt(x,z,y);
+    	
+    	switch(blockID) {
+			case ZOMBIE_SPAWNER_ID: setMobSpawner(pt,1,0); return;
+			case SKELETON_SPAWNER_ID: setMobSpawner(pt,1,1); return;
+			case SPIDER_SPAWNER_ID: setMobSpawner(pt,1,2); return;
+			case CREEPER_SPAWNER_ID: setMobSpawner(pt,1,3); return;
+			case UPRIGHT_SPAWNER_ID: if(random.nextInt(3)==0) setMobSpawner(pt,1,3); else setMobSpawner(pt,2,0); return;
+			case EASY_SPAWNER_ID: setMobSpawner(pt,2,0); return; 
+			case MEDIUM_SPAWNER_ID: setMobSpawner(pt,3,0); return; 
+			case HARD_SPAWNER_ID: setMobSpawner(pt,4,0); return; 
+			case EASY_CHEST_ID: setLootChest(pt,EASY_CHEST); return;
+			case MEDIUM_CHEST_ID: setLootChest(pt,MEDIUM_CHEST); return;
+			case HARD_CHEST_ID: setLootChest(pt,HARD_CHEST); return;
+			case TOWER_CHEST_ID: setLootChest(pt,TOWER_CHEST); return;
+			case PIG_ZOMBIE_SPAWNER_ID: setMobSpawner(pt,1,4); return;
+			case ENDERMAN_SPAWNER_ID: setMobSpawner(pt,1,6); return;
+			case CAVE_SPIDER_SPAWNER_ID: setMobSpawner(pt,1,7); return;
+			case GHAST_SPAWNER_ID: setMobSpawner(pt,1,5); return;
+			case WALL_STAIR_ID: world.setBlockAndMetadata(pt[0],pt[1],pt[2],STEP_ID,rotateMetadata(STEP_ID,metadata)); return; //this case should not be reached
+			case PAINTING_SPECIAL_ID: delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,metadata}); return;
+    	}
+    	if(IS_HUMANS_PLUS_FLAG[blockID]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,metadata});
     }
     
-    private final void setMobSpawner(int x,int z, int y, int nTypes, int offset){
-    	int[] pt=getIJKPt(x,z,y);
+    //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setMobSpawner &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
+    private final void setMobSpawner(int[] pt, int nTypes, int offset){
     	String mob="";
         int n = random.nextInt(nTypes)+offset;
         switch(n) {
@@ -324,9 +337,9 @@ public class Building
 	        if(tileentitymobspawner!=null) tileentitymobspawner.setMobID(mob);
         } catch(Exception e) { System.out.println("Error placing mob spawner: "+e.getMessage());} 
  	}
- 		
- 	private final void setLootChest(int x,int z,int y,int chestType){
- 		int[] pt=getIJKPt(x,z,y);
+    
+  //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setLootChest &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
+ 	private final void setLootChest(int[] pt,int chestType){
  		try{
  			world.setBlock(pt[0],pt[1],pt[2],CHEST_ID);
         
@@ -362,6 +375,7 @@ public class Building
  							 itempool[2][idx]);
  	}
  	
+ 	//&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setSignOrPost &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
  	public void setSignOrPost(int x2,int z2,int y2,boolean post,int sDir,String[] lines){
  		int[] pt=getIJKPt(x2,z2,y2);
  		world.setBlockAndMetadata(pt[0],pt[1],pt[2],post ? SIGN_POST_ID : WALL_SIGN_ID,sDir);
@@ -378,20 +392,55 @@ public class Building
  	    }
  	}
  	
- 	//public h_EntityFlag(World world, int posX, int posY, int posZ, int l)
-    public static void makeHumansPlusFactionFlag(World world,int i, int j, int k, int l){
-    	/*
+ 	//&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setPainting &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
+ 	public void setPainting(int[] pt, int metadata){
+ 		//painting uses same orientation meta as ladders.
+ 		//Have to adjust ijk since unlike ladders the entity exists at the block it is hung on.
+ 		int dir=rotateMetaDirToLocalAxes(LADDER_META_TO_DIR[metadata]);
+ 		if(dir==DIR_NORTH || dir==DIR_SOUTH) pt[0]+=dir/2; else pt[2]+=dir;
+ 			
+ 		EntityPainting entitypainting = new EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir+2]);
+        if(entitypainting.canStay() && !world.multiplayerWorld)
+            world.entityJoinedWorld(entitypainting);
+        
+ 	}
+ 	
+ 	//&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setPainting &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
+    public void setHumansPlusFactionFlag(int[] pt, int blockID, int metadata){
+    	if(!wgt.explorationHandler.humansPlusLoaded) return;
+    	
+    	int dir=rotateMetaDirToLocalAxes(LADDER_META_TO_DIR[metadata]);
+    	if(dir==DIR_NORTH || dir==DIR_SOUTH) pt[0]+=dir/2; else pt[2]+=dir;
+    	Integer faceDir=PAINTING_DIR_TO_FACEDIR[dir+2]; 
+    	
     	try {
-    		Class cls = Class.forName("net.minecraft.src.h_EntitityFlag");
-    		Class partypes[] = new Class[]{Class.forName("net.minecraft.src.World"),Integer.TYPE,Integer.TYPE,Integer.TYPE,Integer.TYPE};
-    		Constructor ct = cls.getConstructor(partypes);
-    		Object arglist[] = new Object[]{world,new Integer(i), new Integer(j), new Integer(k),new Integer(l)};
-    		Object retobj = ct.newInstance(arglist);
+    		//call constructor using reflection
+    		Object arglist[] = new Object[]{world,new Integer(pt[0]), new Integer(pt[1]), new Integer(pt[2]),faceDir};
+    		Object h_EntityFlagObj = wgt.explorationHandler.h_EntityFlagConstr.newInstance(arglist);
+    		Object retobj = wgt.explorationHandler.updateFlagMethod.invoke(h_EntityFlagObj,new Object[]{});
+    		if(((Boolean)retobj).booleanValue()){
+    			if(!world.multiplayerWorld){
+    				world.entityJoinedWorld((Entity)h_EntityFlagObj);
+    			}
+    		}
+    		
+    		//now change the "flag" enum field to the desired faction
+    		Object factionObj=null;
+    		switch(blockID){
+	    		case HUMANS_PLUS_ASSASIN_FLAG_ID: factionObj=wgt.explorationHandler.enumAssassinObj; break;
+	    		case HUMANS_PLUS_ROGUE_FLAG_ID: factionObj=wgt.explorationHandler.enumRogueObj; break;
+	    		case HUMANS_PLUS_BANDIT_FLAG_ID: factionObj=wgt.explorationHandler.enumBanditObj; break;
+	    		case HUMANS_PLUS_PEACEFUL_FLAG_ID: factionObj=wgt.explorationHandler.enumPeacefulObj; break;
+	    		case HUMANS_PLUS_MILITIA_FLAG_ID: factionObj=wgt.explorationHandler.enumMilitiaObj; break;
+	    		case HUMANS_PLUS_SHADOW_FLAG_ID: factionObj=wgt.explorationHandler.enumShadowObj; break;
+    		}
+    		if(factionObj!=null)
+    			wgt.explorationHandler.h_EntityFlagFlagfFld.set(h_EntityFlagObj, factionObj);
     	}
     	catch (Throwable e) {
     		System.err.println(e);
     	}
-    	*/
+    	
     }
  	
  	/*
@@ -404,6 +453,7 @@ public class Building
 	  }
 	 */
     
+  //******************** LOCAL COORDINATE FUNCTIONS - BLOCK TEST FUNCTIONS *************************************************************************************************************//
     protected final boolean isWallable(int x, int z, int y){
     	if(bDir==DIR_NORTH) return (axX==1 ? IS_WALLABLE[world.getBlockId(i1-y,j1+z,k1+x)] : IS_WALLABLE[world.getBlockId(i1-y, j1+z,k1-x)]);
   		if(bDir==DIR_EAST) return  (axX==1 ? IS_WALLABLE[world.getBlockId(i1+x,j1+z,k1-y)] : IS_WALLABLE[world.getBlockId(i1-x, j1+z,k1-y)]);
@@ -434,6 +484,20 @@ public class Building
     	return (blkId==STEP_ID || blkId==COBBLESTONE_STAIRS_ID || blkId==WOOD_STAIRS_ID);
     }
     
+  //true if block is air, block below is wall block
+    protected final boolean isDoorway(int x, int z, int y){
+    	return isFloor(x,z,y) && (isWallBlock(x+1,z,y) && isWallBlock(x-1,z,y) || isWallBlock(x,z,y+1) && isWallBlock(x-1,z,y-1));
+    }
+    
+  //true if block is air, block below is wall block
+    protected final boolean isFloor(int x, int z, int y){
+    	int blkId1=getBlockIdLocal(x,z,y), blkId2=getBlockIdLocal(x,z-1,y);
+    	//return ((blkId1==0 || blkId1==STEP_ID) && IS_WALL_BLOCK[blkId2] && blkId2!=LADDER_ID);
+    	return ((blkId1==0) && IS_WALL_BLOCK[blkId2] && blkId2!=LADDER_ID);
+    }
+    
+    
+  //******************** LOCAL COORDINATE FUNCTIONS - HELPER FUNCTIONS *************************************************************************************************************//
     private final void emptyIfChest(int[] pt){
     	//if block is a chest empty it
     	if(pt!=null && world.getBlockId(pt[0],pt[1],pt[2])==CHEST_ID){
@@ -445,17 +509,6 @@ public class Building
 	    }
     }
     
-    //true if block is air, block below is wall block
-    protected final boolean isFloor(int x, int z, int y){
-    	int blkId1=getBlockIdLocal(x,z,y), blkId2=getBlockIdLocal(x,z-1,y);
-    	//return ((blkId1==0 || blkId1==STEP_ID) && IS_WALL_BLOCK[blkId2] && blkId2!=LADDER_ID);
-    	return ((blkId1==0) && IS_WALL_BLOCK[blkId2] && blkId2!=LADDER_ID);
-    }
-    
-    //true if block is air, block below is wall block
-    protected final boolean isDoorway(int x, int z, int y){
-    	return isFloor(x,z,y) && (isWallBlock(x+1,z,y) && isWallBlock(x-1,z,y) || isWallBlock(x,z,y+1) && isWallBlock(x-1,z,y-1));
-    }
     
     public final String globalCoordString(int x, int z, int y){
     	if(EW==1) return "("+(i1+axX*x)+","+(j1+z)+","+(k1+axY*y)+")";
@@ -506,11 +559,33 @@ public class Building
 		   	setBlockAndMetadataLocal(x,z1,y,idAndMeta[0],idAndMeta[1],false);
 		}
    }
+   
+   protected boolean isObstructedFrame(int zstart,int ybuffer){
+   	for(int z1=zstart; z1<bHeight; z1++){
+   		//for(int x1=0; x1<length; x1++) for(int y1=ybuffer; y1<width-1;y1++)
+   		//	if(isWallBlock(x1,z1,y1))
+   		//		return true;
+   		
+   		for(int x1=0; x1<bWidth; x1++)
+   			if(isWallBlock(x1,z1,bLength-1)) return true;
+   		for(int y1=ybuffer; y1<bLength-1;y1++){
+   			if(isWallBlock(0,z1,y1)) return true;
+   			if(isWallBlock(bWidth-1,z1,y1)) return true;
+   		}
+   	}
+   	return false;
+   }
+   
+   protected boolean isObstructedSolid(int pt1[],int pt2[]){
+   	for(int x1=pt1[0]; x1<=pt2[0]; x1++)
+   		for(int z1=pt1[1]; z1<=pt2[1]; z1++)
+   			for(int y1=pt1[2]; y1<=pt2[2]; y1++)
+				if(!isWallable(x1,z1,y1)) return true;
+   	return false;
+   }
     
-    //** END LOCAL COORDINATE FUNCTIONS **//
 	  
-	  //******************** HELPER FUNCTIONS ******************************************************************************************************************************************//
-     
+   //******************** STATIC FUNCTIONS ******************************************************************************************************************************************//
    
    public static void setBlockNoLighting(World world, int i, int j, int k, int blockId){
        if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= 128)
@@ -586,30 +661,6 @@ public class Building
 			}
 		}
 		return -1;
-    }
-    
-    protected boolean isObstructedFrame(int zstart,int ybuffer){
-    	for(int z1=zstart; z1<bHeight; z1++){
-    		//for(int x1=0; x1<length; x1++) for(int y1=ybuffer; y1<width-1;y1++)
-    		//	if(isWallBlock(x1,z1,y1))
-    		//		return true;
-    		
-    		for(int x1=0; x1<bWidth; x1++)
-    			if(isWallBlock(x1,z1,bLength-1)) return true;
-    		for(int y1=ybuffer; y1<bLength-1;y1++){
-    			if(isWallBlock(0,z1,y1)) return true;
-    			if(isWallBlock(bWidth-1,z1,y1)) return true;
-    		}
-    	}
-    	return false;
-    }
-    
-    protected boolean isObstructedSolid(int pt1[],int pt2[]){
-    	for(int x1=pt1[0]; x1<=pt2[0]; x1++)
-    		for(int z1=pt1[1]; z1<=pt2[1]; z1++)
-    			for(int y1=pt1[2]; y1<=pt2[2]; y1++)
-				if(!isWallable(x1,z1,y1)) return true;
-    	return false;
     }
 	  
 	  public static int selectWeightedOption( Random random, int[] weights, int[] options){
@@ -711,14 +762,45 @@ public class Building
 	        }
 	    }
     */
-    
-    
 
 	
 	
     private int rotateMetadata( int blockID, int metadata) {
 		int tempdata = 0;
 		switch( blockID ) {
+		case WOOD_STAIRS_ID: case COBBLESTONE_STAIRS_ID: case BRICK_STAIRS_ID: case STONE_BRICK_STAIRS_ID:
+			return STAIRS_DIR_TO_META[rotateMetaDirToLocalAxes(STAIRS_META_TO_DIR[metadata])+2];
+			
+		case TORCH_ID: case LEVER_ID: case REDSTONE_TORCH_OFF_ID: case REDSTONE_TORCH_ON_ID: case STONE_BUTTON_ID:
+			// check to see if this is a switch or a button and is flagged as thrown
+			if( blockID == LEVER_ID || blockID == STONE_BUTTON_ID ) {
+				if( metadata - 8 > 0 ) {
+					tempdata += 8;
+					metadata -= 8;
+				}
+				// now see if it's a floor switch
+				if( blockID == LEVER_ID && ( metadata == 5 || metadata == 6 ) ) {
+					// we'll leave this as-is
+					return metadata + tempdata;
+				}
+			} else if(metadata == 5 ){
+				// torches on the floor.
+				return metadata;
+			}
+			return TORCH_DIR_TO_META[rotateMetaDirToLocalAxes(TORCH_META_TO_DIR[metadata])+2] + tempdata;
+
+
+		case LADDER_ID: case DISPENSER_ID: case FURNACE_ID: case BURNING_FURNACE_ID: case WALL_SIGN_ID: case PISTON_ID: case PISTON_EXTENSION_ID:
+			if(blockID==PISTON_ID || blockID==PISTON_EXTENSION_ID){
+				if( metadata - 8 >= 0 ) {
+					//pushed or not, sticky or not
+					tempdata += 8;
+					metadata -= 8;
+				}
+				if(metadata==0 || metadata==1) return metadata + tempdata;
+			}
+			return LADDER_DIR_TO_META[rotateMetaDirToLocalAxes(LADDER_META_TO_DIR[metadata])+2];
+			
 		case RAILS_ID:
 			switch( bDir ) {
 			case DIR_NORTH:
@@ -816,37 +898,6 @@ public class Building
 				if( metadata == 3 ) { return (bHand==1 ? 2:3) + tempdata; }
 			}
 			break;
-		case TORCH_ID: case LEVER_ID: case REDSTONE_TORCH_OFF_ID: case REDSTONE_TORCH_ON_ID: case STONE_BUTTON_ID:
-			// check to see if this is a switch or a button and is flagged as thrown
-			if( blockID == LEVER_ID || blockID == STONE_BUTTON_ID ) {
-				if( metadata - 8 > 0 ) {
-					tempdata += 8;
-					metadata -= 8;
-				}
-				// now see if it's a floor switch
-				if( blockID == LEVER_ID && ( metadata == 5 || metadata == 6 ) ) {
-					// we'll leave this as-is
-					return metadata + tempdata;
-				}
-			} else if(metadata == 5 ){
-				// torches on the floor.
-				return metadata;
-			}
-			return TORCH_DIR_TO_META[rotateMetaDirToLocalAxes(TORCH_META_TO_DIR[metadata])+2] + tempdata;
-
-		case WOOD_STAIRS_ID: case COBBLESTONE_STAIRS_ID: case BRICK_STAIRS_ID: case STONE_BRICK_STAIRS_ID:
-			return STAIRS_DIR_TO_META[rotateMetaDirToLocalAxes(STAIRS_META_TO_DIR[metadata])+2];
-
-		case LADDER_ID: case DISPENSER_ID: case FURNACE_ID: case BURNING_FURNACE_ID: case WALL_SIGN_ID: case PISTON_ID: case PISTON_EXTENSION_ID:
-			if(blockID==PISTON_ID || blockID==PISTON_EXTENSION_ID){
-				if( metadata - 8 >= 0 ) {
-					//pushed or not, sticky or not
-					tempdata += 8;
-					metadata -= 8;
-				}
-				if(metadata==0 || metadata==1) return metadata + tempdata;
-			}
-			return LADDER_DIR_TO_META[rotateMetaDirToLocalAxes(LADDER_META_TO_DIR[metadata])+2];
 			
 		case PUMPKIN_ID: case JACK_O_LANTERN_ID: case DIODE_BLOCK_OFF_ID: case DIODE_BLOCK_ON_ID:
 			if( blockID == DIODE_BLOCK_OFF_ID || blockID == DIODE_BLOCK_ON_ID ) {
@@ -892,7 +943,11 @@ public class Building
 			return VINES_DIR_TO_META[rotateMetaDirToLocalAxes(VINES_META_TO_DIR[metadata])+2];
 			
 		case TRAP_DOOR_ID:
-			return TRAPDOOR_DIR_TO_META[rotateMetaDirToLocalAxes(TRAPDOOR_META_TO_DIR[metadata])+2];
+			if( metadata - 4 >= 0){
+				tempdata += 4;
+				metadata -= 4;
+			}
+			return TRAPDOOR_DIR_TO_META[rotateMetaDirToLocalAxes(TRAPDOOR_META_TO_DIR[metadata])+2] + tempdata;
 			
 		case SIGN_POST_ID:
 			// sign posts
@@ -974,6 +1029,55 @@ public class Building
 		// we should never get here, but users can be silly sometimes.
 		return metadata + tempdata;
 	}
+    
+    public static boolean metaValueIsValid(int blockID, int metadata){
+    	if(metadata<0 || metadata >=16) return false;
+    	
+    	//note, cases where full 0-16 range is valid have been removed
+    	switch( blockID ) {
+    		//non-orientation metas, comment these out for now
+    		/*
+    		case LOG_ID:
+    			return metadata < 3;
+    		case SOIL_ID:
+    			return metadata < 9;
+    		case CROPS_ID:
+    			return metadata < 8;
+    		case PUMPKIN_STEM_ID: case MELON_STEM_ID:
+    			return metadata < 8;
+    		case CAKE_BLOCK_ID:
+    			return metadata < 6;
+    		*/
+    		
+    			
+    		//orientation metas
+			case RAILS_ID:
+				return metadata < 10;
+			case TORCH_ID: case REDSTONE_TORCH_OFF_ID: case REDSTONE_TORCH_ON_ID:
+				return metadata > 0 &&  metadata <6;
+			case LEVER_ID: case STONE_BUTTON_ID:
+				if(metadata > 8) metadata-=8;
+				return metadata!=0 && metadata < 7;
+			case WOOD_STAIRS_ID: case COBBLESTONE_STAIRS_ID: case BRICK_STAIRS_ID: case STONE_BRICK_STAIRS_ID:
+				return metadata < 4;
+			case LADDER_ID: case DISPENSER_ID: case FURNACE_ID: case BURNING_FURNACE_ID: case WALL_SIGN_ID: case PAINTING_SPECIAL_ID:
+			case PISTON_ID: case PISTON_EXTENSION_ID:
+				if(metadata >= 8) metadata-=8;
+				return metadata < 6;
+			case PUMPKIN_ID: case JACK_O_LANTERN_ID:
+				return metadata < 4;
+			case FENCE_GATE_ID:
+				return metadata < 8;
+			case VINES_ID:
+				return metadata==0 || metadata==1 || metadata==2 || metadata==4 || metadata==8;
+			case TRAP_DOOR_ID:
+				return metadata < 8;
+    	}
+    	
+    	if(IS_HUMANS_PLUS_FLAG[blockID]) return metadata > 1 && metadata < 6;
+    	
+    	return true;
+    }
     
     public final static int AIR_ID=0;
     public final static int STONE_ID=1;
@@ -1086,7 +1190,7 @@ public class Building
     public final static int STONE_BRICK_STAIRS_ID=109;
     
     //Special Blocks
-    public final static int SPECIAL_BLOCKID_START=300, SPECIAL_BLOCKID_END=319;
+    public final static int SPECIAL_BLOCKID_START=300, SPECIAL_BLOCKID_END=326;
 	public final static int PRESERVE_ID=300;
 	public final static int ZOMBIE_SPAWNER_ID=301;
 	public final static int SKELETON_SPAWNER_ID=302;
@@ -1103,8 +1207,16 @@ public class Building
 	public final static int PIG_ZOMBIE_SPAWNER_ID=313;
 	public final static int ENDERMAN_SPAWNER_ID=314;
 	public final static int CAVE_SPIDER_SPAWNER_ID=315;
-	public final static int GHAST_ID=316;
+	public final static int GHAST_SPAWNER_ID=316;
 	public final static int WALL_STAIR_ID=319;
+	public final static int PAINTING_SPECIAL_ID=320;
+	public final static int HUMANS_PLUS_ASSASIN_FLAG_ID=321;
+	public final static int HUMANS_PLUS_ROGUE_FLAG_ID=322;
+	public final static int HUMANS_PLUS_BANDIT_FLAG_ID=323;
+	public final static int HUMANS_PLUS_PEACEFUL_FLAG_ID=324;
+	public final static int HUMANS_PLUS_MILITIA_FLAG_ID=325;
+	public final static int HUMANS_PLUS_SHADOW_FLAG_ID=326;
+	
 	
 	//Spawner Blocks from other mods
 	public final static int CASTLE_DEFENDERS_ENEMY_KNIGHT=231;
@@ -1237,13 +1349,14 @@ public class Building
 							VINES_META_TO_DIR=new int[]{0,		DIR_WEST,DIR_NORTH,0,DIR_EAST,0,0,0,DIR_SOUTH};
 	
 	//inverse map should be {North_inv,East_inv,dummy,West_inv,South_inv}
-	private static int[] 	BED_DIR_TO_META		=new int[]{1,2,0,0,3},
-							TORCH_DIR_TO_META	=new int[]{2,4,0,3,1},
-							STAIRS_DIR_TO_META	=new int[]{1,3,0,2,0},
-							LADDER_DIR_TO_META	=new int[]{4,2,0,3,5},
-							PUMPKIN_DIR_TO_META	=new int[]{3,0,0,2,1},
-							TRAPDOOR_DIR_TO_META=new int[]{3,1,0,0,2},
-							VINES_DIR_TO_META	=new int[]{2,4,0,1,8};
+	private static int[] 	BED_DIR_TO_META			=new int[]{1,2,0,0,3},
+							TORCH_DIR_TO_META		=new int[]{2,4,0,3,1},
+							STAIRS_DIR_TO_META		=new int[]{1,3,0,2,0},
+							LADDER_DIR_TO_META		=new int[]{4,2,0,3,5},
+							PUMPKIN_DIR_TO_META		=new int[]{3,0,0,2,1},
+							TRAPDOOR_DIR_TO_META	=new int[]{3,1,0,0,2},
+							VINES_DIR_TO_META		=new int[]{2,4,0,1,8},
+							PAINTING_DIR_TO_FACEDIR =new int[]{3,2,0,0,1};
     
     public final static boolean[] IS_WALL_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_WALLABLE=new boolean[SPECIAL_BLOCKID_END+1];
@@ -1253,6 +1366,7 @@ public class Building
     public final static boolean[] IS_NONSOLID_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_ORE_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_SPAWNER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
+    public final static boolean[] IS_HUMANS_PLUS_FLAG=new boolean[SPECIAL_BLOCKID_END+1];
     
     
     static{
@@ -1296,6 +1410,11 @@ public class Building
     			blockID==ENDERMAN_SPAWNER_ID || blockID==CAVE_SPIDER_SPAWNER_ID || blockID==CASTLE_DEFENDERS_ENEMY_KNIGHT || blockID==CASTLE_DEFENDERS_ENEMY_ARCHER)
     			IS_SPAWNER_BLOCK[blockID]=true;
     		else IS_SPAWNER_BLOCK[blockID]=false;
+    		
+    		if(blockID==HUMANS_PLUS_ASSASIN_FLAG_ID || blockID==HUMANS_PLUS_ROGUE_FLAG_ID || blockID==HUMANS_PLUS_BANDIT_FLAG_ID || 
+    		   blockID==HUMANS_PLUS_PEACEFUL_FLAG_ID || blockID==HUMANS_PLUS_MILITIA_FLAG_ID || blockID==HUMANS_PLUS_SHADOW_FLAG_ID)
+    			IS_HUMANS_PLUS_FLAG[blockID]=true;
+    		else IS_HUMANS_PLUS_FLAG[blockID]=false;
     	}
     }
     
@@ -1384,6 +1503,7 @@ public class Building
 				 				 	{-1, 1, 0, 0, 0,-1},
 				 				 	{-1,-1, 0, 1,-1,-1}};
  	}
+ 	
  	
  	private final static int LIGHTING_INVERSE_DENSITY=10;
  	private final static boolean[] randLightingHash=new boolean[512];

@@ -4,6 +4,9 @@ package net.minecraft.src;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.ListIterator;
@@ -69,6 +72,13 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	protected LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
 	protected String loadingMessage="";
 	
+	//Humans+ reflection fields
+ 	Constructor h_EntityFlagConstr=null;
+ 	Method updateFlagMethod=null;
+ 	Field h_EntityFlagFlagfFld=null;
+ 	Object enumAssassinObj=null, enumRogueObj=null, enumBanditObj=null, enumPeacefulObj=null, enumMilitiaObj=null, enumShadowObj=null;
+ 	boolean humansPlusLoaded=false;
+	
 	//BUKKIT PORT / MP PORT - uncomment
 	//public static Logger logger=MinecraftServer.logger;
 	public Minecraft mc=ModLoader.getMinecraftInstance();
@@ -95,6 +105,29 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 			}
 			System.out.println("kilt a zombie");
 		}
+	}
+	
+	//****************************  FUNCTION - initializeHumansPlusReflection *************************************************************************************//
+	public void initializeHumansPlusReflection(){
+	 	try{
+	 		Class h_EntityFlagCls = Class.forName("h_EntityFlag");
+	 		Class h_SettingFlagTypeCls = Class.forName("h_SettingsFlagTypes");
+	 		Class[] h_EntityFlagPartypes = new Class[]{Class.forName("net.minecraft.src.World"),Integer.TYPE,Integer.TYPE,Integer.TYPE,Integer.TYPE};
+			h_EntityFlagConstr = h_EntityFlagCls.getConstructor(h_EntityFlagPartypes);
+			updateFlagMethod = h_EntityFlagCls.getMethod("updateFlag",null);
+			h_EntityFlagFlagfFld = h_EntityFlagCls.getField("flag");
+			
+			//Get the enum values. .get() argument is null since it is a static enum field
+			enumAssassinObj=h_SettingFlagTypeCls.getField("Assassin").get(null);
+			enumRogueObj=h_SettingFlagTypeCls.getField("Rogue").get(null);
+			enumBanditObj=h_SettingFlagTypeCls.getField("Bandit").get(null);
+			enumPeacefulObj=h_SettingFlagTypeCls.getField("Peaceful").get(null);
+			enumMilitiaObj=h_SettingFlagTypeCls.getField("Militia").get(null);
+			enumShadowObj=h_SettingFlagTypeCls.getField("Shadow").get(null);
+			humansPlusLoaded=true;
+	 	}catch(Throwable e){
+	 		
+	 	}
 	}
 	
 	//****************************  FUNCTION - queryChunk *************************************************************************************//
@@ -130,7 +163,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	protected void flushGenThreads(){
 		if(isFlushingGenThreads) return;
 		
-		//MP-PORT: delete mc.thePlayer!=null condition
+		//MP PORT: delete mc.thePlayer!=null condition
 		if(!isCreatingDefaultChunks && mc.thePlayer!=null && !isAboutToFlushGenThreads && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
 			String flushAnnouncement=(2*CHUNKS_AT_WORLD_START)+" chunks queued to explore this wave, pausing to process.";
 			mc.thePlayer.addChatMessage(flushAnnouncement);
