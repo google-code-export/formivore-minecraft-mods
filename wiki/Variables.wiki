@@ -8,8 +8,7 @@ These variables should be provided for all template files used by the Great Wall
 
 <font color= #800080>`weight` </font>`= weight`<br>
 The likelihood weight of template during random generation. Weight is relative to the sum of weights provided for other templates that perform the same role. For example if there are two wall templates for city walls, a sandstone template (<font color= #800080>`weight` </font>`= 2`) and a cobblestone template (<font color= #800080>`weight` </font>`= 3`) the chance of generating sandstone city walls will be 40%.
-A separate calculation is done for the templates provided for city streets, street buildings, etc.
-Defaults to `1`.
+A separate calculation is done for the templates provided for city streets, street buildings, etc.Defaults to `1`.
 
 <font color= #800080>`embed_into_distance` </font>= `depth`<br>
 Specifies how many z-levels of the template will be below ground. Note that for buildings constructed alongside walls, "ground level" is actually specified by the `walk_height` variable of the wall. Use this to construct basements, foundations, and anything below walking level.
@@ -18,11 +17,11 @@ Specifies how many z-levels of the template will be below ground. Note that for 
 The dimensions of the template you are providing. Height is the number of layers provided. Width is the North-South width. Length is the East-West width. For reference, north is the top of the text file. Note that wall template dimensions will have a different interpretation, but you should still give dimension values in the same order as the standard layout(i.e. the first value= number of layers).  See [Layers] for more information.
 
 <font color= #800080>`max_leveling` </font>= `leveling`<br>
-Specifies the maximum depth below the source block that will be filled in order to level the site.  If there is more air directly below the maximum depth, the template will not be built. If a base layer is provided this will be used for leveling, otherwise local blocks will be used. Any leveling will take place before the site is built, preserving basement space.
+Specifies the maximum depth below the source block that will be filled in order to level the site.  If there is more air directly below the maximum depth, the template will not be built. If a base layer is provided this will be used for leveling, otherwise local blocks will be used. Any leveling will take place before the site is built, preserving basement space.<br>
 Defaults to `4`.
 
 <font color= #800080>`max_cut_in` </font>= `cut_in`<br>
-Specifies the maximum height above the source block that will be set to air in order to clear the site.
+Specifies the maximum height above the source block that will be set to air in order to clear the site.<br>
 Defaults to `0`.
 
 NOTE: The following variables from the ruins mod are currently NOT supported and will be ignored:
@@ -33,40 +32,39 @@ unique, acceptable_target_block, allowable_overhang, leveling_buffer ,cut_in_buf
 A number of additional variables are required from <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#Wall_Templates_and_Road_Templates>wall templates</a>.
 
 <font color= #800080>`biomes` </font>= `biome1,biome2,biome3,...`<br>
-A comma-separated list of the biomes that can spawn this wall or city type. Should only be used for top-level templates (not child templates). Instead of a list, you may have <font color= #800080>`biomes` </font>`= ALL` to allow spawning in all biomes. Listing the Underground biome for city templates indicates that this city type will only spawn underground. Allowable biomes are: Rainforest, Swampland, Seasonal Forest, Forest, Savanna, Shrubland, Taiga, Desert, Plains, Ice Desert, Tundra, Hell, Sky, Hills, Ocean, Underground.
+A comma-separated list of the biomes that can spawn this wall or city type. Should only be used for top-level templates (not child templates). Instead of a list, you may have <font color= #800080>`biomes` </font>`= ALL` to allow spawning in all biomes. Listing the Underground biome for city templates indicates that this city type will only spawn underground. Allowable biomes are: Rainforest, Swampland, Seasonal Forest, Forest, Savanna, Shrubland, Taiga, Desert, Plains, Ice Desert, Tundra, Hell, Sky, Hills, Ocean, Underground.<br>
 Defaults to `ALL`.
 
 <font color= #800080>`building_templates` </font>= `filename1,filename2,filename3,...`<br>
-A comma-separated list of template file names that will be used to construct buildings alongside this wall. Instead of a list, you may have either <font color= #800080>`building_templates` </font>`= ALL` or <font color= #800080>`building_templates` </font>`= NONE` which will load all or none of the templates in the building folder as potential child templates. These files should be placed in the building subfolder.
+A comma-separated list of template file names that will be used to construct buildings alongside this wall. Instead of a list, you may have either <font color= #800080>`building_templates` </font>`= ALL` or <font color= #800080>`building_templates` </font>`= NONE` which will load all or none of the templates in the building folder as potential child templates. These files should be placed in the building subfolder.<br>
 Defaults to `NONE`.
 
 <font color= #800080>`street_templates` </font>= `filename1,filename2,filename3,...`<br>
-Only for city wall templates used in the Walled City mod. A comma-separated list of template file names that will be used to generate streets inside the current template. Instead of a list you may have <font color= #800080>`street_templates` </font>`= ALL` or <font color= #800080>`street_templates` </font>`= NONE` which will load all or none of the templates in the streets folder as potential child templates. These files should be placed in the streets subfolder.
+Only for city wall templates used in the Walled City mod. A comma-separated list of template file names that will be used to generate streets inside the current template. Instead of a list you may have <font color= #800080>`street_templates` </font>`= ALL` or <font color= #800080>`street_templates` </font>`= NONE` which will load all or none of the templates in the streets folder as potential child templates. These files should be placed in the streets subfolder.<br>
 Defaults to `ALL`.
 
 <font color= #800080>`street_density` </font>= `density`<br>
-Only for city wall templates used in the Walled City mod. Should be an integer between 0 and 20.
+Only for city wall templates used in the Walled City mod. Should be an integer between 0 and 20.<br>
 Defaults to `6`.
 
 <font color= #800080>`merge_walls` </font>= `1/0`<br>
-Only for the Great Wall Mod. If set to 1 will allow walls to merge and cross over each other. Useful to create infinite cities.
-Defaults to `0`.
+Only for the Great Wall Mod. If set to 1 will allow walls to merge and cross over each other. Useful to create infinite cities. Defaults to `0`.
 
 <font color= #800080>`level_interior` </font>= `1/0`<br>
-Only for city wall templates used in the Walled City mod. If set to 1 the city interior will be leveled to remove water and excessive high and low points.
+Only for city wall templates used in the Walled City mod. If set to 1 the city interior will be leveled to remove water and excessive high and low points.<br>
 Defaults to `1`.
 
 <font color= #800080>`walk_height` </font>= `height`<br>
-For walls that serve as a roadway, the height of the roadway (relative to the bottom of the template). This value is used for a)positioning elements such as towers to allow transit b)ensuring this level is always above water.
+For walls that serve as a roadway, the height of the roadway (relative to the bottom of the template). This value is used for a)positioning elements such as towers to allow transit b)ensuring this level is always above water. <br>
 Defaults to `0`.
 
 <font color= #800080>`min_length` </font>= `length`<br>
 <font color= #800080>`max_length` </font>= `length`<br>
-The minimum and maximum allowed lengths of the wall.
+The minimum and maximum allowed lengths of the wall.<br>
 Defaults to `150`/`1000`.
 
 <font color= #800080>`building_interval` </font>= `buildling_interval`<br>
-The minimum separation required between buildings built alongside this wall.
+The minimum separation required between buildings built alongside this wall.<br>
 Defaults to `75`.
 
 <font color= #800080>`make_buildings` </font>= `1/0`<br>
@@ -86,29 +84,29 @@ or <font color= #800080>`tower_rule` </font>= `rule number`<br>
 The block rule used as the main structural block for the default towers. Can either define a new rule on this line or reference a rule later in the file using a rule number. *<font color=#FF0000>There is no default, this variable must be defined for wall templates or the template will be considered invalid.</font>*
 
 <font color= #800080>`default_tower_weight` </font>= `weight`<br>
-The weight of towers. Both default towers and buildings from template listed in the building_templates variable can be generated alongside walls. This weight specifies how likely default tower are relative to template buildings.
+The weight of towers. Both default towers and buildings from template listed in the building_templates variable can be generated alongside walls. This weight specifies how likely default tower are relative to template buildings.<br>
 Default to `1`.
 
 <font color= #800080>`tower_offset` </font>= `offset`<br>
-The x offset (distance from centerline) of side towers from the wall edges. Negative values will create towers closer to the center.
+The x offset (distance from centerline) of side towers from the wall edges. Negative values will create towers closer to the center.<br>
 Defaults to `0`.
 
 <font color= #800080>`spawner_rule` </font>= `<rule definition>`<br>
 or <font color= #800080>`spawner_rule` </font>= `ruleID`<br>
-Rule for mob spawners in the default towers. Recognizes a number of blockIDs including the mine spawner block id 52 (will create a pig spawner), the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>special spawner blocks</a>, and blockIDs from the <a href="http://www.minecraftforum.net/topic/472937-181castle-defendersv202-updated/">Castle Defenders mod</a>. Otherwise will not create any spawners. Can either define a new rule on this line or reference a rule later in the file using a rule number.
+Rule for mob spawners in the default towers. Recognizes a number of blockIDs including the mine spawner block id 52 (will create a pig spawner), the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>special spawner blocks</a>, and blockIDs from the <a href="http://www.minecraftforum.net/topic/472937-181castle-defendersv202-updated/">Castle Defenders mod</a>. Otherwise will not create any spawners. Can either define a new rule on this line or reference a rule later in the file using a rule number.<br>
 Defaults to not creating any spawners.
 
 <font color= #800080>`chest_rule` </font>= `<rule definition>`<br>
 or <font color= #800080>`chest_rule` </font>= `ruleID`<br>
-Rule for creating chests in towers. Rule can use the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>special chest blockIDs</a> or any blockID. Can either define a new rule on this line or reference a rule later in the file using a rule number.
+Rule for creating chests in towers. Rule can use the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>special chest blockIDs</a> or any blockID. Can either define a new rule on this line or reference a rule later in the file using a rule number.<br>
 Defaults to no chests.
 
 <font color= #800080>`populate_furniture` </font>= `1/0`<br>
-If set to one mod will generate some furniture inside of towers.
+If set to one mod will generate some furniture inside of towers.<br>
 Defaults to `0`.
 
 <font color= #800080>`circular_probability` </font>= `probability`<br>
-Probabily that a tower will have a circular cross section. Otherwise it will be rectangular.
+Probabily that a tower will have a circular cross section. Otherwise it will be rectangular.<br>
 Default to `0.3`.
 
 <font color= #800080>`square_min_height` </font>= `height`<br>
@@ -119,13 +117,13 @@ Default to `0.3`.
 <font color= #800080>`circular_max_height` </font>= `height`<br>
 <font color= #800080>`circular_min_width` </font>= `width`<br>
 <font color= #800080>`circular_max_width` </font>= `width`<br>
-The range of heights and widths allowed for rectangular and circular towers respectively. Actual dimensions will be chosen randomly from these ranges.
+The range of heights and widths allowed for rectangular and circular towers respectively. Actual dimensions will be chosen randomly from these ranges.<br>
 Default to 11/15/7/7/11/16/7/7
 
 <font color= #800080>`square_roof_styles` </font>= `style1,style2,...`<br> 
 <font color= #800080>`circular_tower_roof_styles` </font>= `style1,style2,...`<br>
 Lists of allowed roof style for towers. Styles may be repeated to increase their weight. 
-Allowable roof styles are: Crenel, Steep, Steep Trim, Shallow, Dome, Cone, Two Sided
+Allowable roof styles are: Crenel, Steep, Steep Trim, Shallow, Dome, Cone, Two Sided.<br>
 Defaults to: Crenel
 
 <font color= #800080>`square_roof_rule` </font>= `rule number`<br>
