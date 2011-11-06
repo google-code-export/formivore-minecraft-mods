@@ -8,7 +8,8 @@ These variables should be provided for all template files used by the Great Wall
 
 <font color= #800080>`weight` </font>`= weight`<br>
 The likelihood weight of template during random generation. Weight is relative to the sum of weights provided for other templates that perform the same role. For example if there are two wall templates for city walls, a sandstone template (<font color= #800080>`weight` </font>`= 2`) and a cobblestone template (<font color= #800080>`weight` </font>`= 3`) the chance of generating sandstone city walls will be 40%.
-A separate calculation is done for the templates provided for city streets, street buildings, etc.Defaults to `1`.
+A separate calculation is done for the templates provided for city streets, street buildings, etc.<br>
+Defaults to `1`.
 
 <font color= #800080>`embed_into_distance` </font>= `depth`<br>
 Specifies how many z-levels of the template will be below ground. Note that for buildings constructed alongside walls, "ground level" is actually specified by the `walk_height` variable of the wall. Use this to construct basements, foundations, and anything below walking level.
