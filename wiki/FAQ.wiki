@@ -1,4 +1,4 @@
-==Frequently Asked Questions==
+=Frequently Asked Questions=
 <wiki:toc max_depth="1" />
 
 =Troubleshooting and General Questions=
