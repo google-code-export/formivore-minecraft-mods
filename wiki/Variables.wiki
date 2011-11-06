@@ -12,7 +12,8 @@ A separate calculation is done for the templates provided for city streets, stre
 Defaults to `1`.
 
 <font color= #800080>`embed_into_distance` </font>= `depth`<br>
-Specifies how many z-levels of the template will be below ground. Note that for buildings constructed alongside walls, "ground level" is actually specified by the `walk_height` variable of the wall. Use this to construct basements, foundations, and anything below walking level.
+Specifies how many z-levels of the template will be below ground. Note that for buildings constructed alongside walls, "ground level" is actually specified by the `walk_height` variable of the wall. Use this to construct basements, foundations, and anything below walking level.<br>
+Defaults to `1`.
 
 <font color= #800080>`dimensions` </font>= `height,width,length`<br>
 The dimensions of the template you are providing. Height is the number of layers provided. Width is the North-South width. Length is the East-West width. For reference, north is the top of the text file. Note that wall template dimensions will have a different interpretation, but you should still give dimension values in the same order as the standard layout(i.e. the first value= number of layers).  See [Layers] for more information.
