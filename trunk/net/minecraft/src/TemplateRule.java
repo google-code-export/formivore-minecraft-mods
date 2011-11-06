@@ -42,22 +42,9 @@ public class TemplateRule {
         		throw new Exception("Error reading rule: BlockID "+blockIDs[i]+" not registered!");
         	}
         	blockMDs[i]= data.length>1 ? Integer.parseInt( data[1]) : 0;
-        	
-        	
-        	/*
-			data = items[i + 2].trim().split( "-" );
-			if( data.length > 1 ) {
-				blockIDs[i] = Integer.parseInt( data[0] );
-				if( data[1].split( "'" ).length > 1 ) {
-					blockMDs[i] = Integer.parseInt( data[1].split( "'" )[0] );
-				} else {
-					blockMDs[i] = Integer.parseInt( data[1] );
-				}
-			} else {
-				blockIDs[i] = Integer.parseInt( items[i + 2].trim() );
-				blockMDs[i] = 0;
-			}
-			*/
+        	if(!Building.metaValueIsValid(blockIDs[i], blockMDs[i])) {
+        		throw new Exception("Error reading rule: Bad meta value for block-meta "+items[i+2]);
+        	}
         }
         
         setPrimaryBlock();

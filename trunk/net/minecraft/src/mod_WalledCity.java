@@ -73,7 +73,10 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
 	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
 	public void ModsLoaded(){
-		if(!dataFilesLoaded) loadDataFiles();
+		if(!dataFilesLoaded){
+			initializeHumansPlusReflection();
+		 	loadDataFiles();
+		}
 	}
 	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
@@ -106,15 +109,6 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			e.printStackTrace();
 		}finally{ if(lw!=null) lw.close(); }
 
-		//see if the great wall mod is loaded and if so combine explorers
-		/*
-		if(!errFlag){
-			for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
-				if(mod.toString().equals(GREAT_WALL_MOD_STRING))
-					((BuildingExplorationHandler)mod).combineExploreThreads(this);
-			}
-		}
-		*/
 		dataFilesLoaded=true;
 	}
 	
