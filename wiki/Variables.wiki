@@ -16,7 +16,8 @@ Specifies how many z-levels of the template will be below ground. Note that for 
 Defaults to `1`.
 
 <font color= #800080>`dimensions` </font>= `height,width,length`<br>
-The dimensions of the template you are providing. Height is the number of layers provided. Width is the North-South width. Length is the East-West width. For reference, north is the top of the text file. Note that wall template dimensions will have a different interpretation, but you should still give dimension values in the same order as the standard layout(i.e. the first value= number of layers).  See [Layers] for more information.
+The dimensions of the template you are providing. Height is the number of layers provided. Width is the North-South width. Length is the East-West width. For reference, north is the top of the text file. Note that wall template dimensions will have a different interpretation, but you should still give dimension values in the same order as the standard layout(i.e. the first value= number of layers).  See [Layers] for more information.<br>
+*<font color=#FF0000>No default, the dimension must be defined and match the layers provided for the template to be valid.</font>*
 
 <font color= #800080>`max_leveling` </font>= `leveling`<br>
 Specifies the maximum depth below the source block that will be filled in order to level the site.  If there is more air directly below the maximum depth, the template will not be built. If a base layer is provided this will be used for leveling, otherwise local blocks will be used. Any leveling will take place before the site is built, preserving basement space.<br>
