@@ -54,6 +54,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	protected final static int MAX_TRIES_PER_CHUNK=10;
 	protected final static int CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=1;
+	public final static int[] NO_CALL_CHUNK=null;
 	
 	public final static String VERSION_STRING="v2.1.2";
 	public final static String GREAT_WALL_MOD_STRING="mod_GreatWall "+VERSION_STRING;
@@ -71,6 +72,8 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	public World world;
 	protected LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
 	protected String loadingMessage="";
+	public int[] flushCallChunk=NO_CALL_CHUNK;
+	public PrintWriter lw=null;
 	
 	//Humans+ reflection fields
  	Constructor h_EntityFlagConstr=null;
@@ -103,7 +106,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 				}
 				joinAtSuspension(wgt);
 			}
-			System.out.println("kilt a zombie");
+			System.out.println("Killed a zombie thread.");
 		}
 	}
 	
@@ -160,33 +163,37 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	}
 	
 	//****************************  FUNCTION - flushGenThreads *************************************************************************************//
-	protected void flushGenThreads(){
-		if(isFlushingGenThreads) return;
-		
-		//MP PORT: delete mc.thePlayer!=null condition
-		if(!isCreatingDefaultChunks && mc.thePlayer!=null && !isAboutToFlushGenThreads && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
+	protected void flushGenThreads(int[] callChunk){	
+		//announce there is about to be lag because we are about to flush generation threads
+		//MP PORT: comment out this block
+		if(!isAboutToFlushGenThreads && !isCreatingDefaultChunks && mc.thePlayer!=null && chunksExploredFromStart > 2*CHUNKS_AT_WORLD_START-15){
 			String flushAnnouncement=(2*CHUNKS_AT_WORLD_START)+" chunks queued to explore this wave, pausing to process.";
 			mc.thePlayer.addChatMessage(flushAnnouncement);
 			logOrPrint(flushAnnouncement);
 			isAboutToFlushGenThreads=true;
 		}
 		
+		//Must make sure that a)There is only one call to flushGenThreads on the stack at a time
+		//                    b)flushGenThreads is only called from the main Minecraft thread.
+		//This check is not at the beginning of function because we want to announce we are about to flush no matter what.
+		if(isFlushingGenThreads || Thread.currentThread() instanceof WorldGeneratorThread) 
+				return;
+		
 		if(chunksExploredFromStart>= (isCreatingDefaultChunks ? CHUNKS_AT_WORLD_START-1 : 2*CHUNKS_AT_WORLD_START)){
-			if(!(Thread.currentThread() instanceof WorldGeneratorThread)){ //don't want to flush unless current thread is main thread
-			
-				if(isCreatingDefaultChunks){
-					//MP PORT - comment out below line
-					mc.loadingScreen.displayLoadingString(loadingMessage);
-					//mc.loadingScreen.printText("Generating cities");
-				}
-				isFlushingGenThreads=true;
-				while(exploreThreads.size() > 0) 
-					OnTickInGame(0F,mc);
-				
-				isFlushingGenThreads=false;
-				isCreatingDefaultChunks=false;
-				isAboutToFlushGenThreads=false;
+			if(isCreatingDefaultChunks){
+				//MP PORT - comment out below line
+				mc.loadingScreen.displayLoadingString(loadingMessage);
+				//mc.loadingScreen.printText("Generating cities");
 			}
+			isFlushingGenThreads=true;
+			flushCallChunk=callChunk;
+			while(exploreThreads.size() > 0) 
+				OnTickInGame(0F,mc);
+			
+			isFlushingGenThreads=false;
+			isCreatingDefaultChunks=false;
+			isAboutToFlushGenThreads=false;
+			flushCallChunk=NO_CALL_CHUNK;
 		}
 	}
 	

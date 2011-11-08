@@ -17,6 +17,8 @@ public class TemplateTML
 	public boolean [][] templateLayout=null;
 	public HashMap<String,int[][]> namedLayers=null;
 	public HashMap<String,String> extraOptions=null;
+	public final static Exception ZERO_WEIGHT_EXCEPTION=new Exception("wieght=0");
+	public BuildingExplorationHandler explorationHandler;
 
 	public String name="";
 	//public int[] targets;
@@ -26,12 +28,13 @@ public class TemplateTML
 
 	PrintWriter lw;
 
-	public TemplateTML( File file, PrintWriter lw_) throws Exception{
+	public TemplateTML( File file, BuildingExplorationHandler beh) throws Exception{
 		// load in the given file as a template
+		explorationHandler=beh;
 		BufferedReader br=null;
 		try {
 			name=file.getName();
-			lw=lw_;
+			lw=beh.lw;
 			ArrayList<String> lines = new ArrayList<String>();
 			br= new BufferedReader( new FileReader( file ) );
 			for(String read=br.readLine(); read!=null; read=br.readLine())
@@ -82,7 +85,7 @@ public class TemplateTML
 
 			} else if( line.startsWith( "rule" ) ) {
 				String[] parts = line.split( "=" );
-				rulesArrayList.add( new TemplateRule(parts[1] ) );
+				rulesArrayList.add( new TemplateRule(parts[1],explorationHandler,true) );
 			}
 			else if(line.startsWith( "dimensions" )){
 				int[] dim=WallStyle.readIntList(lw,null,"=",line);
@@ -112,7 +115,7 @@ public class TemplateTML
 		template=new int[height][length][width];
 		template=layers.toArray(template);
 		
-		if(weight<0) weight=0;
+		if(weight<=0) throw ZERO_WEIGHT_EXCEPTION;
 
 
 		//convert rules to array and check that rules in template are OK

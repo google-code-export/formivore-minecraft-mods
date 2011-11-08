@@ -25,7 +25,7 @@ public class TemplateRule {
     public int[] primaryBlock=null;
     private int[] fixedRuleChosen=null;
 
-    public TemplateRule ( String rule ) throws Exception {
+    public TemplateRule (String rule, BuildingExplorationHandler explorationHandler, boolean checkMetaValue ) throws Exception {
         String[] items = rule.split( "," );
         int numblocks = items.length - 2;
         if( numblocks < 1 ) { throw new Exception( "Error reading rule: No blockIDs specified for rule!" ); }
@@ -38,11 +38,11 @@ public class TemplateRule {
         for( int i = 0; i < numblocks; i++ ) {
         	data = items[i + 2].trim().split( "-" );
         	blockIDs[i]=Integer.parseInt( data[0] );
-        	if(Building.isInvalidRuleBlock(blockIDs[i])){
+        	if(!Building.isValidRuleBlock(blockIDs[i],explorationHandler)){
         		throw new Exception("Error reading rule: BlockID "+blockIDs[i]+" not registered!");
         	}
         	blockMDs[i]= data.length>1 ? Integer.parseInt( data[1]) : 0;
-        	if(!Building.metaValueIsValid(blockIDs[i], blockMDs[i])) {
+        	if(checkMetaValue && !Building.metaValueIsValid(blockIDs[i], blockMDs[i])) {
         		throw new Exception("Error reading rule: Bad meta value for block-meta "+items[i+2]);
         	}
         }

@@ -46,7 +46,6 @@ public class mod_GreatWall extends BuildingExplorationHandler
 	public BuildingExplorationHandler walledCityMod=null;
 	public ArrayList<WallStyle> wallStyles=null;
 	private long explrWorldCode;
-	private PrintWriter lw=null;
 	//public LinkedList<WorldGeneratorThread> exploreThreads;
 	
 	public int[] placedCoords=null;
@@ -106,7 +105,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 
 			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 			
-			wallStyles=WallStyle.loadWallStylesFromDir(STYLES_DIRECTORY,lw);
+			wallStyles=WallStyle.loadWallStylesFromDir(STYLES_DIRECTORY,this);
 
 			lw.println("\nTemplate loading complete.");
 			lw.println("Probability of generation attempt per chunk explored is "+ChunkTryProb+", with "+TriesPerChunk+" tries per chunk.");
@@ -159,10 +158,12 @@ public class mod_GreatWall extends BuildingExplorationHandler
 		updateWorldExplored(world);
 		chunksExploredFromStart++;
 		
+		//Put flushGenThreads before the exploreThreads enqueues and include the callChunk argument.
+		//This is to avoid putting mineral deposits in cities etc.
+		if(walledCityMod==null && isCreatingDefaultChunks) flushGenThreads(new int[]{i,k});
+		
 		if(random.nextFloat() < ChunkTryProb)
 			exploreThreads.add(new WorldGenGreatWall(this,walledCityMod==null ? this : walledCityMod, world, random, i, k,TriesPerChunk, ChunkTryProb));
-		
-		if(walledCityMod==null) flushGenThreads();
 	}
 	
 	public void GenerateNether( World world, Random random, int chunkI, int chunkK ) {
@@ -176,7 +177,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 	public boolean OnTickInGame(float tick, net.minecraft.client.Minecraft game) {
 		if(walledCityMod!=null) return true;
 		//if(exploreThreads.size()==0) doQueuedLighting();
-		flushGenThreads();
+		flushGenThreads(NO_CALL_CHUNK);
 		runWorldGenThreads();
 		return true;
 	}

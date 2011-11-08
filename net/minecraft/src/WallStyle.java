@@ -38,7 +38,7 @@ public class WallStyle extends TemplateTML{
 	public int MinL=150, MaxL=1000;
 
 	//default tower parameters
-	public TemplateRule TowerRule=null, SpawnerRule=null, ChestRule=null;
+	public TemplateRule TowerRule=BuildingTower.RULE_NOT_PROVIDED, SpawnerRule=BuildingTower.RULE_NOT_PROVIDED, ChestRule=BuildingTower.RULE_NOT_PROVIDED;
 	//public boolean RandomizeBuildingIntervals=false;
 	public boolean MakeBuildings=true,MergeWalls=false, EndTowers=true, GatehouseTowers=true,PopulateFurniture=false, MakeDoors=false;
 	public int BuildingInterval=75;
@@ -57,8 +57,8 @@ public class WallStyle extends TemplateTML{
 
 
 	//****************************************  CONSTRUCTOR - WallStyle*************************************************************************************//
-	public WallStyle(File wallFile,HashMap<String,TemplateTML> buildingTemplateMap, PrintWriter lw_)  throws Exception{
-		super(wallFile,lw_);
+	public WallStyle(File wallFile,HashMap<String,TemplateTML> buildingTemplateMap, BuildingExplorationHandler beh)  throws Exception{
+		super(wallFile,beh);
 
 		readTowerParameters();
 		buildings=loadChildTemplates("building_templates",buildingTemplateMap);
@@ -76,7 +76,7 @@ public class WallStyle extends TemplateTML{
 		if(extraOptions.containsKey("walk_height")) WalkHeight=readIntParam(lw,WalkHeight,"=",(String)extraOptions.get("walk_height"));
 		if(extraOptions.containsKey("min_length")) MinL=readIntParam(lw,MinL,"=",(String)extraOptions.get("min_length"));
 		if(extraOptions.containsKey("max_length")) MaxL=readIntParam(lw,MaxL,"=",(String)extraOptions.get("max_length"));
-		if(extraOptions.containsKey("tower_rule")) TowerRule=readRuleIdOrRule(null,"=",(String)extraOptions.get("tower_rule"));
+		if(extraOptions.containsKey("tower_rule")) TowerRule=readRuleIdOrRule("=",(String)extraOptions.get("tower_rule"));
 		if(extraOptions.containsKey("building_interval")) BuildingInterval=readIntParam(lw,BuildingInterval,"=",(String)extraOptions.get("building_interval"));
 		if(extraOptions.containsKey("make_buildings")) MakeBuildings=readIntParam(lw,1,"=",(String)extraOptions.get("make_buildings")) == 1;
 		if(extraOptions.containsKey("make_gatehouse_towers")) GatehouseTowers=readIntParam(lw,1,"=",(String)extraOptions.get("make_gatehouse_towers")) == 1;
@@ -84,7 +84,7 @@ public class WallStyle extends TemplateTML{
 		if(extraOptions.containsKey("merge_walls")) MergeWalls=readIntParam(lw,0,"=",(String)extraOptions.get("merge_walls")) == 1;
 		if(extraOptions.containsKey("default_tower_weight")) DefaultTowerWeight=readIntParam(lw,DefaultTowerWeight,"=",(String)extraOptions.get("default_tower_weight"));
 		if(extraOptions.containsKey("tower_offset")) TowerXOffset=readIntParam(lw,TowerXOffset,"=",(String)extraOptions.get("tower_offset"));
-		if(extraOptions.containsKey("spawner_rule")) SpawnerRule=readRuleIdOrRule(BuildingTower.NO_SPAWNER_RULE ,"=",(String)extraOptions.get("spawner_rule"));
+		if(extraOptions.containsKey("spawner_rule")) SpawnerRule=readRuleIdOrRule("=",(String)extraOptions.get("spawner_rule"));
 		if(extraOptions.containsKey("spawner_count")) SpawnerCount=readIntParam(lw,SpawnerCount,"=",(String)extraOptions.get("spawner_count"));
 		if(extraOptions.containsKey("mob_probability")) mobProb=readFloatParam(lw,mobProb,"=",(String)extraOptions.get("mob_probability"));
 		if(extraOptions.containsKey("pig_zombie_probability")) pigZombieProb=readFloatParam(lw,pigZombieProb,"=",(String)extraOptions.get("pig_zombie_probability"));
@@ -93,19 +93,19 @@ public class WallStyle extends TemplateTML{
 		if(extraOptions.containsKey("populate_furniture")) PopulateFurniture=readFloatParam(lw,0,"=",(String)extraOptions.get("populate_furniture")) == 1;
 		if(extraOptions.containsKey("make_doors")) MakeDoors=readFloatParam(lw,0,"=",(String)extraOptions.get("make_doors")) == 1;
 		if(extraOptions.containsKey("circular_probability")) CircularProb=readFloatParam(lw,CircularProb,"=",(String)extraOptions.get("circular_probability"));
-		if(extraOptions.containsKey("chest_rule")) ChestRule=readRuleIdOrRule(BuildingTower.NO_CHEST_RULE ,"=",(String)extraOptions.get("chest_rule"));
+		if(extraOptions.containsKey("chest_rule")) ChestRule=readRuleIdOrRule("=",(String)extraOptions.get("chest_rule"));
 		if(extraOptions.containsKey("square_min_height")) SqrMinHeight=readIntParam(lw,SqrMinHeight,"=",(String)extraOptions.get("square_min_height"));
 		if(extraOptions.containsKey("square_max_height")) SqrMaxHeight=readIntParam(lw,SqrMaxHeight,"=",(String)extraOptions.get("square_max_height"));
 		if(extraOptions.containsKey("square_min_width")) SqrMinWidth=readIntParam(lw,SqrMinWidth,"=",(String)extraOptions.get("square_min_width"));
 		if(extraOptions.containsKey("square_max_width")) SqrMaxWidth=readIntParam(lw,SqrMaxWidth,"=",(String)extraOptions.get("square_max_width"));
 		if(extraOptions.containsKey("square_roof_styles")) SqrRoofStyles=readNamedCheckList(lw,SqrRoofStyles,"=",(String)extraOptions.get("square_roof_styles"),BuildingTower.ROOFSTYLE_NAMES,"");
-		if(extraOptions.containsKey("square_roof_rule")) SqrRoofRule=readRuleIdOrRule(BuildingTower.DEFAULT_ROOF_RULE ,"=",(String)extraOptions.get("square_roof_rule"));
+		if(extraOptions.containsKey("square_roof_rule")) SqrRoofRule=readRuleIdOrRule("=",(String)extraOptions.get("square_roof_rule"));
 		if(extraOptions.containsKey("circular_tower_min_height")) CircMinHeight=readIntParam(lw,CircMinHeight,"=",(String)extraOptions.get("circular_tower_min_height"));
 		if(extraOptions.containsKey("circular_tower_max_height")) CircMaxHeight=readIntParam(lw,CircMaxHeight,"=",(String)extraOptions.get("circular_tower_max_height"));
 		if(extraOptions.containsKey("circular_tower_min_width")) CircMinWidth=readIntParam(lw,CircMinWidth,"=",(String)extraOptions.get("circular_tower_min_width"));
 		if(extraOptions.containsKey("circular_tower_max_width")) CircMaxWidth=readIntParam(lw,CircMaxWidth,"=",(String)extraOptions.get("circular_tower_max_width"));
 		if(extraOptions.containsKey("circular_tower_roof_styles")) CircRoofStyles=readNamedCheckList(lw,CircRoofStyles,"=",(String)extraOptions.get("circular_tower_roof_styles"),BuildingTower.ROOFSTYLE_NAMES,"");
-		if(extraOptions.containsKey("circular_tower_roof_rule")) CircRoofRule=readRuleIdOrRule(BuildingTower.DEFAULT_ROOF_RULE ,"=",(String)extraOptions.get("circular_tower_roof_rule"));
+		if(extraOptions.containsKey("circular_tower_roof_rule")) CircRoofRule=readRuleIdOrRule("=",(String)extraOptions.get("circular_tower_roof_rule"));
 
 		if(MaxL <= MinL) MaxL=MinL+1;
 		if(StreetDensity<0) StreetDensity=0;
@@ -134,19 +134,12 @@ public class WallStyle extends TemplateTML{
 		if(TowerRule==null) throw new Exception("No valid rule provided for tower block!");
 		
 		//spawner rule logic
-		if(SpawnerRule==BuildingTower.NO_SPAWNER_RULE){
+		if(SpawnerRule==BuildingTower.RULE_NOT_PROVIDED){
 			//try the deprecated mob probabilities
 			if(mobProb>0.0F) SpawnerRule=new TemplateRule(new int[]{Building.UPRIGHT_SPAWNER_ID,0}, (int)(mobProb*100));
 			else if(pigZombieProb>0.0F) SpawnerRule=new TemplateRule(new int[]{Building.PIG_ZOMBIE_SPAWNER_ID,0}, (int)(pigZombieProb*100));
 			else if(endermanProb>0.0F) SpawnerRule=new TemplateRule(new int[]{Building.ENDERMAN_SPAWNER_ID,0}, (int)(endermanProb*100));
 			else if(caveSpiderProb>0.0F) SpawnerRule=new TemplateRule(new int[]{Building.CAVE_SPIDER_SPAWNER_ID,0}, (int)(caveSpiderProb*100));
-		}else{
-			for(int blockID : SpawnerRule.getBlockIDs()){
-				if(!Building.IS_SPAWNER_BLOCK[blockID]){
-					SpawnerRule= new TemplateRule(new int[]{Building.UPRIGHT_SPAWNER_ID,0}, SpawnerRule.chance);
-					break;
-				}
-			}
 		}
 		
 		if(Biomes!=ALL_BIOMES && Biomes[BIOME_UNDERGROUND]>0){
@@ -298,83 +291,85 @@ public class WallStyle extends TemplateTML{
 	
 	//if an integer ruleId: try reading from rules and return.
 	//If a rule: parse the rule, add it to rules, and return.
-	public TemplateRule readRuleIdOrRule(TemplateRule defaultRule, String splitString, String read){
+	public TemplateRule readRuleIdOrRule(String splitString, String read) throws Exception{
 		String postSplit=read.split(splitString)[1].trim();
 		try{
 			int ruleId=Integer.parseInt(postSplit);
 			return rules[ruleId];
 		} catch(NumberFormatException e) { 
 			try{
-				TemplateRule r=new TemplateRule(postSplit);
+				TemplateRule r=new TemplateRule(postSplit,explorationHandler,false);
 				return r;
-				//TemplateRule[] newRules= new TemplateRule[rules.length+1];
-				//for(int m=0; m<rules.length; m++) newRules[m]=rules[m];
-				//newRules[rules.length]=r;
-				//rules=newRules;
 			}catch(Exception re){
-				lw.println("Error parsing rule: "+re.toString()+". Line:"+read);
+				throw new Exception("Error parsing rule: "+re.toString()+". Line:"+read);
 			}
 		}catch(Exception e) { 
-			lw.println("Error reading block rule for variable: "+e.toString());
-			lw.println("Line:"+read); 
+			throw new Exception("Error reading block rule for variable: "+e.toString()+". Line:"+read);
 		}
-		return defaultRule;
 	}
 
 	//****************************************  FUNCTION - loadTemplatesFromDir *************************************************************************************//
-	public static ArrayList<TemplateTML> loadTemplatesFromDir(File tmlDirectory, PrintWriter lw){
+	public static ArrayList<TemplateTML> loadTemplatesFromDir(File tmlDirectory, BuildingExplorationHandler explorationHandler){
 		ArrayList<TemplateTML> templates= new ArrayList<TemplateTML>();
 		for( File f : tmlDirectory.listFiles() ) {
 			if(getFileType(f.getName()).equals("tml")){
 				try{
-					TemplateTML t = new TemplateTML(f,lw).buildLayout();
+					TemplateTML t = new TemplateTML(f,explorationHandler).buildLayout();
 					templates.add(t);	
 				}catch(Exception e){
-					lw.println( "There was a problem loading the .tml file: " + f.getName() );
-					e.printStackTrace(lw);
-					lw.println();
+					if(e==TemplateTML.ZERO_WEIGHT_EXCEPTION){
+						explorationHandler.lw.println("Did not load "+f.getName()+", weight was zero.");
+					}else{
+						explorationHandler.lw.println( "There was a problem loading the .tml file: " + f.getName() );
+						e.printStackTrace(explorationHandler.lw);
+						explorationHandler.lw.println();
+					}
 				}
 		}}
 		return templates;
 	}
 
 	//****************************************  FUNCTION - loadWallStylesFromDir *************************************************************************************//
-	public static ArrayList<WallStyle> loadWallStylesFromDir(File stylesDirectory, PrintWriter lw) throws Exception{
+	public static ArrayList<WallStyle> loadWallStylesFromDir(File stylesDirectory, BuildingExplorationHandler explorationHandler) throws Exception{
 		if(!stylesDirectory.exists()) 
 			throw new Exception("Could not find directory /"+stylesDirectory.getName()+" in the resource folder "+stylesDirectory.getParent()+"!");
 		
 		//load buildings
-		lw.println("\nLoading building subfolder in "+stylesDirectory+"\\"+BUILDING_DIRECTORY_NAME+"...");
+		explorationHandler.lw.println("\nLoading building subfolder in "+stylesDirectory+"\\"+BUILDING_DIRECTORY_NAME+"...");
 		HashMap<String,TemplateTML> buildingTemplates=new HashMap<String,TemplateTML>();
 		try{
-			Iterator<TemplateTML> itr=loadTemplatesFromDir(new File(stylesDirectory,BUILDING_DIRECTORY_NAME),lw).iterator();
+			Iterator<TemplateTML> itr=loadTemplatesFromDir(new File(stylesDirectory,BUILDING_DIRECTORY_NAME),explorationHandler).iterator();
 			while(itr.hasNext()){
 				TemplateTML t=itr.next();
 				buildingTemplates.put(t.name,t);
 			}
 		} catch(Exception e){
-			lw.println("No buildings folder for "+stylesDirectory.getName()+e.toString());
+			explorationHandler.lw.println("No buildings folder for "+stylesDirectory.getName()+e.toString());
 		}
 
 		for(int i=0;i<10;i++) {}
 		
 		//load walls
-		lw.println("\nLoading wall styles from directory "+stylesDirectory+"...");
+		explorationHandler.lw.println("\nLoading wall styles from directory "+stylesDirectory+"...");
 			
 		ArrayList<WallStyle> styles = new ArrayList<WallStyle>();
 		for( File f : stylesDirectory.listFiles() ) {
 			if(getFileType(f.getName()).equals("tml")){
 				try{
-					WallStyle ws=new WallStyle(f,buildingTemplates,lw);
+					WallStyle ws=new WallStyle(f,buildingTemplates,explorationHandler);
 					styles.add(ws);
 				}catch(Exception e){
-					lw.println( "Error loading wall style: " + f.getName() );
-					e.printStackTrace(lw);
-					lw.println();
+					if(e==TemplateTML.ZERO_WEIGHT_EXCEPTION){
+						explorationHandler.lw.println("Did not load "+f.getName()+", weight was zero.");
+					}else{
+						explorationHandler.lw.println( "Error loading wall style: " + f.getName() );
+						e.printStackTrace(explorationHandler.lw);
+						explorationHandler.lw.println();
+					}
 				}
 			}
 		}
-		lw.flush();
+		explorationHandler.lw.flush();
 		if(styles.size()==0) throw new Exception("Did not find any valid wall styles!");
 		return styles;
 	}
@@ -442,26 +437,30 @@ public class WallStyle extends TemplateTML{
 	
 
 	//****************************************  FUNCTION - loadStreets *************************************************************************************//
-	public static void loadStreets(ArrayList<WallStyle> cityStyles,File streetsDirectory, PrintWriter lw) throws Exception{
+	public static void loadStreets(ArrayList<WallStyle> cityStyles,File streetsDirectory, BuildingExplorationHandler explorationHandler) throws Exception{
 		//streets, don't print error if directory DNE
 		HashMap<String,WallStyle> streetTemplateMap=new HashMap<String,WallStyle>();
 		Iterator<WallStyle> itr;
 		try{
-			lw.println("\nLoading streets subfolder in "+streetsDirectory+"...");
-			itr=loadWallStylesFromDir(streetsDirectory,lw).iterator();
+			explorationHandler.lw.println("\nLoading streets subfolder in "+streetsDirectory+"...");
+			itr=loadWallStylesFromDir(streetsDirectory,explorationHandler).iterator();
 			while(itr.hasNext()){
 				WallStyle cs=itr.next();
 				streetTemplateMap.put(cs.name,cs);
 			}
 		} catch(Exception e){
-			lw.println("No street folder for "+streetsDirectory.getName()+e.toString());
+			explorationHandler.lw.println("No street folder for "+streetsDirectory.getName()+e.toString());
 		}
 
+		explorationHandler.lw.println();
 		itr=cityStyles.iterator();
 		while(itr.hasNext()){
 			WallStyle cs=itr.next();
 			cs.streets=cs.loadChildStyles("street_templates",streetTemplateMap);
-			if(cs.streets.size()==0 && !cs.underground) itr.remove();
+			if(cs.streets.size()==0 && !cs.underground){
+				itr.remove();
+				explorationHandler.lw.println("No valid street styles for "+cs.name+". Disabling this city style.");
+			}
 			//else cs.streetWeights=buildWeightsAndIndex(cs.streets);
 		}
 		if(cityStyles.size()==0) throw new Exception("Did not find any valid city styles that had street styles!");

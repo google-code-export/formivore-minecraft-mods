@@ -1219,8 +1219,8 @@ public class Building
 	
 	
 	//Spawner Blocks from other mods
-	public final static int CASTLE_DEFENDERS_ENEMY_KNIGHT=231;
-	public final static int CASTLE_DEFENDERS_ENEMY_ARCHER=232;
+	//public final static int CASTLE_DEFENDERS_ENEMY_KNIGHT=231;
+	//public final static int CASTLE_DEFENDERS_ENEMY_ARCHER=232;
 
     public final static int IRON_SPADE_ID=256;
     public final static int IRON_PICKAXE_ID=257;
@@ -1365,7 +1365,7 @@ public class Building
     public final static boolean[] IS_LIQUID_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_NONSOLID_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_ORE_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
-    public final static boolean[] IS_SPAWNER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
+    //public final static boolean[] IS_SPAWNER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_HUMANS_PLUS_FLAG=new boolean[SPECIAL_BLOCKID_END+1];
     
     
@@ -1405,16 +1405,18 @@ public class Building
     			IS_ORE_BLOCK[blockID]=true;
     		else IS_ORE_BLOCK[blockID]=false;
     		
-    		if( blockID==MOB_SPAWNER_ID || blockID==ZOMBIE_SPAWNER_ID || blockID==SKELETON_SPAWNER_ID || blockID==SPIDER_SPAWNER_ID || blockID==CREEPER_SPAWNER_ID || 
-    			blockID==UPRIGHT_SPAWNER_ID || blockID==EASY_SPAWNER_ID || blockID==MEDIUM_SPAWNER_ID || blockID==HARD_SPAWNER_ID || blockID==PIG_ZOMBIE_SPAWNER_ID ||
-    			blockID==ENDERMAN_SPAWNER_ID || blockID==CAVE_SPIDER_SPAWNER_ID || blockID==CASTLE_DEFENDERS_ENEMY_KNIGHT || blockID==CASTLE_DEFENDERS_ENEMY_ARCHER)
-    			IS_SPAWNER_BLOCK[blockID]=true;
-    		else IS_SPAWNER_BLOCK[blockID]=false;
-    		
     		if(blockID==HUMANS_PLUS_ASSASIN_FLAG_ID || blockID==HUMANS_PLUS_ROGUE_FLAG_ID || blockID==HUMANS_PLUS_BANDIT_FLAG_ID || 
     		   blockID==HUMANS_PLUS_PEACEFUL_FLAG_ID || blockID==HUMANS_PLUS_MILITIA_FLAG_ID || blockID==HUMANS_PLUS_SHADOW_FLAG_ID)
     			IS_HUMANS_PLUS_FLAG[blockID]=true;
     		else IS_HUMANS_PLUS_FLAG[blockID]=false;
+    		
+    		/*if( blockID==MOB_SPAWNER_ID || blockID==ZOMBIE_SPAWNER_ID || blockID==SKELETON_SPAWNER_ID || blockID==SPIDER_SPAWNER_ID || blockID==CREEPER_SPAWNER_ID || 
+        			blockID==UPRIGHT_SPAWNER_ID || blockID==EASY_SPAWNER_ID || blockID==MEDIUM_SPAWNER_ID || blockID==HARD_SPAWNER_ID || blockID==PIG_ZOMBIE_SPAWNER_ID ||
+        			blockID==ENDERMAN_SPAWNER_ID || blockID==CAVE_SPIDER_SPAWNER_ID || blockID==CASTLE_DEFENDERS_ENEMY_KNIGHT || blockID==CASTLE_DEFENDERS_ENEMY_ARCHER
+        			|| IS_HUMANS_PLUS_FLAG[blockID])
+        			IS_SPAWNER_BLOCK[blockID]=true;
+        		else IS_SPAWNER_BLOCK[blockID]=false;
+        		*/
     	}
     }
     
@@ -1432,8 +1434,9 @@ public class Building
     	}
     }
     
-    public final static boolean isInvalidRuleBlock(int blockID){
-    	return (blockID <  SPECIAL_BLOCKID_START || blockID > SPECIAL_BLOCKID_END) && blockID!=AIR_ID && Block.blocksList[blockID]==null;
+    public final static boolean isValidRuleBlock(int blockID,BuildingExplorationHandler beh){
+    	if(blockID >=  SPECIAL_BLOCKID_START && blockID <= SPECIAL_BLOCKID_END) return (beh.humansPlusLoaded || !IS_HUMANS_PLUS_FLAG[blockID]);
+    	return Block.blocksList[blockID]!=null || blockID==AIR_ID;
     }
     
 	public final static void circleShape(int diam){
