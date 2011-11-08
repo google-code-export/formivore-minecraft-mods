@@ -14,7 +14,7 @@ public class BuildingTower extends Building
 	public final static int FORCE_BUILDDOWN=3;
 	public final static String[] ROOFSTYLE_NAMES={"Crenel","Steep","Steep Trim","Shallow","Dome","Cone","Two Sided"};
 	public final static int[] ROOF_STYLE_IDS=new int[ROOFSTYLE_NAMES.length];
-	public final static TemplateRule DEFAULT_ROOF_RULE=null, NO_CHEST_RULE=null,NO_SPAWNER_RULE=null;
+	public final static TemplateRule RULE_NOT_PROVIDED=null;
 	public final static int SURFACE_PORTAL_ODDS=20;
 	public final static int NETHER_PORTAL_ODDS=10;
 	public final static int BOOKSHELF_ODDS=3;
@@ -114,7 +114,7 @@ public class BuildingTower extends Building
 		//				0% chance if isSkellieZombieCreeperSpawner, 100% otherwise
 		//If floor haunted =>	Always build spawner_count spawners (resampling for each spawner).
 		//						No windows/doors unless ground floor.
-		boolean haunted=SpawnerRule!=NO_SPAWNER_RULE && random.nextInt(100)<SpawnerRule.chance;
+		boolean haunted=SpawnerRule!=RULE_NOT_PROVIDED && random.nextInt(100)<SpawnerRule.chance;
 		boolean isSkellieZombieCreeperSpawner=true;
 		if(haunted)
 			for(int blockID : SpawnerRule.getBlockIDs())
@@ -169,7 +169,8 @@ public class BuildingTower extends Building
 			int winDoorX2=Math.min(Math.max(bWidth/2 + (z1==baseHeight-1 ? doorOffset2 : 0),1),bWidth-2);
 			int torchX1=winDoorX1 + (winDoorX1==bWidth-2 ? -1:1);
 			int torchX2=winDoorX2 + (winDoorX2==bWidth-2 ? -1:1);
-			boolean floorIsHaunted = haunted && (z1==baseHeight-1 ? !isSkellieZombieCreeperSpawner : random.nextInt(100) < FLOOR_HAUNTED_CHANCE);
+		
+			boolean floorIsHaunted = haunted && (z1==baseHeight-1 ? !isSkellieZombieCreeperSpawner : (random.nextInt(100) < FLOOR_HAUNTED_CHANCE) );
 			
 			if(z1==baseHeight-1 || !floorIsHaunted){
 				int winH=z1>baseHeight-1 ? 2:3;
@@ -187,13 +188,13 @@ public class BuildingTower extends Building
 
 			//door torches
 			if(!haunted && bRule.chance==100){ 
-				buffer[torchX1+1][z1+4][2+(circular && bLength==6 ? 1:0)]=new int[]{TORCH_ID,2}; 
-				buffer[torchX2+1][z1+4][bLength-(circular && bLength==6 ? 1:0)-1]=new int[]{TORCH_ID,1};
+				buffer[torchX1+1][z1+3+1][1+(circular && bLength==6 ? 1:0)+1]=new int[]{TORCH_ID,2}; 
+				buffer[torchX2+1][z1+3+1][bLength-2-(circular && bLength==6 ? 1:0)+1]=new int[]{TORCH_ID,1};
 			}
 			
 			//*** mob spawners***
 			if(floorIsHaunted){
-				if(z1==baseHeight+4 && bRule.chance==100){
+				if(z1==baseHeight+4 && isSkellieZombieCreeperSpawner && bRule.chance==100){
 					for(int x1=bWidth/2-1;x1<=bWidth/2+1;x1++){
 						for(int y1=1; y1<Math.min(3, bLength/2-1);y1++)
 							if(!circular || circle_shape[x1][y1]==0)
@@ -204,15 +205,24 @@ public class BuildingTower extends Building
 					}
 				}
 				
-				for(int x1=bWidth/2-(SpawnerCount-1)/2; x1<=bWidth/2+SpawnerCount/2; x1++)
-					buffer[x1+1][z1+1+1][bLength/2+1]=SpawnerRule.getNonAirBlock(random);
+				int spawnerBlock=SpawnerRule.getNonAirBlock(random)[0];
+				if(spawnerBlock==231){
+					int b=2+2;
+					int a=b;
+				}
+				if(IS_HUMANS_PLUS_FLAG[spawnerBlock]){
+					buffer[bWidth-2+1][z1+2+1][bLength/2+1+1]=new int[]{spawnerBlock,2};
+				}
+				else for(int x1=bWidth/2-(SpawnerCount-1)/2; x1<=bWidth/2+SpawnerCount/2; x1++)
+						buffer[x1+1][z1+1+1][bLength/2+1]=SpawnerRule.getNonAirBlock(random);
+				
 			}
 			
 			//chests
 			if(ChestRule!=null && random.nextInt(100)<ChestRule.chance)
-				buffer[bWidth-1][z1+1+1][bLength/2]=ChestRule.getNonAirBlock(random);
+				buffer[bWidth-2+1][z1+1+1][bLength/2-1+1]=ChestRule.getNonAirBlock(random);
 			else if(floorIsHaunted && random.nextInt(100) < HAUNTED_CHEST_CHANCE) //even if no chest rule, can have chests if floorIsHaunted
-				buffer[bWidth-1][z1+1+1][bLength/2]=z1 < 15 ? TemplateRule.TOWER_CHEST_BLOCK : TemplateRule.HARD_CHEST_BLOCK;
+				buffer[bWidth-2+1][z1+1+1][bLength/2-1+1]=z1 < 15 ? TemplateRule.TOWER_CHEST_BLOCK : TemplateRule.HARD_CHEST_BLOCK;
 
 
 			if(z1==baseHeight-1) z1++;
@@ -221,11 +231,12 @@ public class BuildingTower extends Building
 		//*** ladder ***
 		int topFloorHeight=((bHeight-baseHeight-4)/4)*4+baseHeight+1;
 		int ladderHeight=roofStyle==ROOF_CRENEL ? bHeight : (bHeight-baseHeight<8 ? 0 : topFloorHeight);  //don't continue through top floor unless crenellated
-		for(int z1=baseHeight; z1<ladderHeight;z1++) buffer[2][z1+1][bLength/2]=new int[]{LADDER_ID,2};
+		for(int z1=baseHeight; z1<ladderHeight;z1++) buffer[1+1][z1+1][bLength/2-1+1]=new int[]{LADDER_ID,2};
 
 		//*** roof ***
 		buildRoof();
-		if(haunted) buffer[2][bHeight > baseHeight+12 ? baseHeight+9 : bHeight+1][bLength/2] = bRule.getBlockOrHole(random);
+		if(haunted && roofStyle==ROOF_CRENEL) 
+			buffer[1+1][bHeight > baseHeight+12 ? baseHeight+9 : bHeight+1][bLength/2-1+1] = bRule.getBlockOrHole(random);
 
 		//*** run decay ***
 		int zLim= bRule.chance>=100 ? buffer[0].length : propagateCollapse(bRule.chance);
@@ -269,17 +280,6 @@ public class BuildingTower extends Building
 		}
 		
 		flushDelayed();
-		
-		//not sure how minecrafts lighting updates work, maybe this will do the trick
-		/*
-		for(int z1=BHeight+1;z1<THeight-1;z1+=4){
-			for(int y1=-1; y1<=TWidth; y1++){
-				int[] pt=getIJKPt(TWidth/2,z1,y1);
-				wgt.explorationHandler.queueLighting(new int[]{pt[0],pt[1],pt[2],pt[0],pt[1],pt[2]});
-			}
-			if(z1==BHeight+1) z1++;
-		}
-		*/
 	}
 	
 	
@@ -389,7 +389,7 @@ public class BuildingTower extends Building
 		//If roofRule=cobblestone, do cobblestone for all roofstyles
 		//If roofRule=sandstone/step, do wooden for steep roofstyle and sandstone/step otherwise
 		//Otherwise do wooden for sloped roofstyles, and roofRule otherwise
-		if(roofRule==DEFAULT_ROOF_RULE){
+		if(roofRule==RULE_NOT_PROVIDED){
 			roofRule= (roofStyle==ROOF_STEEP || roofStyle==ROOF_SHALLOW || roofStyle==ROOF_TRIM || roofStyle==ROOF_TWO_SIDED)
 					? new TemplateRule(new int[]{WOOD_ID,0}) : bRule;
 		}

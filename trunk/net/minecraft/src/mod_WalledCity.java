@@ -48,7 +48,6 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	private ArrayList<int[]> cityLocations, undergroundCityLocations;
 	private HashMap<Long,ArrayList<int[]> > worldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >(),
 											undergroundWorldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >();
-	private PrintWriter lw=null;
 	public LinkedList<int[]> citiesBuiltMessages=new LinkedList<int[]>();
 	//private LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
 	
@@ -89,8 +88,8 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			getGlobalOptions();
 			
 
-			cityStyles=WallStyle.loadWallStylesFromDir(STYLES_DIRECTORY,lw);
-			WallStyle.loadStreets(cityStyles,STREETS_DIRECTORY,lw);
+			cityStyles=WallStyle.loadWallStylesFromDir(STYLES_DIRECTORY,this);
+			WallStyle.loadStreets(cityStyles,STREETS_DIRECTORY,this);
 			for(int m=0; m<cityStyles.size(); m++){
 				if(cityStyles.get(m).underground){
 					WallStyle uws = cityStyles.remove(m);
@@ -213,6 +212,10 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			while(citiesBuiltMessages.size()>0) 
 				chatCityBuilt(citiesBuiltMessages.remove());
 
+		//Put flushGenThreads before the exploreThreads enqueues and include the callChunk argument.
+		//This is to avoid putting mineral deposits in cities etc.
+		if(isCreatingDefaultChunks) flushGenThreads(new int[]{i,k});
+		
 		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_WALLED) && random.nextFloat() < ChunkTryProb){
 			exploreThreads.add(new WorldGenWalledCity(this, world, random, i, k,TriesPerChunk, ChunkTryProb));
 		}
@@ -222,8 +225,6 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			wgt.setSpawnHeight(j-WorldGenUndergroundCity.MAX_DIAM, j, false);
 			exploreThreads.add(wgt);
 		}
-		
-		flushGenThreads();
 	}
 	
 	public void GenerateNether( World world, Random random, int chunkI, int chunkK ) {
@@ -236,7 +237,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	@Override
 	public boolean OnTickInGame(float tick, net.minecraft.client.Minecraft game) {
 		//if(exploreThreads.size()==0) doQueuedLighting();
-		flushGenThreads();
+		flushGenThreads(NO_CALL_CHUNK);
 		runWorldGenThreads();	
 		return true;
 	}

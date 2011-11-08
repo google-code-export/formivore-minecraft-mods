@@ -102,6 +102,12 @@ public abstract class WorldGeneratorThread extends Thread {
     		suspendGen();
     	}
     	
+    	//check if we are trying to build in a chunk in middle of generation, if so terminate
+    	if(explorationHandler.flushCallChunk!=BuildingExplorationHandler.NO_CALL_CHUNK){
+    		if(i>>4==explorationHandler.flushCallChunk[0] && k>>4==explorationHandler.flushCallChunk[1])
+    			return false;
+    	}
+    		
     	//MP PORT
     	//world.getChunkProvider().loadChunk(i>>4, k>>4);
     	world.getBlockId(i,0,k); //force world to load this chunk

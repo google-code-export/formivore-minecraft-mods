@@ -95,7 +95,7 @@ public class BuildingWall extends Building
 			roofStyle=ws.pickRoofStyle(circular,random);
 			towerRule=ws.TowerRule.getFixedRule(random);
 			roofRule=ws.getRoofRule(circular);
-			if(roofRule!=BuildingTower.DEFAULT_ROOF_RULE) roofRule=roofRule.getFixedRule(random);
+			if(roofRule!=BuildingTower.RULE_NOT_PROVIDED) roofRule=roofRule.getFixedRule(random);
 			endTLength=(endTowers && ws.EndTowers) ? ws.pickTWidth(circular,random) : 0;
 		}
 	}
