@@ -13,10 +13,10 @@ The minimum separation allowed between above-ground and underground city spawns.
 *`CityBuiltMessage`* (Walled City Mod)<br>
 Toggles whether you receive a chat message when a city spawns.
 
-*`Smooth1`*<br>
-*`Smooth2`*<br>
-*`Backtrack`*<br>
-`Smooth1` and `Smooth2` control the length scales of concave and convex smoothing respectively.  `Backtrack` control the distance to backtrack to look for an alternate path if a wall reaches a dead end.
+*`ConcaveSmoothingScale`*<br>
+*`ConvexSmoothingScale`*<br>
+*`BacktrackLength`*<br>
+`ConcaveSmoothingScale` and `ConvexSmoothingScale` specifiy the maximum length that can be smoothed away in walls for cocave/convex curves respectively.  `BacktrackLength` controls the distance to backtrack to look for an alternate path if a wall reaches a dead end.
 
 *`CurveBias`*(Great Wall Mod)<br>
 *`LengthBiasNorm`*(Great Wall Mod)<br>
