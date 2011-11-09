@@ -28,7 +28,7 @@ Specifies the maximum height above the source block that will be set to air in o
 Defaults to `0`.
 
 <font color= #800080>`water_height` </font>= `height`<br>
-The maximum height that water is allowed to reach alongside this strucutre, conversely how far underwater this wall can be built.<br>
+The maximum height that water is allowed to reach alongside this structure, conversely how far underwater this wall can be built. Can set to <font color= #800080>`water_height` </font>= `NO_WATER_CHECK` to avoid doing a check for water.<br>
 Defaults to `3`, or for wall templates the minimum of `3` and <font color= #800080>`walk_height` </font> `- 1`.
 
 NOTE: The following variables from the ruins mod are currently NOT supported and will be ignored:
@@ -75,11 +75,11 @@ The minimum separation required between buildings built alongside this wall.<br>
 Defaults to `75`.
 
 <font color= #800080>`make_buildings` </font>= `1/0`<br>
-If set to 1 make buildings along side this wall, if set to 0 don't.
+If set to 1 make buildings along side this wall, if set to 0 don't.<br>
 Defaults to `1`.
 
 <font color= #800080>`make_end_towers` </font>= `1/0`<br>
-If set to 1 make towers at the wall endpoints, if set to 0 don't.
+If set to 1 make towers at the wall endpoints, if set to 0 don't.<br>
 Defaults to `1`.
 
 <font color= #800080>`make_underground_entraceways` </font>= `1/0`<br>
