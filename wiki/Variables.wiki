@@ -82,6 +82,10 @@ Defaults to `1`.
 If set to 1 make towers at the wall endpoints, if set to 0 don't.
 Defaults to `1`.
 
+<font color= #800080>`make_underground_entraceways` </font>= `1/0`<br>
+Only for underground cities. If set to 1 make entranceways to surface, if set to 0 don't.
+Defaults to `1`.
+
 
 ==Default Tower Variables==
 These variables control the style of the default resizable towers. These variables should also be provided in each <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#Wall_Templates_and_Road_Templates>wall template</a> file.
