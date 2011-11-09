@@ -58,8 +58,12 @@ Only for city wall templates used in the Walled City mod. If set to 1 the city i
 Defaults to `1`.
 
 <font color= #800080>`walk_height` </font>= `height`<br>
-For walls that serve as a roadway, the height of the roadway (relative to the bottom of the template). This value is used for a)positioning elements such as towers to allow transit b)ensuring this level is always above water. <br>
+For walls that serve as a roadway, the height of the roadway (relative to the bottom of the template). This value is used for positioning elements such as towers to allow transit. <br>
 Defaults to `0`.
+
+<font color= #800080>`water_height` </font>= `height`<br>
+The maximum height that water is allowed to reach alongside this wall, conversely how far underwater this wall can be built.
+Defaults to the minimum of `2` and `walk_height-1`.
 
 <font color= #800080>`min_length` </font>= `length`<br>
 <font color= #800080>`max_length` </font>= `length`<br>
