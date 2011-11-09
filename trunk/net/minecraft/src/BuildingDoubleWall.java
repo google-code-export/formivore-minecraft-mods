@@ -43,9 +43,9 @@ public class BuildingDoubleWall extends Building
 		for(int m=0;m<a;m++) { tempx[m+b]=wall1.xArray[m];  tempz[m+b]=wall1.zArray[m]; }
 
 		if(BuildingWall.DEBUG>1) System.out.println("\nSMOOTHING X");
-		BuildingWall.smooth(tempx,0,a+b-1,wgt.explorationHandler.Smooth1,wgt.explorationHandler.Smooth1,true);
+		BuildingWall.smooth(tempx,0,a+b-1,wgt.explorationHandler.ConcaveSmoothingScale,wgt.explorationHandler.ConcaveSmoothingScale,true);
 		if(BuildingWall.DEBUG>1) System.out.println("\nSMOOTHING Z");
-		BuildingWall.smooth(tempz,0,a+b-1,wgt.explorationHandler.Smooth1,wgt.explorationHandler.Smooth2,true);
+		BuildingWall.smooth(tempz,0,a+b-1,wgt.explorationHandler.ConcaveSmoothingScale,wgt.explorationHandler.ConvexSmoothingScale,true);
 		for(int m=0;m<b;m++) { wall2.xArray[b-m-1]=-tempx[m]; wall2.zArray[b-m-1]=tempz[m];}
 		for(int m=0;m<a;m++) { wall1.xArray[m]=tempx[m+b]; wall1.zArray[m]=tempz[m+b]; }
 		return true;

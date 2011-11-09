@@ -35,7 +35,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 	
 
 	//USER MODIFIABLE PARAMETERS, values below are defaults
-	public float ChunkTryProb=0.0015F;
+	public float GlobalFrequency=0.0015F;
 	public int TriesPerChunk=1;
 	//public int hL=500;
 	public float CurveBias=0.0F;
@@ -108,8 +108,8 @@ public class mod_GreatWall extends BuildingExplorationHandler
 			wallStyles=WallStyle.loadWallStylesFromDir(STYLES_DIRECTORY,this);
 
 			lw.println("\nTemplate loading complete.");
-			lw.println("Probability of generation attempt per chunk explored is "+ChunkTryProb+", with "+TriesPerChunk+" tries per chunk.");
-			if(ChunkTryProb <0.000001) errFlag=true;
+			lw.println("Probability of generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
+			if(GlobalFrequency <0.000001) errFlag=true;
 		} catch( Exception e ) {
 			errFlag=true;
 			logOrPrint( "There was a problem loading the great wall mod: "+ e.getMessage() );
@@ -162,8 +162,8 @@ public class mod_GreatWall extends BuildingExplorationHandler
 		//This is to avoid putting mineral deposits in cities etc.
 		if(walledCityMod==null && isCreatingDefaultChunks) flushGenThreads(new int[]{i,k});
 		
-		if(random.nextFloat() < ChunkTryProb)
-			exploreThreads.add(new WorldGenGreatWall(this,walledCityMod==null ? this : walledCityMod, world, random, i, k,TriesPerChunk, ChunkTryProb));
+		if(random.nextFloat() < GlobalFrequency)
+			exploreThreads.add(new WorldGenGreatWall(this,walledCityMod==null ? this : walledCityMod, world, random, i, k,TriesPerChunk, GlobalFrequency));
 	}
 	
 	public void GenerateNether( World world, Random random, int chunkI, int chunkK ) {
@@ -192,13 +192,13 @@ public class mod_GreatWall extends BuildingExplorationHandler
 				lw.println("Getting global options...");    
 	
 				while( read != null ) {
-					if(read.startsWith( "ChunkTryProb" )) ChunkTryProb = WallStyle.readFloatParam(lw,ChunkTryProb,":",read);
+					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = WallStyle.readFloatParam(lw,GlobalFrequency,":",read);
 					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = WallStyle.readIntParam(lw,TriesPerChunk,":",read);
 					if(read.startsWith( "CurveBias" )) CurveBias = WallStyle.readFloatParam(lw,CurveBias,":",read);
 					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = WallStyle.readIntParam(lw,LengthBiasNorm,":",read);
-					if(read.startsWith( "Smooth1" )) Smooth1 = WallStyle.readIntParam(lw,Smooth1,":",read);
-					if(read.startsWith( "Smooth2" )) Smooth2 = WallStyle.readIntParam(lw,Smooth2,":",read);
-					if(read.startsWith( "Backtrack" )) Backtrack = WallStyle.readIntParam(lw,Backtrack,":",read);
+					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = WallStyle.readIntParam(lw,ConcaveSmoothingScale,":",read);
+					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = WallStyle.readIntParam(lw,ConvexSmoothingScale,":",read);
+					if(read.startsWith( "BacktrackLength" )) BacktrackLength = WallStyle.readIntParam(lw,BacktrackLength,":",read);
 					
 					readChestItemsList(lw,read,br);
 					
@@ -218,23 +218,27 @@ public class mod_GreatWall extends BuildingExplorationHandler
 				pw=new PrintWriter( new BufferedWriter( new FileWriter(SETTINGS_FILE) ) );
 				pw.println("<-README: put this file in the main minecraft folder, e.g. C:\\Users\\Administrator\\AppData\\Roaming\\.minecraft\\->");
 				pw.println();
-				pw.println("<-ChunkTryProb Controls how likely walls are to appear. Should be between 0.0 and 1.0. Lower to make less common->");
+				pw.println("<-GlobalFrequency controls how likely walls are to appear. Should be between 0.0 and 1.0. Lower to make less common->");
 				pw.println("<-TriesPerChunk allows multiple attempts per chunk. Only change from 1 if you want very dense walls!->");
-				pw.println("ChunkTryProb:"+ChunkTryProb);
+				pw.println("GlobalFrequency:"+GlobalFrequency);
 				pw.println("TriesPerChunk:"+TriesPerChunk);
 				pw.println();
-				pw.println("<Pathfinding>");
-				pw.println("<-Smooth1 and Smooth2 control concave and convex smoothing respectively.>");
-				pw.println("<-Backtrack - length of backtracking if a dead end is hit>");
-				pw.println("<-CurveBias - strength of the bias towards curvier walls. Should be greater than 0.0. >");
+				pw.println("<-Wall Pathfinding->");
+				pw.println("<-ConcaveSmoothingScale and ConvexSmoothingScale specifiy the maximum length that can be smoothed away in walls for cocave/convex curves respectively.->");
+				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
+				pw.println("<-CurveBias - strength of the bias towards curvier walls. Value should be between 0.0 and 1.0.->");
 				pw.println("<-LengthBiasNorm - wall length at which there is no penalty for generation>");
-				pw.println("Smooth1:"+Smooth1);
-				pw.println("Smooth2:"+Smooth2);
-				pw.println("Backtrack:"+Backtrack);
+				pw.println("ConcaveSmoothingScale:"+ConcaveSmoothingScale);
+				pw.println("ConvexSmoothingScale:"+ConvexSmoothingScale);
+				pw.println("BacktrackLength:"+BacktrackLength);
 				pw.println("CurveBias:"+CurveBias);
 				pw.println("LengthBiasNorm:"+LengthBiasNorm);
 				pw.println();
 				pw.println();
+				pw.println("<-Chest contents->");
+				pw.println("<-Tries is the number of selections that will be made for this chest type.->");
+				pw.println("<-Format for items is <itemID>,<selection weight>,<min stack size>,<max stack size> ->");
+				pw.println("<-So e.g. 262,1,1,12 means a stack of between 1 and 12 arrows, with a selection weight of 1.->");
 				printDefaultChestItems(pw);
 			}
 			catch(Exception e) { lw.println(e.getMessage()); }

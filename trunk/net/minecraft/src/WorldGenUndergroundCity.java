@@ -37,7 +37,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		wc.addCityLocation(i0,k0,mod_WalledCity.CITY_TYPE_UNDERGROUND);
 		wc.logOrPrint("\n***** Building "+pws.name+" city with "+hollows.size()+" hollows at ("+i0+","+j0+","+k0+"). ******\n");
 		
-		ArrayList<BuildingUndergroundEntranceway> entranceways=buildEntranceways();
+		ArrayList<BuildingUndergroundEntranceway> entranceways= buildEntranceways();
 		
 
 		
@@ -130,6 +130,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	
 	//****************************  FUNCTION - buildEntranceways *************************************************************************************//
 	private ArrayList<BuildingUndergroundEntranceway> buildEntranceways() throws InterruptedException{
+		if(!pws.MakeUndergroundEntranceways) return new ArrayList<BuildingUndergroundEntranceway>();
+		
 		int[] center=new int[]{(int)(cavernMass_i/cavernMass),128,(int)(cavernMass_k/cavernMass)}; 
 		int[] pole=new int[]{center[0]+100,center[1],center[2]};
 		ArrayList<BuildingUndergroundEntranceway> entranceways = new ArrayList<BuildingUndergroundEntranceway>();

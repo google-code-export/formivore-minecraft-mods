@@ -1190,7 +1190,7 @@ public class Building
     public final static int STONE_BRICK_STAIRS_ID=109;
     
     //Special Blocks
-    public final static int SPECIAL_BLOCKID_START=300, SPECIAL_BLOCKID_END=326;
+    public final static int SPECIAL_BLOCKID_START=300, SPECIAL_BLOCKID_END=325;
 	public final static int PRESERVE_ID=300;
 	public final static int ZOMBIE_SPAWNER_ID=301;
 	public final static int SKELETON_SPAWNER_ID=302;
@@ -1214,8 +1214,8 @@ public class Building
 	public final static int HUMANS_PLUS_ROGUE_FLAG_ID=322;
 	public final static int HUMANS_PLUS_BANDIT_FLAG_ID=323;
 	public final static int HUMANS_PLUS_PEACEFUL_FLAG_ID=324;
-	public final static int HUMANS_PLUS_MILITIA_FLAG_ID=325;
-	public final static int HUMANS_PLUS_SHADOW_FLAG_ID=326;
+	public final static int HUMANS_PLUS_SHADOW_FLAG_ID=325;
+	public final static int HUMANS_PLUS_MILITIA_FLAG_ID=326;
 	
 	
 	//Spawner Blocks from other mods

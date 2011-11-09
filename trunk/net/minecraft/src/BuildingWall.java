@@ -47,7 +47,7 @@ public class BuildingWall extends Building
 		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, new int[]{ws_.WWidth,ws_.WHeight,0}, new int[]{i0_,j0_,k0_});
 		constructorHelper(ws_,maxLength_,i0_,j0_,k0_);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
-		Backtrack=wgt.explorationHandler.Backtrack;
+		Backtrack=wgt.explorationHandler.BacktrackLength;
 		if(maxLength>0){
 			xArray[0]=0;
 			zArray[0]=0;
@@ -58,7 +58,7 @@ public class BuildingWall extends Building
 		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, new int[]{ws_.WWidth,ws_.WHeight,0}, pt);
 		constructorHelper(ws_,maxLength_,pt[0],pt[1],pt[2]);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
-		Backtrack=wgt.explorationHandler.Backtrack;
+		Backtrack=wgt.explorationHandler.BacktrackLength;
 		if(maxLength>0){
 			xArray[0]=0;
 			zArray[0]=0;
@@ -96,7 +96,7 @@ public class BuildingWall extends Building
 			towerRule=ws.TowerRule.getFixedRule(random);
 			roofRule=ws.getRoofRule(circular);
 			if(roofRule!=BuildingTower.RULE_NOT_PROVIDED) roofRule=roofRule.getFixedRule(random);
-			endTLength=(endTowers && ws.EndTowers) ? ws.pickTWidth(circular,random) : 0;
+			endTLength=(endTowers && ws.MakeEndTowers) ? ws.pickTWidth(circular,random) : 0;
 		}
 	}
 
@@ -212,7 +212,7 @@ public class BuildingWall extends Building
 					if((stopAtWall || z1 < -2) && isArtificialWallBlock(x1,z1,0))
 						failCode=FAIL_HIT_WALL;
 				}
-				if(IS_LIQUID_BLOCK[getBlockIdLocal(x1,WalkHeight,0)])
+				if(IS_LIQUID_BLOCK[getBlockIdLocal(x1,ws.waterHeight+1,0)])
 					failCode=FAIL_UNDERWATER;
 				if(!isWallable(x1,obstructionHeight,0) && failCode==NO_FAIL)
 					failCode=FAIL_OBSTRUCTED;
@@ -489,6 +489,13 @@ public class BuildingWall extends Building
 		int n=Math.max(ws.getTMaxWidth(circular)+3,2*ws.BuildingInterval/3);
 		//boolean enteredPreGateway=false, enteredPostGateway=false, passedGateway=false;
 		while(n<bLength){
+			if(gatewayStart!=NO_GATEWAY && n>=gatewayStart && n<=gatewayEnd+ws.getTMaxWidth(circular)+2){ 
+				//don't built if there's a gateway
+				n=gatewayEnd+ws.getTMaxWidth(circular)+2;
+				if(n>=bLength) break;
+			}
+			
+			//towers are built from n-2 to n-tw-1
 			setCursor(n);
 			int tw=ws.pickTWidth(circular,random);
 			int th=ws.pickTHeight(circular,random);
@@ -499,13 +506,6 @@ public class BuildingWall extends Building
 			if(clearSide==0){
 				if(lSideTowers && rSideTowers) clearSide=2*random.nextInt(2)-1;
 				else clearSide= lSideTowers ? L_HAND : R_HAND;
-			}
-			
-			//towers are built from n-2 to n-tw-1
-			if(gatewayStart!=NO_GATEWAY && n>=gatewayStart && n<=gatewayEnd+ws.getTMaxWidth(circular)+3){ 
-				//don't built if there's a gateway
-				n=gatewayEnd+ws.getTMaxWidth(circular)+3;
-				if(n>=bLength) break;
 			}
 			
 			//try tower types
@@ -628,6 +628,8 @@ public class BuildingWall extends Building
 				}
 				
 				//build it
+				//gateway is built from n-gatewayWidth to n-1
+				
 				if(rs==null ||  avenues[1].bLength>=MIN_GATEWAY_ROAD_LENGTH){ 
 					if(rs!=null){
 						avenues[0].smooth(10,10,false);
@@ -647,19 +649,21 @@ public class BuildingWall extends Building
 					//build flanking towers
 					if(n+gateWidth+tw > bLength) flankTHand=0;
 					if(flankTHand!=0){
+						//preceding tower
 						int tnMid1=n-tw/2;
 						int dx1=xArray[tnMid1]-xArray[n];
 						int tx1=(flankTHand==bHand ? (bWidth-1+(dx1<0 ? dx1:0)+ws.TowerXOffset) : (-ws.TowerXOffset + dx1>0 ? dx1:0));
-						BuildingTower tower1=new BuildingTower(0,this, rotateDir(bDir,flankTHand), bHand, tw, th, tw,
+						BuildingTower precedingTower=new BuildingTower(0,this, rotateDir(bDir,flankTHand), bHand, tw, th, tw,
 																getIJKPt(tx1,zArray[tnMid1]-zArray[n],-1));
-						tower1.build(0,0,false);
+						precedingTower.build(0,0,false);
 						
+						//
 						int tnMid2=n+gateWidth+tw/2;
 						int dx2=xArray[tnMid2]-xArray[n];
 						int tx2=(flankTHand==bHand ? (bWidth-1+(dx2<0 ? dx2:0)+ws.TowerXOffset) : (-ws.TowerXOffset + dx2>0 ? dx2:0));
-						BuildingTower tower2=new BuildingTower(0,this, rotateDir(bDir,flankTHand),-bHand, tw, th+zArray[tnMid1]-zArray[tnMid2], tw,
+						BuildingTower followingTower=new BuildingTower(0,this, rotateDir(bDir,flankTHand),-bHand, tw, th+zArray[tnMid1]-zArray[tnMid2], tw,
 																getIJKPt(tx2, zArray[tnMid2]-zArray[n], gateWidth));
-						tower2.build(0,0,false);
+						followingTower.build(0,0,false);
 						
 					}
 					flushDelayed();
@@ -673,8 +677,8 @@ public class BuildingWall extends Building
 					*/
 					
 					
-					gatewayStart=n-(flankTHand!=0 ? tw+ws.BuildingInterval/2:0);
-					gatewayEnd=n+gateWidth-1+(flankTHand!=0 ? (tw+ws.BuildingInterval/2):0);
+					gatewayStart=n-gateWidth-(flankTHand!=0 ? tw+ws.BuildingInterval/2:0);
+					gatewayEnd=n-1+(flankTHand!=0 ? (tw+ws.BuildingInterval/2):0);
 					return avenues;
 				}
 			}

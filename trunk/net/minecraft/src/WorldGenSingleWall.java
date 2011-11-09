@@ -38,7 +38,7 @@ public class WorldGenSingleWall extends WorldGeneratorThread{
   		//plan(int Backtrack, int startN, int depth, int lookahead, boolean stopAtWall) throws InterruptedException {
   		
   		if(wall.bLength>=wall.y_targ){
-  			wall.smooth(gw.Smooth1,gw.Smooth2,true);
+  			wall.smooth(gw.ConcaveSmoothingScale,gw.ConvexSmoothingScale,true);
   			wall.buildFromTML();
   			wall.buildTowers(true,true,true,false,false);		
 			gw.placedCoords=null;

@@ -46,7 +46,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		sws=WallStyle.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
 		if(sws==null) return false;
 		if(!wc.cityIsSeparated(i0,k0,mod_WalledCity.CITY_TYPE_WALLED)) return false;
-		if(ows.EndTowers) ows.EndTowers=false;
+		if(ows.MakeEndTowers) ows.MakeEndTowers=false;
 		
 		int ID=(random.nextInt(9000)+1000)*100;
 		int minJ=ows.LevelInterior ? Building.WORLD_HEIGHT/2 - 2 : BuildingWall.NO_MIN_J;
@@ -105,7 +105,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		}
 		
 		//smoothing
-		for(BuildingWall w : walls) w.smooth(wc.Smooth1,wc.Smooth1,true);
+		for(BuildingWall w : walls) w.smooth(wc.ConcaveSmoothingScale,wc.ConcaveSmoothingScale,true);
 		
 		//======================= Additional site checks =======================================
 		
@@ -271,7 +271,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			avenue.buildTowers(true,true,false,ows.StreetDensity > WallStyle.MAX_STREET_DENSITY/2, true);
 		for(BuildingDoubleWall street : plannedStreets){
 			if(!explorationHandler.isFlushingGenThreads) suspendGen();
-			street.buildTowers(true,true,sws.GatehouseTowers,ows.StreetDensity > WallStyle.MAX_STREET_DENSITY/2, false);
+			street.buildTowers(true,true,sws.MakeGatehouseTowers,ows.StreetDensity > WallStyle.MAX_STREET_DENSITY/2, false);
 		}
 		
 		

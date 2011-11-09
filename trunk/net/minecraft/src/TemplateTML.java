@@ -19,10 +19,12 @@ public class TemplateTML
 	public HashMap<String,String> extraOptions=null;
 	public final static Exception ZERO_WEIGHT_EXCEPTION=new Exception("wieght=0");
 	public BuildingExplorationHandler explorationHandler;
+	public final static String NO_WATER_CHECK_STR="NO_WATER_CHECK";
+	public final static int NO_WATER_CHECK=-666;
 
 	public String name="";
 	//public int[] targets;
-	public int height = 0, length = 0, width = 0, weight = 1, embed = 1,leveling = 4, cutIn = 0;
+	public int height = 0, length = 0, width = 0, weight = 1, embed = 1,leveling = 4, cutIn = 0, waterHeight=3;
 	//public int overhang = 0, primary=4, w_off=0, l_off=0, lbuffer =0;
 	//public boolean preserveWater = false, preserveLava = false, preservePlants = false, unique = false;
 
@@ -96,16 +98,25 @@ public class TemplateTML
 				width = dim[2];
 			}
 			//else if(line.startsWith("acceptable_target_blocks" )) targets=WallStyle.readIntList(lw,targets,"=",line);
-			else if(line.startsWith("weight" )) weight = WallStyle.readIntParam(lw,weight,"=",line);
+			else if(line.startsWith("weight" )) {
+				weight = WallStyle.readIntParam(lw,weight,"=",line);
+				if(weight<=0) throw ZERO_WEIGHT_EXCEPTION;
+			}
 			else if(line.startsWith("embed_into_distance" )) embed = WallStyle.readIntParam(lw,embed,"=",line);
 			else if(line.startsWith("max_cut_in" )) cutIn = WallStyle.readIntParam(lw,cutIn ,"=",line);
-			else if(line.startsWith("max_leveling" )) leveling = WallStyle.readIntParam(lw,leveling ,"=",line);
+			else if(line.startsWith("max_leveling" )) leveling = WallStyle.readIntParam(lw,leveling,"=",line);
+			else if(line.startsWith("water_height" )){
+				if(line.indexOf(NO_WATER_CHECK_STR)!=-1) waterHeight=NO_WATER_CHECK;
+				else waterHeight = WallStyle.readIntParam(lw,waterHeight,"=",line);
+			}
 			else if(line!=null && line.length()>0){
 				String[] spl=line.split("=");
 				if(spl.length==2 && !spl[0].equals("") && !spl[1].equals("") )
 					extraOptions.put(spl[0],line); //lazy - put line as value since we have a functions to parse
 			}
 		}
+		
+		waterHeight-=embed;
 		
 		if(layers.size()==0) throw new Exception("No layers provided!");
 		if(layers.size()!=height){
@@ -115,7 +126,6 @@ public class TemplateTML
 		template=new int[height][length][width];
 		template=layers.toArray(template);
 		
-		if(weight<=0) throw ZERO_WEIGHT_EXCEPTION;
 
 
 		//convert rules to array and check that rules in template are OK
