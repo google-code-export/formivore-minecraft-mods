@@ -63,7 +63,7 @@ Defaults to `0`.
 
 <font color= #800080>`water_height` </font>= `height`<br>
 The maximum height that water is allowed to reach alongside this wall, conversely how far underwater this wall can be built.<br>
-Defaults to the minimum of `2` and `walk_height-1`.
+Defaults to the minimum of `3` and <font color= #800080>`walk_height` </font> `- 1`.
 
 <font color= #800080>`min_length` </font>= `length`<br>
 <font color= #800080>`max_length` </font>= `length`<br>
