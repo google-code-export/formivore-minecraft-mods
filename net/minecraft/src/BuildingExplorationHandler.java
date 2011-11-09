@@ -61,7 +61,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	public final static String WALLED_CITY_MOD_STRING="mod_WalledCity "+VERSION_STRING;
 	
 	
-	public int Smooth1=10, Smooth2=20, Backtrack=9;
+	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
 	
 	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;

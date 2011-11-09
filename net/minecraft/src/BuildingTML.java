@@ -71,6 +71,14 @@ public class BuildingTML extends Building
     	//Don't build if it would require leveling greater than tmlt.leveling
     	for(int y=0 ;y<bLength;y++) for(int x=0 ;x<bWidth;x++)
     		if(j1 - getSurfaceIJKPt(x,y,j1-1,false,true)[1] > tmlt.leveling + 1) return false;
+    	
+    	//check to see if we are underwater
+    	if(tmlt.waterHeight!=TemplateTML.NO_WATER_CHECK){
+    		int waterCheckHeight=tmlt.waterHeight+tmlt.embed+1; //have to unshift by embed
+    		if(IS_LIQUID_BLOCK[getBlockIdLocal(0,waterCheckHeight,0)] || IS_LIQUID_BLOCK[getBlockIdLocal(0,waterCheckHeight,bLength-1)]
+    		 ||IS_LIQUID_BLOCK[getBlockIdLocal(bWidth-1,waterCheckHeight,0)] || IS_LIQUID_BLOCK[getBlockIdLocal(bWidth-1,waterCheckHeight,bLength-1)])
+    			return false;
+    	}
 
     	
     	if(wgt.isLayoutGenerator()){

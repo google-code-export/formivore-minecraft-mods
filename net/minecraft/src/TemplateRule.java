@@ -16,6 +16,8 @@ public class TemplateRule {
     public final static int[] PORTAL_BLOCK=new int[]{Building.PORTAL_ID,0};
     public final static int FIXED_FOR_BUILDING=5;
     
+    public final static String BLOCK_NOT_REIGSTERED_ERROR_PREFIX="Error reading rule: BlockID ";  //so we can treat this error differently
+    
     public final static TemplateRule AIR_RULE=new TemplateRule(AIR_BLOCK);
     
     //public final static TemplateRule DEFAULT_SPAWNER_RULE= new TemplateRule(HARD_SPAWNER_BLOCK);
@@ -39,7 +41,7 @@ public class TemplateRule {
         	data = items[i + 2].trim().split( "-" );
         	blockIDs[i]=Integer.parseInt( data[0] );
         	if(!Building.isValidRuleBlock(blockIDs[i],explorationHandler)){
-        		throw new Exception("Error reading rule: BlockID "+blockIDs[i]+" not registered!");
+        		throw new Exception(BLOCK_NOT_REIGSTERED_ERROR_PREFIX+blockIDs[i]+" not registered!");
         	}
         	blockMDs[i]= data.length>1 ? Integer.parseInt( data[1]) : 0;
         	if(checkMetaValue && !Building.metaValueIsValid(blockIDs[i], blockMDs[i])) {

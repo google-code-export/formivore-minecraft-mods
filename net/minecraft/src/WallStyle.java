@@ -34,13 +34,13 @@ public class WallStyle extends TemplateTML{
 	public int[][] buildingWeights;
 	public int StreetDensity=6;
 	public boolean LevelInterior=true;
-	public int WHeight=7, WWidth=5, WalkHeight=0; //walk height is the height in the template (embed will be subtracted)
+	public int WHeight=7, WWidth=5, WalkHeight=0; //WalkHeight is the height in the template (embed will be subtracted)
 	public int MinL=150, MaxL=1000;
 
 	//default tower parameters
 	public TemplateRule TowerRule=BuildingTower.RULE_NOT_PROVIDED, SpawnerRule=BuildingTower.RULE_NOT_PROVIDED, ChestRule=BuildingTower.RULE_NOT_PROVIDED;
 	//public boolean RandomizeBuildingIntervals=false;
-	public boolean MakeBuildings=true,MergeWalls=false, EndTowers=true, GatehouseTowers=true,PopulateFurniture=false, MakeDoors=false;
+	public boolean MakeBuildings=true,MergeWalls=false, MakeEndTowers=true, MakeGatehouseTowers=true,MakeUndergroundEntranceways=true,PopulateFurniture=false, MakeDoors=false;
 	public int BuildingInterval=75;
 	public int DefaultTowerWeight=1;
 	public int TowerXOffset=0;
@@ -79,8 +79,9 @@ public class WallStyle extends TemplateTML{
 		if(extraOptions.containsKey("tower_rule")) TowerRule=readRuleIdOrRule("=",(String)extraOptions.get("tower_rule"));
 		if(extraOptions.containsKey("building_interval")) BuildingInterval=readIntParam(lw,BuildingInterval,"=",(String)extraOptions.get("building_interval"));
 		if(extraOptions.containsKey("make_buildings")) MakeBuildings=readIntParam(lw,1,"=",(String)extraOptions.get("make_buildings")) == 1;
-		if(extraOptions.containsKey("make_gatehouse_towers")) GatehouseTowers=readIntParam(lw,1,"=",(String)extraOptions.get("make_gatehouse_towers")) == 1;
-		if(extraOptions.containsKey("make_end_towers")) EndTowers=readIntParam(lw,1,"=",(String)extraOptions.get("make_end_towers")) == 1;
+		if(extraOptions.containsKey("make_gatehouse_towers")) MakeGatehouseTowers=readIntParam(lw,1,"=",(String)extraOptions.get("make_gatehouse_towers")) == 1;
+		if(extraOptions.containsKey("make_end_towers")) MakeEndTowers=readIntParam(lw,1,"=",(String)extraOptions.get("make_end_towers")) == 1;
+		if(extraOptions.containsKey("make_underground_entranceways")) MakeUndergroundEntranceways=readIntParam(lw,1,"=",(String)extraOptions.get("make_underground_entranceways")) == 1;
 		if(extraOptions.containsKey("merge_walls")) MergeWalls=readIntParam(lw,0,"=",(String)extraOptions.get("merge_walls")) == 1;
 		if(extraOptions.containsKey("default_tower_weight")) DefaultTowerWeight=readIntParam(lw,DefaultTowerWeight,"=",(String)extraOptions.get("default_tower_weight"));
 		if(extraOptions.containsKey("tower_offset")) TowerXOffset=readIntParam(lw,TowerXOffset,"=",(String)extraOptions.get("tower_offset"));
@@ -114,6 +115,7 @@ public class WallStyle extends TemplateTML{
 		WWidth = width;
 		WHeight = length - embed;
 		WalkHeight-=embed;
+		if(waterHeight>=WalkHeight) waterHeight=WalkHeight-1;
 		if(DefaultTowerWeight<0) DefaultTowerWeight=0;
 
 		if(SqrMinWidth < BuildingTower.TOWER_UNIV_MIN_WIDTH) SqrMinWidth=BuildingTower.TOWER_UNIV_MIN_WIDTH;
@@ -297,12 +299,8 @@ public class WallStyle extends TemplateTML{
 			int ruleId=Integer.parseInt(postSplit);
 			return rules[ruleId];
 		} catch(NumberFormatException e) { 
-			try{
-				TemplateRule r=new TemplateRule(postSplit,explorationHandler,false);
-				return r;
-			}catch(Exception re){
-				throw new Exception("Error parsing rule: "+re.toString()+". Line:"+read);
-			}
+			TemplateRule r=new TemplateRule(postSplit,explorationHandler,false);
+			return r;
 		}catch(Exception e) { 
 			throw new Exception("Error reading block rule for variable: "+e.toString()+". Line:"+read);
 		}
@@ -320,9 +318,11 @@ public class WallStyle extends TemplateTML{
 					if(e==TemplateTML.ZERO_WEIGHT_EXCEPTION){
 						explorationHandler.lw.println("Did not load "+f.getName()+", weight was zero.");
 					}else{
-						explorationHandler.lw.println( "There was a problem loading the .tml file: " + f.getName() );
-						e.printStackTrace(explorationHandler.lw);
-						explorationHandler.lw.println();
+						explorationHandler.lw.println( "There was a problem loading the .tml file: " + f.getName()+": "+e.getMessage() );
+						if(!e.getMessage().startsWith(TemplateRule.BLOCK_NOT_REIGSTERED_ERROR_PREFIX)){
+							e.printStackTrace(explorationHandler.lw);
+							explorationHandler.lw.println();
+						}
 					}
 				}
 		}}
@@ -362,9 +362,11 @@ public class WallStyle extends TemplateTML{
 					if(e==TemplateTML.ZERO_WEIGHT_EXCEPTION){
 						explorationHandler.lw.println("Did not load "+f.getName()+", weight was zero.");
 					}else{
-						explorationHandler.lw.println( "Error loading wall style: " + f.getName() );
-						e.printStackTrace(explorationHandler.lw);
-						explorationHandler.lw.println();
+						explorationHandler.lw.println( "Error loading wall style: " + f.getName()+": "+e.getMessage() );
+						if(!e.getMessage().startsWith(TemplateRule.BLOCK_NOT_REIGSTERED_ERROR_PREFIX)){
+							e.printStackTrace(explorationHandler.lw);
+							explorationHandler.lw.println();
+						}
 					}
 				}
 			}

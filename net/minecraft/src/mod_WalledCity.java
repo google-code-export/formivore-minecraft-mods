@@ -37,7 +37,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	}
 
 	//USER MODIFIABLE PARAMETERS, values here are defaults
-	public float ChunkTryProb=0.05F, UndergroundChunkTryProb=0.005F;
+	public float GlobalFrequency=0.05F, UndergroundGlobalFrequency=0.005F;
 	public int TriesPerChunk=1;
 	public int MinCitySeparation=500, UndergroundMinCitySeparation=250;
 	public boolean CityBuiltMessage=true;
@@ -99,8 +99,8 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			}}
 
 			lw.println("\nTemplate loading complete.");
-			lw.println("Probability of generation attempt per chunk explored is "+ChunkTryProb+", with "+TriesPerChunk+" tries per chunk.");
-			if(ChunkTryProb <0.000001 && UndergroundChunkTryProb<0.000001) errFlag=true;
+			lw.println("Probability of generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
+			if(GlobalFrequency <0.000001 && UndergroundGlobalFrequency<0.000001) errFlag=true;
 		} catch( Exception e ) {
 			errFlag=true;
 			lw.println( "There was a problem loading the walled city mod: "+e.getMessage() );
@@ -216,11 +216,11 @@ public class mod_WalledCity extends BuildingExplorationHandler
 		//This is to avoid putting mineral deposits in cities etc.
 		if(isCreatingDefaultChunks) flushGenThreads(new int[]{i,k});
 		
-		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_WALLED) && random.nextFloat() < ChunkTryProb){
-			exploreThreads.add(new WorldGenWalledCity(this, world, random, i, k,TriesPerChunk, ChunkTryProb));
+		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_WALLED) && random.nextFloat() < GlobalFrequency){
+			exploreThreads.add(new WorldGenWalledCity(this, world, random, i, k,TriesPerChunk, GlobalFrequency));
 		}
-		if(undergroundCityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundChunkTryProb){
-			WorldGeneratorThread wgt=new WorldGenUndergroundCity(this, world, random, i, k,1, UndergroundChunkTryProb);
+		if(undergroundCityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundGlobalFrequency){
+			WorldGeneratorThread wgt=new WorldGenUndergroundCity(this, world, random, i, k,1, UndergroundGlobalFrequency);
 			int j=Building.findSurfaceJ(world,i,k,127,false,false)- WorldGenUndergroundCity.MAX_DIAM/2 - 5;
 			wgt.setSpawnHeight(j-WorldGenUndergroundCity.MAX_DIAM, j, false);
 			exploreThreads.add(wgt);
@@ -256,15 +256,15 @@ public class mod_WalledCity extends BuildingExplorationHandler
 				while( read != null ) {
 		
 					//outer wall parameters
-					if(read.startsWith( "ChunkTryProb" )) ChunkTryProb = WallStyle.readFloatParam(lw,ChunkTryProb,":",read);
-					if(read.startsWith( "ChunkUndergroundTryProb" )) UndergroundChunkTryProb = WallStyle.readFloatParam(lw,UndergroundChunkTryProb,":",read);
+					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = WallStyle.readFloatParam(lw,GlobalFrequency,":",read);
+					if(read.startsWith( "UndergroundGlobalFrequency" )) UndergroundGlobalFrequency = WallStyle.readFloatParam(lw,UndergroundGlobalFrequency,":",read);
 					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = WallStyle.readIntParam(lw,TriesPerChunk,":",read);
 					if(read.startsWith( "MinCitySeparation" )) MinCitySeparation= WallStyle.readIntParam(lw,MinCitySeparation,":",read);
 					if(read.startsWith( "MinUndergroundCitySeparation" )) UndergroundMinCitySeparation= WallStyle.readIntParam(lw,UndergroundMinCitySeparation,":",read);
 		
-					if(read.startsWith( "Smooth1" )) Smooth1 = WallStyle.readIntParam(lw,Smooth1,":",read);
-					if(read.startsWith( "Smooth2" )) Smooth2 = WallStyle.readIntParam(lw,Smooth2,":",read);
-					if(read.startsWith( "Backtrack" )) Backtrack = WallStyle.readIntParam(lw,Backtrack,":",read);
+					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = WallStyle.readIntParam(lw,ConcaveSmoothingScale,":",read);
+					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = WallStyle.readIntParam(lw,ConvexSmoothingScale,":",read);
+					if(read.startsWith( "BacktrackLength" )) BacktrackLength = WallStyle.readIntParam(lw,BacktrackLength,":",read);
 					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = WallStyle.readIntParam(lw,1,":",read)==1;
 					
 					readChestItemsList(lw,read,br);
@@ -281,25 +281,27 @@ public class mod_WalledCity extends BuildingExplorationHandler
 				pw=new PrintWriter( new BufferedWriter( new FileWriter(SETTINGS_FILE) ) );
 				pw.println("<-README: put this file in the main minecraft folder->");
 				pw.println();
-				pw.println("<-ChunkTryProb Controls how likely walls are to appear. Should be between 0.0 and 1.0. Lower to make less common->");
-				pw.println("<-TriesPerChunk allows multiple attempts per chunk. Only change from 1 if you want very dense walls!->");
-				pw.println("<-MinCitySeparation defines a minimum allowable separation between city spawns.->");
-				pw.println("ChunkTryProb:"+ChunkTryProb);
-				pw.println("ChunkUndergroundTryProb:"+UndergroundChunkTryProb);
+				pw.println("<-GlobalFrequency/UndergroundGlobalFrequency controls how likely aboveground/belowground cities are to appear. Should be between 0.0 and 1.0. Lower to make less common->");
+				pw.println("<-MinCitySeparation/UndergroundMinCitySeparation define a minimum allowable separation between city spawns.->");
+				pw.println("<-CityBuiltMessage controls whether the player receives message when a city is building. Set to 1 to receive message, 0 for no messages.->");
+				pw.println("GlobalFrequency:"+GlobalFrequency);
+				pw.println("UndergroundGlobalFrequency:"+UndergroundGlobalFrequency);
 				pw.println("MinCitySeparation:"+MinCitySeparation);
 				pw.println("MinUndergroundCitySeparation:"+UndergroundMinCitySeparation);
 				pw.println("CityBuiltMessage:"+(CityBuiltMessage ? 1:0));
 				pw.println();
-				pw.println("<Pathfinding>");
-				pw.println("<-Smooth1 and Smooth2 control concave and convex smoothing respectively.>");
-				pw.println("<-Backtrack - length of backtracking if a dead end is hit>");
-				pw.println("<-CurveBias - strength of the bias towards curvier walls. Should be greater than 0.0. >");
-				pw.println("<-LengthBiasNorm - wall length at which there is no penalty for generation>");
-				pw.println("Smooth1:"+Smooth1);
-				pw.println("Smooth2:"+Smooth2);
-				pw.println("Backtrack:"+Backtrack);
+				pw.println("<-Wall Pathfinding->");
+				pw.println("<-ConcaveSmoothingScale and ConvexSmoothingScale specifiy the maximum length that can be smoothed away in walls for cocave/convex curves respectively.->");
+				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
+				pw.println("ConcaveSmoothingScale:"+ConcaveSmoothingScale);
+				pw.println("ConvexSmoothingScale:"+ConvexSmoothingScale);
+				pw.println("BacktrackLength:"+BacktrackLength);
 				pw.println();
 				pw.println();
+				pw.println("<-Chest contents->");
+				pw.println("<-Tries is the number of selections that will be made for this chest type.->");
+				pw.println("<-Format for items is <itemID>,<selection weight>,<min stack size>,<max stack size> ->");
+				pw.println("<-So e.g. 262,1,1,12 means a stack of between 1 and 12 arrows, with a selection weight of 1.->");
 				printDefaultChestItems(pw);
 			}catch(IOException e) { lw.println(e.getMessage()); }
 			finally{ if(pw!=null) pw.close(); }
