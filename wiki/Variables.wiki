@@ -27,6 +27,10 @@ Defaults to `4`.
 Specifies the maximum height above the source block that will be set to air in order to clear the site.<br>
 Defaults to `0`.
 
+<font color= #800080>`water_height` </font>= `height`<br>
+The maximum height that water is allowed to reach alongside this strucutre, conversely how far underwater this wall can be built.<br>
+Defaults to `3`, or for wall templates the minimum of `3` and <font color= #800080>`walk_height` </font> `- 1`.
+
 NOTE: The following variables from the ruins mod are currently NOT supported and will be ignored:
 unique, acceptable_target_block, allowable_overhang, leveling_buffer ,cut_in_buffer, preserve_water, preserve_lava, preserve_plants.
 
@@ -60,10 +64,6 @@ Defaults to `1`.
 <font color= #800080>`walk_height` </font>= `height`<br>
 For walls that serve as a roadway, the height of the roadway (relative to the bottom of the template). This value is used for positioning elements such as towers to allow transit. <br>
 Defaults to `0`.
-
-<font color= #800080>`water_height` </font>= `height`<br>
-The maximum height that water is allowed to reach alongside this wall, conversely how far underwater this wall can be built.<br>
-Defaults to the minimum of `3` and <font color= #800080>`walk_height` </font> `- 1`.
 
 <font color= #800080>`min_length` </font>= `length`<br>
 <font color= #800080>`max_length` </font>= `length`<br>
