@@ -1,3 +1,15 @@
+===Version 2.1.2===
+  * Better support for modded blocks. Added special blocks for Humans+ spawners.
+  * Added cities/walls that use Humans+/CastleDefenders spawners.
+  * UndergroundMossyCoblestoneCity.tml can now only be reached from surface via BattleBasements. 
+  * Added a UndergroundSparseMossyCobblestoneCIty.tml city.
+  * Default city and wall spawn frequencies have been lowered.
+  * Renamed some of the settings file variables for clarity.
+  * Added chest contents to the settings file.
+  * Default towers can now be rectangular.
+  * Structures now tend to avoid water more.
+  * Bugfixes.
+
 ===Version 2.1.1===
   * Greatly reduced lag due to lighting updates
   * Many modifications and additions to templates. Several new great wall templates.
