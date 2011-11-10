@@ -1,7 +1,20 @@
 package net.minecraft.src;
 /*
-//  By formivore 2011 for Minecraft Beta.
-//	Modloader handle for Great Wall Mod, reads in from SETTINGS_FILE.
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * mod_GreatWall is the main class that hooks into ModLoader for the Great Wall Mod.
+ * It reads the globalSettings file and runs WorldGenWalledCities.
  */
 
 import java.util.List;
@@ -44,7 +57,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 
 	//DATA VARIABLES
 	public BuildingExplorationHandler walledCityMod=null;
-	public ArrayList<WallStyle> wallStyles=null;
+	public ArrayList<TemplateWall> wallStyles=null;
 	private long explrWorldCode;
 	//public LinkedList<WorldGeneratorThread> exploreThreads;
 	
@@ -105,7 +118,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 
 			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 			
-			wallStyles=WallStyle.loadWallStylesFromDir(STYLES_DIRECTORY,this);
+			wallStyles=TemplateWall.loadWallStylesFromDir(STYLES_DIRECTORY,this);
 
 			lw.println("\nTemplate loading complete.");
 			lw.println("Probability of generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
@@ -192,13 +205,13 @@ public class mod_GreatWall extends BuildingExplorationHandler
 				lw.println("Getting global options...");    
 	
 				while( read != null ) {
-					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = WallStyle.readFloatParam(lw,GlobalFrequency,":",read);
-					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = WallStyle.readIntParam(lw,TriesPerChunk,":",read);
-					if(read.startsWith( "CurveBias" )) CurveBias = WallStyle.readFloatParam(lw,CurveBias,":",read);
-					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = WallStyle.readIntParam(lw,LengthBiasNorm,":",read);
-					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = WallStyle.readIntParam(lw,ConcaveSmoothingScale,":",read);
-					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = WallStyle.readIntParam(lw,ConvexSmoothingScale,":",read);
-					if(read.startsWith( "BacktrackLength" )) BacktrackLength = WallStyle.readIntParam(lw,BacktrackLength,":",read);
+					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = TemplateWall.readFloatParam(lw,GlobalFrequency,":",read);
+					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = TemplateWall.readIntParam(lw,TriesPerChunk,":",read);
+					if(read.startsWith( "CurveBias" )) CurveBias = TemplateWall.readFloatParam(lw,CurveBias,":",read);
+					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = TemplateWall.readIntParam(lw,LengthBiasNorm,":",read);
+					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = TemplateWall.readIntParam(lw,ConcaveSmoothingScale,":",read);
+					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = TemplateWall.readIntParam(lw,ConvexSmoothingScale,":",read);
+					if(read.startsWith( "BacktrackLength" )) BacktrackLength = TemplateWall.readIntParam(lw,BacktrackLength,":",read);
 					
 					readChestItemsList(lw,read,br);
 					

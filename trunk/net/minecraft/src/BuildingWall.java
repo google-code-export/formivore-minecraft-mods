@@ -1,9 +1,20 @@
 package net.minecraft.src;
 /*
-//  By formivore 2011 for Minecraft Beta.
-//	Builds walls with optional towers and gateways
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * BuildingWall plans and builds a wall that flows along Minecraft's terrain.
+ */
 
 import java.lang.Math;
 
@@ -19,31 +30,32 @@ public class BuildingWall extends Building
 	public final static int OVERHEAD_CLEARENCE=4, OVERHEAD_TREE_CLEARENCE=8;
 	public final static int NO_GATEWAY=-1, NO_MIN_J=-1;
 	private final static int MIN_GATEWAY_ROAD_LENGTH=20;
-	private final static int NO_FAIL=0, FAIL_OBSTRUCTED=1, FAIL_UNDERWATER=2, FAIL_TOO_STEEP_DOWN=3, FAIL_TOO_STEEP_UP=4, FAIL_HIT_WALL=5,
-							 FAIL_CANNOT_EXPLORE=6,FAIL_HIT_TARGET=7, FAIL_MAX_LENGTH=8;
+	
+	//failCode values
+	private final static int NO_FAIL=0, FAIL_OBSTRUCTED=1, FAIL_UNDERWATER=2, FAIL_TOO_STEEP_DOWN=3, FAIL_TOO_STEEP_UP=4,
+	                         FAIL_HIT_WALL=5,FAIL_CANNOT_EXPLORE=6,FAIL_HIT_TARGET=7, FAIL_MAX_LENGTH=8;
 
 	//**** WORKING VARIABLES **** 
 	public int i0,j0,k0;
-	//public int bHeight, bWidth;
 	public int WalkHeight; //this is absolute, same as WallStyle
 	public int maxLength;
 	public int[] xArray, zArray;
 	public int gatewayStart=NO_GATEWAY, gatewayEnd=NO_GATEWAY;
-	public WallStyle ws;
+	public TemplateWall ws;
 
 	public boolean target=false,circular=false;
 	public int x_targ, z_targ, y_targ;
 	public int minJ=NO_MIN_J;
 	private boolean hitMaxDepth=false;
 	public int failCode=NO_FAIL;
-	public int endTLength=0;
-	private int halfStairValue=2;
+	public int endTLength=0; //length of end tower
+	private int halfStairValue=2; //metavalue of half step based on bRule
 	public int roofStyle;
 	public TemplateRule towerRule,roofRule;
 	public int Backtrack;
 
 	//****************************************  CONSTRUCTORS - BuildingWall  *************************************************************************************//
-	public BuildingWall(int ID_, WorldGeneratorThread wgt_,WallStyle ws_,int dir_,int axXHand_, int maxLength_,boolean endTowers,int i0_,int j0_, int k0_){
+	public BuildingWall(int ID_, WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int axXHand_, int maxLength_,boolean endTowers,int i0_,int j0_, int k0_){
 		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, new int[]{ws_.WWidth,ws_.WHeight,0}, new int[]{i0_,j0_,k0_});
 		constructorHelper(ws_,maxLength_,i0_,j0_,k0_);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
@@ -54,9 +66,9 @@ public class BuildingWall extends Building
 		}
 	}
 	
-	public BuildingWall(int ID_, WorldGeneratorThread wgt_,WallStyle ws_,int dir_,int axXHand_, int maxLength_,boolean endTowers,int[] pt){
-		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, new int[]{ws_.WWidth,ws_.WHeight,0}, pt);
-		constructorHelper(ws_,maxLength_,pt[0],pt[1],pt[2]);
+	public BuildingWall(int ID_, WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int axXHand_, int maxLength_,boolean endTowers,int[] sourcePt){
+		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, new int[]{ws_.WWidth,ws_.WHeight,0}, sourcePt);
+		constructorHelper(ws_,maxLength_,sourcePt[0],sourcePt[1],sourcePt[2]);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
 		Backtrack=wgt.explorationHandler.BacktrackLength;
 		if(maxLength>0){
@@ -76,7 +88,7 @@ public class BuildingWall extends Building
 		y_targ=bw.y_targ;
 	}
 	
-	private void constructorHelper(WallStyle ws_,int maxLength_,int i0_,int j0_, int k0_){
+	private void constructorHelper(TemplateWall ws_,int maxLength_,int i0_,int j0_, int k0_){
 		i0=i0_;
 		j0=j0_;
 		k0=k0_;
@@ -348,9 +360,6 @@ public class BuildingWall extends Building
 
 	//****************************************  FUNCTION - buildFromTML*************************************************************************************//
 	//Builds a planned wall from a template
-	//
-	//PARAMETERS: endTWidth - length of terminating tower, 0 if none
-	//
 	public void buildFromTML(){
 		if(ws==null){ 
 			System.out.println("Tried to build wall from template but no template was given!");
@@ -487,7 +496,6 @@ public class BuildingWall extends Building
 		if(!ws.MakeBuildings) return;
 
 		int n=Math.max(ws.getTMaxWidth(circular)+3,2*ws.BuildingInterval/3);
-		//boolean enteredPreGateway=false, enteredPostGateway=false, passedGateway=false;
 		while(n<bLength){
 			if(gatewayStart!=NO_GATEWAY && n>=gatewayStart && n<=gatewayEnd+ws.getTMaxWidth(circular)+2){ 
 				//don't built if there's a gateway
@@ -526,15 +534,14 @@ public class BuildingWall extends Building
 			else if((lSideTowers && clearSide==L_HAND) || (rSideTowers && clearSide==R_HAND)) {   //side towers
 				if(DEBUG>1) System.out.println("Building side tower for "+IDString()+" at n="+n+" "+globalCoordString(0,0,0)+" with clearSide="+clearSide+" width "+tw);
 				TemplateTML building=ws.buildings.get(Building.selectWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
-				int y1=(building==WallStyle.DEFAULT_TOWER ? -2 : (building.length-tw)/2 - 2);
+				int y1=(building==TemplateWall.DEFAULT_TOWER ? -2 : (building.length-tw)/2 - 2);
 
-				if(building==WallStyle.DEFAULT_TOWER){
+				if(building==TemplateWall.DEFAULT_TOWER){
 					int ybuffer=(isAvenue ? 0:1) - ws.TowerXOffset;
 					int x1=twrDXMid+(clearSide==bHand ? (bWidth - ybuffer):ybuffer-1);
 					BuildingTower tower=new BuildingTower(bID+n,this, rotateDir(bDir,clearSide), clearSide, tw, th, tl, getIJKPt(x1,twrDZMid,y1));
 					if(tower.queryCanBuild(ybuffer,overlapTowers)){
 						tower.build(0,0,true);
-						//new BuildingCone(0,wgt,Building.OBSIDIAN_ID,rotateDir(dir,clearSide), clearSide, tw,getIJKPt(x1,twrDZMid,y1)).build();
 						n+=ws.BuildingInterval;
 						built=true;
 					}
@@ -554,7 +561,6 @@ public class BuildingWall extends Building
 		}
 
 		//build towers at endpoints
-		
 		if(endTLength >= BuildingTower.TOWER_UNIV_MIN_WIDTH){
 			if(DEBUG>1) System.out.println("Building end tower for "+IDString()+" at n="+bLength+" "+globalCoordString(0,0,0));
 			int tl=endTLength;
@@ -587,14 +593,16 @@ public class BuildingWall extends Building
 	//PARAMETERS:
 	//startScan,endScan - bounds of where to look to place gateway
 	//gateHeight, gateWidth - dimensions of the gateway in the wall
-	//exitPath - if true, try to build a road and only accept gateway if sucessful
-	//minExitPathLength - minimum length of road to build
+	//rs - wall style of avenues
+	//flankTHand - the hand to build flanking towers on. 0 => n0 flanking towers.
+	//XMaxLen, antiXMaxLen - maximum length of avenues for the +X and -X side avenues
+	//XTarget, antiXTarget - the target point for the +X and -X side avenues
+	//XHand, antiXHand - the internal handedness of the +X and -X side avenues.
+	//
 	//RETURNS:
 	//y-position where gateway was build or -1 if no gateways was built
 	//
-	//public int buildGateway(int startScan, int endScan, int gateHeight,int gateWidth,boolean exitPath, int minExitPathLength){
-		
-	public BuildingWall[] buildGateway(int startScan, int endScan, int gateHeight,int gateWidth,WallStyle rs,int flankTHand,
+	public BuildingWall[] buildGateway(int startScan, int endScan, int gateHeight,int gateWidth,TemplateWall rs,int flankTHand,
 			int XMaxLen,int[] XTarget,int XHand, int antiXMaxLen, int[] antiXTarget, int antiXHand) throws InterruptedException {
 		BuildingWall[] avenues=null;
 		if(rs!=null) gateWidth=rs.WWidth;
@@ -667,14 +675,6 @@ public class BuildingWall extends Building
 						
 					}
 					flushDelayed();
-					
-					//lighting
-					/*
-					for(int x1=0;x1<WWidth;x1++){
-						int[] pt=getIJKPt(x1,0,gateWidth/2);
-						wgt.explorationHandler.queueLighting(new int[]{pt[0],pt[1],pt[2],pt[0],pt[1],pt[2]});
-					}
-					*/
 					
 					
 					gatewayStart=n-gateWidth-(flankTHand!=0 ? tw+ws.BuildingInterval/2:0);

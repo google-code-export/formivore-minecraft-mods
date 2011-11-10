@@ -1,35 +1,48 @@
 package net.minecraft.src;
 /*
-//  By formivore 2011 for Minecraft Beta.
-//	A general class for buildings. Classes can inherit from Building to build from a local frame of reference.
-//  Local frame of reference description:
-//  i_,j_,k_ etc. describe global coordinates, x_,z_,y_ describe local coordinates.
-//  1)Set origin with i1,j1,k1. The child class may want to move the origin as it progress to use as a "cursor" position.
-//  2)axY and EW determine the Y axis. E.g. EW=0,axY=-1 => Y-axis points north.
-//  3)axXHand =-1,1 determines whether X-axis points left or right respectively when facing along Y-axis.
-//  4)Z-axis always points up.
-//
-//			         (EW=0,axY=-1,dir=-2)
-//							(-i)
-//                            n
-//                            n
-//  (EW=1,axY=1,dir=1) (+k)www*eee(-k)  (EW=1,axY=-1,dir=-1)
-//                            s
-//                            s
-//							(+i)
-//                    (EW=0,axY=1,dir=2)
-//
-//
-//
-//			       axY=1
-//
-//                   ^
-//                   |
-//        axX=-1   <-*->  axX=1
-//                   |
-//                   v
-//
-//                axY=-1
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/*
+ *	Building is a general class for buildings. Classes can inherit from Building to build from a local frame of reference.
+ *
+ *  Local frame of reference variables:
+ *     i,j,k are coordinate inputs for global frame of reference functions.
+ *     x,z,y are coordinate inputs for local frame of reference functions. 
+ *     axY and EW determine the Y axis. E.g. EW=0,axY=-1 => Y-axis points north.
+ *     axXHand =-1,1 determines whether X-axis points left or right respectively when facing along Y-axis.
+ *
+ *			         (EW=0,axY=-1,dir=-2)
+ *							(-i)
+ *                            n
+ *                            n
+ *  (EW=1,axY=1,dir=1) (+k)www*eee(-k)  (EW=1,axY=-1,dir=-1)
+ *                            s
+ *                            s
+ *							(+i)
+ *                    (EW=0,axY=1,dir=2)
+ *
+ *
+ *
+ *			       axY=1
+ *
+ *                   ^
+ *                   |
+ *        axX=-1   <-*->  axX=1
+ *                   |
+ *                   v
+ *
+ *                axY=-1
 */
 		
 
@@ -69,20 +82,19 @@ public class Building
 		protected Random random;
 		protected TemplateRule bRule; //main structural blocktype
 		public int bWidth, bHeight, bLength;
-		public int bID;
+		public int bID; //Building ID number
 		private LinkedList<int[]> delayedBuildQueue;
-		protected WorldGeneratorThread wgt;
-		
-		//define local frame of reference
-		protected int i1, j1, k1;
-		protected int EW,NS;
-		protected int axY,axX;
-		protected int bHand; //hand of secondary axis
-		protected int bDir; //primary axis
+		protected WorldGeneratorThread wgt; 
+
+		protected int i1, j1, k1; //origin coordinates. The child class may want to move the origin as it progress to use as a "cursor" position.
+		protected int EW,NS; //one of these should be 1, the other 0
+		protected int axY,axX; //record whether the Y-axis(+-k) and the X-axis (+-i) point in the positive or negative directions.
+		protected int bHand; //hand of secondary axis. Takes values of 1 for right-handed, -1 for left-handed.
+		protected int bDir; //Direction code of primary axis. Takes values of DIR_WEST=1,DIR_EAST=-1,DIR_SOUTH=2,DIR_NORTH=-2.
 
 
 	//****************************  CONSTRUCTORS - Building  *************************************************************************************//
-	public Building(int ID_, WorldGeneratorThread wgt_,TemplateRule buildingRule_,int dir_,int axXHand_, int[] dim, int[] pt) {
+	public Building(int ID_, WorldGeneratorThread wgt_,TemplateRule buildingRule_,int dir_,int axXHand_, int[] dim, int[] sourcePt) {
 		bID=ID_;
 		wgt=wgt_;
 		world=wgt.world;
@@ -93,14 +105,15 @@ public class Building
 		random=wgt.random;
 		bHand=axXHand_;
 		setPrimaryAx(dir_);
-		if(pt!=null && pt.length==3){
-			setOrigin(pt[0],pt[1],pt[2]);
+		if(sourcePt!=null && sourcePt.length==3){
+			setOrigin(sourcePt[0],sourcePt[1],sourcePt[2]);
 		}
 		delayedBuildQueue=new LinkedList<int[]>();
 	}
     
     //******************** ORIENTATION FUNCTIONS *************************************************************************************************************//
     
+	//picks a random direction
     public final static int pickDir(Random random){
     	return (2*random.nextInt(2)-1)*(random.nextInt(2)+1);
     }
@@ -393,6 +406,9 @@ public class Building
  	}
  	
  	//&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setPainting &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
+ 	//MP PORT
+ 	//public void setPainting(int[] pt, int metadata){}
+ 	
  	public void setPainting(int[] pt, int metadata){
  		//painting uses same orientation meta as ladders.
  		//Have to adjust ijk since unlike ladders the entity exists at the block it is hung on.
@@ -406,6 +422,8 @@ public class Building
  	}
  	
  	//&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setPainting &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
+ 	//MP PORT
+ 	//public void setHumansPlusFactionFlag(int[] pt, int blockID, int metadata){}
     public void setHumansPlusFactionFlag(int[] pt, int blockID, int metadata){
     	if(!wgt.explorationHandler.humansPlusLoaded) return;
     	
@@ -629,30 +647,27 @@ public class Building
 		return world.worldInfo.getRandomSeed() + world.worldProvider.worldType;
 	}
     
+	//****************************************  CONSTRUCTOR - findSurfaceJ *************************************************************************************//
+	//Finds a surface block.
+	//Depending on the value of waterIsSurface and wallIsSurface will treat liquid and wall blocks as either solid or air.
     public static int findSurfaceJ(World world, int i, int k, int jinit, boolean waterIsSurface, boolean wallIsSurface ){
     	int blockId;
 		if( isNether(world) ) {
-			// The Nether has an entirely different topography so we'll use two methods
-			// in a semi-random fashion (since we're not getting the random here)
 			if( (i%2==1) ^ (k%2==1) ) {
-				// from the top.  Find the first air block from the ceiling
 				for( int j = 127; j > -1; j-- ) {
-					if( world.getBlockId(i,j,k) == 0 ) {
-						// now find the first non-air block from here
-						for( ; j > -1; j-- ) {
+					if( world.getBlockId(i,j,k) == 0 ) 
+						for( ; j > -1; j-- ) 
 							if( !IS_WALLABLE[world.getBlockId(i,j,k)] )
 								return j;
-				}}}
-			} else {
-				// from the bottom.  find the first air block from the floor
+				}
+			}else {
 				for( int j=0; j<128; j++) 
 					if( world.getBlockId(i,j,k )==0 )
 								return j;
 			}
 			return -1;
 		} 
-		else{ //Normal World
-			// find the first good square from the top of the map at the given coord
+		else{
 			for( int j = jinit; j > -1; j-- ){
 				blockId=world.getBlockId(i,j,k);
 				if(!IS_WALLABLE[blockId] && (wallIsSurface || !IS_WALL_BLOCK[blockId])) 

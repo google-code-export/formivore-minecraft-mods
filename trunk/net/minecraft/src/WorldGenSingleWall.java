@@ -29,7 +29,7 @@ public class WorldGenSingleWall extends WorldGeneratorThread{
 	
 	@Override
 	public boolean generate(int i0, int j0, int k0) throws InterruptedException{
-  		WallStyle ws=WallStyle.pickBiomeWeightedWallStyle(gw.wallStyles,world,i0,k0,random,false);
+  		TemplateWall ws=TemplateWall.pickBiomeWeightedWallStyle(gw.wallStyles,world,i0,k0,random,false);
   		BuildingWall wall=new BuildingWall(0,this,ws,Building.DIR_NORTH,Building.R_HAND, ws.MaxL,true,i0,j0,k0);
   		//BuildingWall(int ID_, WorldGeneratorThread wgt_,WallStyle ws_,int dir_,int axXHand_, int maxLength_,int i0_,int j0_, int k0_){
   		

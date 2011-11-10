@@ -1,16 +1,31 @@
 package net.minecraft.src;
-//By formivore 2011 for Minecraft Beta.
+/*
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * BuildingUndergroundEntranceway builds a passageway from an underground city to the surface.
+ */
 
 public class BuildingUndergroundEntranceway extends Building{
 	private final static int PASSAGE_HEIGHT=6, PASSAGE_WIDTH=4, SUPPORT_INTERVAL=6;
 	private final static TemplateRule STONE_RULE=new TemplateRule(new int[]{STONE_ID,0});
-	private WallStyle ws;
+	private TemplateWall ws;
 	public BuildingWall street;
 	private int stairsID;
 
 	//****************************************  CONSTRUCTOR - BuildingUndergroundEntraceway  *************************************************************************************//
-	public BuildingUndergroundEntranceway (int ID_,WorldGeneratorThread wgt_,WallStyle ws_,int dir_,int[] pt){
-		super(ID_,wgt_, ws_.TowerRule,dir_,1,new int[]{PASSAGE_WIDTH,PASSAGE_HEIGHT,0},pt);
+	public BuildingUndergroundEntranceway (int ID_,WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int[] sourcePt){
+		super(ID_,wgt_, ws_.TowerRule,dir_,1,new int[]{PASSAGE_WIDTH,PASSAGE_HEIGHT,0},sourcePt);
 		ws=ws_;
 		stairsID=STEP_TO_STAIRS[blockToStepMeta(ws.rules[ws.template[0][0][ws.WWidth/2]].primaryBlock)];
 		//wallBlockRule=new TemplateRule(new int[]{ws_.TowerBlock,0});
