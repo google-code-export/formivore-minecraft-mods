@@ -15,3 +15,9 @@ NOTE – a [http://www.youtube.com/watch?v=vCpVlrUu2Po&feature=player_embedded v
   #3Close 7-zip or Winrar.
   #4Drag the mod resources folder into the folder that contains minecraft_server.jar.
   #5Enjoy. Clients do not have to install anything to connect to a server running this mod.
+
+===Activating the modded templates===
+The SSP downloads of the mods include templates that populate stuctures with NPCs from other mods. The Walled City Mod has two cities CobblestoneCityHumansPlus.tml and SandstoneCityHumansPlus.tml with NPCS from Humans+, while the Great Wall Mod has SandstoneWallCastleDefenders.tml and StonebrickWallCastleDefenders.tml populated with NPCs from Castle Defenders. To active these templates:
+  #1First make sure you have the requisite mods installed and running.
+  #2Active the templates by opening the template files (in resources/walledcity and resources/greatwall respectively) and changing the first line to `weight=5`.
+  #3You will probably want to disable the unmodded versions of these templates by opening up and setting their `weight` to zero.
