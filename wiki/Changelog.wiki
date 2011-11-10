@@ -4,8 +4,7 @@
   * UndergroundMossyCoblestoneCity.tml can now only be reached from surface via BattleBasements. 
   * Added a UndergroundSparseMossyCobblestoneCIty.tml city.
   * Default city and wall spawn frequencies have been lowered.
-  * Renamed some of the settings file variables for clarity.
-  * Added chest contents to the settings file.
+  * Renamed some of the settings file variables for clarity. Added chest contents to the settings file.
   * Default towers can now be rectangular.
   * Structures now tend to avoid water more.
   * Bugfixes.
