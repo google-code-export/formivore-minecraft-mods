@@ -1,7 +1,21 @@
 package net.minecraft.src;
 /*
-//  By formivore 2011 for Minecraft Beta.
-//	Builds a walled city
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * WorldGenWalledCity generates walled cities in the Minecraft world.
+ * Walled cities are composed of 4 wall template BuildingWalls in a rough rectangle,
+ *  filled with many street template BuildingDoubleWalls.
  */
 
 import java.util.Random;
@@ -23,7 +37,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 
 	//**** WORKING VARIABLES **** 
 	private mod_WalledCity wc;
-	private WallStyle ows, sws;
+	private TemplateWall ows, sws;
 	private BuildingWall[] walls;
 	private int axXHand;
 	private int[] dir=null;
@@ -41,9 +55,9 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	//****************************************  FUNCTION - generate  *************************************************************************************//
 	@Override
 	public boolean generate(int i0,int j0,int k0) throws InterruptedException{
-		ows=WallStyle.pickBiomeWeightedWallStyle(wc.cityStyles,world,i0,k0,random,false);
+		ows=TemplateWall.pickBiomeWeightedWallStyle(wc.cityStyles,world,i0,k0,random,false);
 		if(ows==null) return false;
-		sws=WallStyle.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
+		sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
 		if(sws==null) return false;
 		if(!wc.cityIsSeparated(i0,k0,mod_WalledCity.CITY_TYPE_WALLED)) return false;
 		if(ows.MakeEndTowers) ows.MakeEndTowers=false;
@@ -170,7 +184,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		wc.chatBuildingCity("\n***** Building "+ows.name+" city"+", ID="+ID+" between "+walls[0].globalCoordString(0,0,0)+" and "+walls[2].globalCoordString(0,0,0) + " ******\n");
 		if(ows.LevelInterior) levelCity();
 		
-		WallStyle avenueWS=WallStyle.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
+		TemplateWall avenueWS=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
 		LinkedList<BuildingWall> interiorAvenues=new LinkedList<BuildingWall>();
 		
 		//layout
@@ -231,7 +245,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		//===============================================      streets   ===============================================
 		//build avenues and cross avenues
 		LinkedList<BuildingDoubleWall> branchAvenues=new LinkedList<BuildingDoubleWall>();
-		int avInterval=ows.StreetDensity > 3*WallStyle.MAX_STREET_DENSITY/4 ? 60 : 35;
+		int avInterval=ows.StreetDensity > 3*TemplateWall.MAX_STREET_DENSITY/4 ? 60 : 35;
 		for(BuildingWall avenue : interiorAvenues){
 			for(int n=avenue.bLength-avInterval; n>=25; n-=avInterval){
 				avenue.setCursor(n);
@@ -254,7 +268,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			
 			if(tries % 5==0 && !explorationHandler.isFlushingGenThreads) suspendGen();
 			int[] pt=randInteriorPoint();
-			sws=WallStyle.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,true);
+			sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,true);
 			if(pt!=null && pt[1]!=-1){
 
 				//streets
@@ -266,12 +280,12 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		
 		//build towers
 		for(BuildingWall avenue : interiorAvenues)
-			avenue.buildTowers(true,true,false,ows.StreetDensity > WallStyle.MAX_STREET_DENSITY/2, true);
+			avenue.buildTowers(true,true,false,ows.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2, true);
 		for(BuildingDoubleWall avenue : branchAvenues)
-			avenue.buildTowers(true,true,false,ows.StreetDensity > WallStyle.MAX_STREET_DENSITY/2, true);
+			avenue.buildTowers(true,true,false,ows.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2, true);
 		for(BuildingDoubleWall street : plannedStreets){
 			if(!explorationHandler.isFlushingGenThreads) suspendGen();
-			street.buildTowers(true,true,sws.MakeGatehouseTowers,ows.StreetDensity > WallStyle.MAX_STREET_DENSITY/2, false);
+			street.buildTowers(true,true,sws.MakeGatehouseTowers,ows.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2, false);
 		}
 		
 		

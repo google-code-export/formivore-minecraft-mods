@@ -1,7 +1,21 @@
 package net.minecraft.src;
 /*
-//  By formivore 2011 for Minecraft Beta.
-//	Builds a bi-directional great wall
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * WorldGenGreatWall creates a great wall in Minecraft.
+ * This class is chiefly a WorldGeneratorThread wrapper for a BuildingDoubleWall.
+ * It also checks curviness and length.
  */
 
 import java.util.Random;
@@ -24,7 +38,7 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 	//****************************  FUNCTION - generate  *************************************************************************************//
 	@Override
 	public boolean generate(int i0, int j0, int k0) throws InterruptedException{
-		WallStyle ws=WallStyle.pickBiomeWeightedWallStyle(gw.wallStyles,world,i0,k0,random,false);
+		TemplateWall ws=TemplateWall.pickBiomeWeightedWallStyle(gw.wallStyles,world,i0,k0,random,false);
 		if(ws==null) return false;
 		
 		

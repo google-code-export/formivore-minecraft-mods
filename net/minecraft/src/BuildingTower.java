@@ -1,7 +1,19 @@
 package net.minecraft.src;
 /*
-//  By formivore 2011 for Minecraft Beta.
-//	Builds towers
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * BuildingTower builds a procedurally generated tower.
  */
 
 import java.lang.Math;
@@ -32,8 +44,8 @@ public class BuildingTower extends Building
 	private TemplateRule roofRule, SpawnerRule, ChestRule;
 
 	//****************************************  CONSTRUCTOR - BuildingTower *************************************************************************************//
-	public BuildingTower(int ID_,BuildingWall wall,int dir_,int axXHand_, int TWidth_, int THeight_,int TLength_, int[] pt){
-		super(ID_,wall.wgt, wall.towerRule,dir_,axXHand_,new int[]{TWidth_,THeight_,TLength_},pt);
+	public BuildingTower(int ID_,BuildingWall wall,int dir_,int axXHand_, int TWidth_, int THeight_,int TLength_, int[] sourcePt){
+		super(ID_,wall.wgt, wall.towerRule,dir_,axXHand_,new int[]{TWidth_,THeight_,TLength_},sourcePt);
 		baseHeight=wall.WalkHeight;
 		roofStyle=wall.roofStyle;
 		minHorizDim=Math.min(bWidth, bLength);
@@ -88,24 +100,14 @@ public class BuildingTower extends Building
 	}
 
 	//****************************************  FUNCTION - build *************************************************************************************//
-	//build(int TWidth, int THeight,int doorOffset1, int doorOffset2,boolean hanging,boolean circle,int roofStyle, int BHeight, double MobProb, boolean buildOver)
 	//builds a tower:   (if EW==1)   from (i1_,k1_) to (i1_ + TWidth, k1_ - TWidth)
 	//                  (if EW==0)   from (i1_,k1_) to (i1_ - TWidth, k1_ + TWidth)
 	//PARAMETERS:
-	//TWidth,THeight - tower width and height.
 	//doorOffset1,doorOffset2 - x-offset of the ground floor door from center
 	//hanging - if true, taper away tower base if hanging over air or water
-	//circle - circle or square tower
-	//roofStyle - roof style code
-	//BHeight - tower base height
-	//MobProb - probability of mob spawners and (maybe) chest
-	//buildOver - build tower even if we will overbuild other man-made blocks
 	//RETURNS:
 	//true if tower was built (dependency: buildOver).
 	//
-	//public void build(TemplateRule TRule, int doorOffset1, int doorOffset2,boolean hanging, TemplateRule roofRule,
-	//		          double MobProb,double PigZombieProb, boolean PopulateFurniture) {
-		
 	public void build(int doorOffset1, int doorOffset2,boolean hanging) {
 		
 		//check against spawner chance to see if haunted. 
@@ -276,6 +278,7 @@ public class BuildingTower extends Building
 	
 	
 	//****************************************  FUNCTION  - buildWindowOrDoor *************************************************************************************//
+	//builds either a window or a door depending on whether there is a floor outside of the aperture.
 	private void buildWindowOrDoor(int x,int z, int y, int xFace, int yFace, int height){
 		boolean buildWoodDoor=false;
 		if(isFloor(x+xFace,z-1,y+yFace) || isFloor(x+xFace,z-2,y+yFace)){

@@ -1,7 +1,20 @@
 package net.minecraft.src;
 /*
-//  By formivore 2011 for Minecraft Beta.
-//	Modloader handle for Walled City Generator Mod, reads in from SETTINGS_FILE.
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * mod_WalledCity is the main class that hooks into ModLoader for the Walled City Mod.
+ * It reads the globalSettings file, keeps track of city locations, and runs WorldGenWalledCitys and WorldGenUndergroundCities.
  */
 
 import java.util.Random;
@@ -43,7 +56,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	public boolean CityBuiltMessage=true;
 
 	//DATA VARIABLES
-	public ArrayList<WallStyle> cityStyles=null, undergroundCityStyles=new ArrayList<WallStyle>();
+	public ArrayList<TemplateWall> cityStyles=null, undergroundCityStyles=new ArrayList<TemplateWall>();
 	private long explrWorldCode;
 	private ArrayList<int[]> cityLocations, undergroundCityLocations;
 	private HashMap<Long,ArrayList<int[]> > worldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >(),
@@ -88,11 +101,11 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			getGlobalOptions();
 			
 
-			cityStyles=WallStyle.loadWallStylesFromDir(STYLES_DIRECTORY,this);
-			WallStyle.loadStreets(cityStyles,STREETS_DIRECTORY,this);
+			cityStyles=TemplateWall.loadWallStylesFromDir(STYLES_DIRECTORY,this);
+			TemplateWall.loadStreets(cityStyles,STREETS_DIRECTORY,this);
 			for(int m=0; m<cityStyles.size(); m++){
 				if(cityStyles.get(m).underground){
-					WallStyle uws = cityStyles.remove(m);
+					TemplateWall uws = cityStyles.remove(m);
 					uws.streets.add(uws); //underground cities have no outer walls, so this should be a street style
 					undergroundCityStyles.add(uws);
 					m--;
@@ -256,16 +269,16 @@ public class mod_WalledCity extends BuildingExplorationHandler
 				while( read != null ) {
 		
 					//outer wall parameters
-					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = WallStyle.readFloatParam(lw,GlobalFrequency,":",read);
-					if(read.startsWith( "UndergroundGlobalFrequency" )) UndergroundGlobalFrequency = WallStyle.readFloatParam(lw,UndergroundGlobalFrequency,":",read);
-					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = WallStyle.readIntParam(lw,TriesPerChunk,":",read);
-					if(read.startsWith( "MinCitySeparation" )) MinCitySeparation= WallStyle.readIntParam(lw,MinCitySeparation,":",read);
-					if(read.startsWith( "MinUndergroundCitySeparation" )) UndergroundMinCitySeparation= WallStyle.readIntParam(lw,UndergroundMinCitySeparation,":",read);
+					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = TemplateWall.readFloatParam(lw,GlobalFrequency,":",read);
+					if(read.startsWith( "UndergroundGlobalFrequency" )) UndergroundGlobalFrequency = TemplateWall.readFloatParam(lw,UndergroundGlobalFrequency,":",read);
+					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = TemplateWall.readIntParam(lw,TriesPerChunk,":",read);
+					if(read.startsWith( "MinCitySeparation" )) MinCitySeparation= TemplateWall.readIntParam(lw,MinCitySeparation,":",read);
+					if(read.startsWith( "MinUndergroundCitySeparation" )) UndergroundMinCitySeparation= TemplateWall.readIntParam(lw,UndergroundMinCitySeparation,":",read);
 		
-					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = WallStyle.readIntParam(lw,ConcaveSmoothingScale,":",read);
-					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = WallStyle.readIntParam(lw,ConvexSmoothingScale,":",read);
-					if(read.startsWith( "BacktrackLength" )) BacktrackLength = WallStyle.readIntParam(lw,BacktrackLength,":",read);
-					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = WallStyle.readIntParam(lw,1,":",read)==1;
+					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = TemplateWall.readIntParam(lw,ConcaveSmoothingScale,":",read);
+					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = TemplateWall.readIntParam(lw,ConvexSmoothingScale,":",read);
+					if(read.startsWith( "BacktrackLength" )) BacktrackLength = TemplateWall.readIntParam(lw,BacktrackLength,":",read);
+					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = TemplateWall.readIntParam(lw,1,":",read)==1;
 					
 					readChestItemsList(lw,read,br);
 		

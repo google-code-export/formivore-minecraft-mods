@@ -1,5 +1,21 @@
 package net.minecraft.src;
-//By formivore 2011 for Minecraft Beta.
+/*
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * BuildingExplorationHandler is a abstract superclass for mod_WalledCity and mod_GreatWall.
+ * It loads settings files and runs WorldGeneratorThreads.
+ */
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -273,7 +289,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		}
 		
 		if(triesIdx!=-1){
-			chestTries[triesIdx]=WallStyle.readIntParam(lw,1,":",br.readLine());
+			chestTries[triesIdx]=TemplateWall.readIntParam(lw,1,":",br.readLine());
 			ArrayList<String> lines=new ArrayList<String>();
 			for(line=br.readLine(); !(line==null || line.length()==0); line=br.readLine())
 				lines.add(line);

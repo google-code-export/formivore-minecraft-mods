@@ -1,8 +1,21 @@
 package net.minecraft.src;
 /*
-//  By formivore 2011 for Minecraft Beta.
-//	Builds towers
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/*
+ * TemplateTML reads in a .tml file and defines a template.
+ */
+
 
 import java.io.*;
 import java.util.ArrayList;
@@ -90,7 +103,7 @@ public class TemplateTML
 				rulesArrayList.add( new TemplateRule(parts[1],explorationHandler,true) );
 			}
 			else if(line.startsWith( "dimensions" )){
-				int[] dim=WallStyle.readIntList(lw,null,"=",line);
+				int[] dim=TemplateWall.readIntList(lw,null,"=",line);
 				if(dim==null || dim.length!=3)
 					throw new Exception( "Bad dimension input!" );
 				height = dim[0];
@@ -99,15 +112,15 @@ public class TemplateTML
 			}
 			//else if(line.startsWith("acceptable_target_blocks" )) targets=WallStyle.readIntList(lw,targets,"=",line);
 			else if(line.startsWith("weight" )) {
-				weight = WallStyle.readIntParam(lw,weight,"=",line);
+				weight = TemplateWall.readIntParam(lw,weight,"=",line);
 				if(weight<=0) throw ZERO_WEIGHT_EXCEPTION;
 			}
-			else if(line.startsWith("embed_into_distance" )) embed = WallStyle.readIntParam(lw,embed,"=",line);
-			else if(line.startsWith("max_cut_in" )) cutIn = WallStyle.readIntParam(lw,cutIn ,"=",line);
-			else if(line.startsWith("max_leveling" )) leveling = WallStyle.readIntParam(lw,leveling,"=",line);
+			else if(line.startsWith("embed_into_distance" )) embed = TemplateWall.readIntParam(lw,embed,"=",line);
+			else if(line.startsWith("max_cut_in" )) cutIn = TemplateWall.readIntParam(lw,cutIn ,"=",line);
+			else if(line.startsWith("max_leveling" )) leveling = TemplateWall.readIntParam(lw,leveling,"=",line);
 			else if(line.startsWith("water_height" )){
 				if(line.indexOf(NO_WATER_CHECK_STR)!=-1) waterHeight=NO_WATER_CHECK;
-				else waterHeight = WallStyle.readIntParam(lw,waterHeight,"=",line);
+				else waterHeight = TemplateWall.readIntParam(lw,waterHeight,"=",line);
 			}
 			else if(line!=null && line.length()>0){
 				String[] spl=line.split("=");
@@ -162,61 +175,6 @@ public class TemplateTML
 		//	for( int y = 0; y < length; y++ )
 		//		layer[widthN][y]=Building.PRESERVE_ID;
 	}
-
-
-	//****************************  FUNCTION - parseVariables *************************************************************************************//
-	/*
-	private void parseVariables( ArrayList<String> variables ) throws Exception {
-		Iterator<String> i = variables.iterator();
-		String line;
-		extraOptions=new HashMap<String,String>();
-
-		while( i.hasNext() ) {
-			line = i.next();
-
-			if( ! line.startsWith( "#" ) ) {
-
-				if(line.startsWith( "dimensions" )){
-					int[] dim=WallStyle.readIntList(lw,null,"=",line);
-					if(dim==null || dim.length!=3)
-						throw new Exception( "Bad dimension input!" );
-					height = dim[0];
-					length = dim[1];
-					width = dim[2];
-				}
-				else if(line.startsWith("acceptable_target_blocks" )) targets=WallStyle.readIntList(lw,targets,"=",line);
-				else if(line.startsWith("weight" )) weight = WallStyle.readIntParam(lw,weight,"=",line);
-				//else if(line.startsWith("unique" )) unique = WallStyle.readIntParam(lw,0,"=",line)==1;
-				else if(line.startsWith("embed_into_distance" )) embed = WallStyle.readIntParam(lw,embed,"=",line);
-				//else if(line.startsWith("primary_block" )) primary = WallStyle.readIntParam(lw,primary,"=",line);
-				//else if(line.startsWith("allowable_overhang" )) overhang = WallStyle.readIntParam(lw,overhang ,"=",line);
-				else if(line.startsWith("max_cut_in" )) cutIn = WallStyle.readIntParam(lw,cutIn ,"=",line);
-				//else if(line.startsWith("cut_in_buffer" )) cbuffer = WallStyle.readIntParam(lw,cbuffer ,"=",line);
-				else if(line.startsWith("max_leveling" )) leveling = WallStyle.readIntParam(lw,leveling ,"=",line);
-				//else if(line.startsWith("leveling_buffer" )) lbuffer = WallStyle.readIntParam(lw,lbuffer ,"=",line);
-				//else if(line.startsWith("preserve_water" )) preserveWater = WallStyle.readIntParam(lw,0,"=",line)==1;
-				//else if(line.startsWith("preserve_lava" )) preserveLava = WallStyle.readIntParam(lw,0,"=",line)==1;
-				//else if(line.startsWith("preserve_plants" )) preservePlants= WallStyle.readIntParam(lw,0,"=",line)==1;
-				else if(line!=null){
-					String[] spl=line.split("=");
-					if(spl.length==2 && !spl[0].equals("") && !spl[1].equals("") )
-						extraOptions.put(spl[0],line); //lazy - put line as value since we have a functions to parse
-				}
-
-			}
-		}
-
-		if(targets==null || targets.length < 1 )  targets= new int[]{0};
-
-		//if(cbuffer > 5) cbuffer = 5;
-		//if(lbuffer > 5) lbuffer = 5;
-		if(weight<0) weight=0;
-
-		//w_off = width%2==1 ? 0 - (width-1)/2 : 0 - width/2;
-		//l_offoverhang = 0 = length%2==1 ? 0 - (width-1)/2 : 0 - width/2;
-
-	}
-	*/
 	
 	//****************************  FUNCTION - buildLayout *************************************************************************************//
 	public TemplateTML buildLayout(){

@@ -1,5 +1,22 @@
 package net.minecraft.src;
-//By formivore 2011 for Minecraft Beta.
+/*
+ *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * WorldGenUndergroundCity generates a city in a large underground cavern.
+ * The cavern is made from many recursively created spherical voids.
+ * These are filled with street template BuildingDoubleWalls to create the city.
+ */
 
 import java.util.Random;
 import java.util.ArrayList;
@@ -15,7 +32,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	private ArrayList<int[]> hollows=new ArrayList<int[]>();
 	private ArrayList<BuildingDoubleWall> streets=new ArrayList<BuildingDoubleWall>();
 	private double cavernMass=0.0, cavernMass_i=0.0, cavernMass_k=0.0;
-	WallStyle pws;
+	TemplateWall pws;
 	
 	//****************************************  CONSTRUCTOR - WorldGenUndergroundCity   *************************************************************************************//
 	public WorldGenUndergroundCity (mod_WalledCity wc_,World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
@@ -26,7 +43,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	
 	//****************************  FUNCTION - generate*************************************************************************************//
 	public boolean generate(int i0,int j0,int k0) throws InterruptedException{
-		pws=WallStyle.pickBiomeWeightedWallStyle(wc.undergroundCityStyles,world,i0,k0,random,true);
+		pws=TemplateWall.pickBiomeWeightedWallStyle(wc.undergroundCityStyles,world,i0,k0,random,true);
 		if(pws==null) return false;
 		willBuild=true;
 		if(!wc.cityIsSeparated(i0,k0,mod_WalledCity.CITY_TYPE_UNDERGROUND)) return false;
@@ -50,7 +67,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		}}
 		for(BuildingDoubleWall street : streets) {
 			if(!explorationHandler.isFlushingGenThreads) suspendGen();
-			street.buildTowers(true,true,false,pws.StreetDensity > WallStyle.MAX_STREET_DENSITY/2,false);
+			street.buildTowers(true,true,false,pws.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2,false);
 		}
 
 		return true;
@@ -177,7 +194,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 				pt[0]+=hollow[0];
 				pt[2]+=hollow[2];
 				pt[1]=Building.findSurfaceJ(world, pt[0], pt[2], hollow[1]-(hollow[3]+1)/2, false,false);
-				WallStyle sws=WallStyle.pickBiomeWeightedWallStyle(pws.streets,world,pt[0],pt[2],random,true);
+				TemplateWall sws=TemplateWall.pickBiomeWeightedWallStyle(pws.streets,world,pt[0],pt[2],random,true);
 				sws.MergeWalls=true;
 				BuildingDoubleWall street=new BuildingDoubleWall(tries,this,sws,Building.pickDir(random),Building.R_HAND,pt);
 				if(street.plan()) {
