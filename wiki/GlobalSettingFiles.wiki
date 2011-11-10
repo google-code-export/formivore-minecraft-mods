@@ -1,10 +1,10 @@
 =Global Settings Files=
 *WalledCitySettings.txt* and *GreatWallModSettings.txt* are the global settings files for the Walled City Generator and the Great Wall Mod respectively. These files are located in the main Minecraft directory and will be automatically generated if not present. Below is a description of the different settings.
 
-*`ChunkTryProb`*<br>
-*`ChunkUndergroundTryProb`*(Walled City Mod)<br>
+*`GlobalFrequency`*<br>
+*`UndergroundGlobalFrequency`*(Walled City Mod)<br>
 *`TriesPerChunk`*<br>
-These settings control how frequently walls or cities will be generated in Minecraft. `ChunkTryProb` takes a value 0.0 and 1.0. Lower it make less common. You should always first try to control frequency with `ChunkTryProb`. `TriesPerChunk` is only provided in case you want very dense generation, increasing it can have a large effect on performance.
+These settings control how frequently walls or cities will be generated in Minecraft. `GlobalFrequency` takes a value 0.0 and 1.0. Lower it make less common. You should always first try to control frequency with `GlobalFrequency`. `TriesPerChunk` is only provided in case you want very dense generation, increasing it can have a large effect on performance.
 
 *`MinCitySeparation`*(Walled City Mod)<br>
 *`MinUndergroundCitySeparation`*(Walled City Mod)<br>
