@@ -1,10 +1,10 @@
 =Global Settings Files=
-*WalledCitySettings.txt* and *GreatWallModSettings.txt* are the global settings files for the Walled City Generator and the Great Wall Mod respectively. These files are located in the main Minecraft directory and will be automatically generated if not present. Below is a description of the different settings.
+*WalledCitySettings.txt* and *GreatWallModSettings.txt* are the global settings files for the Walled City Generator and the Great Wall Mod respectively. These files are located in the main Minecraft directory and will be automatically generated if not present. If you have both mods installed frequencies/chest contents/etc. for each mod will be controlled by its own settings file. Below is a description of the different settings.
 
 *`GlobalFrequency`*<br>
 *`UndergroundGlobalFrequency`*(Walled City Mod)<br>
 *`TriesPerChunk`*<br>
-These settings control how frequently walls or cities will be generated in Minecraft. `GlobalFrequency` takes a value 0.0 and 1.0. Lower it make less common. You should always first try to control frequency with `GlobalFrequency`. `TriesPerChunk` is only provided in case you want very dense generation, increasing it can have a large effect on performance.
+These settings control how frequently walls or cities will be generated in Minecraft. `GlobalFrequency` takes a value 0.0 and 1.0. Lower it make less common. `UndergroundGlobalFrequency` is for underground cities. You should always first try to control frequency with `GlobalFrequency`. `TriesPerChunk` is only provided in case you want very dense generation, increasing it can have a large effect on performance.
 
 *`MinCitySeparation`*(Walled City Mod)<br>
 *`MinUndergroundCitySeparation`*(Walled City Mod)<br>
@@ -21,3 +21,6 @@ Toggles whether you receive a chat message when a city spawns.
 *`CurveBias`*(Great Wall Mod)<br>
 *`LengthBiasNorm`*(Great Wall Mod)<br>
 Specify a bias towards curvier and longer walls respectively. `CurveBias` should take a value between 0.0 and 1.0 while `LengthBiasNorm` is the length above which there is no penalty. Note that these settings work by culling potential walls so increasing them will decrease build frequency. You can increase `ChunkTryProb` to compensate.
+
+===Chest contents===
+You can specify the possible contents of the various chest types created by the chest <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>Special blockIDs</a>. See the settings files for a description of the item format.
