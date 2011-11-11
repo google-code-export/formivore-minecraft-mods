@@ -25,11 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
 
-//MP PORT
-//import net.minecraft.server.MinecraftServer;
-//import java.util.logging.Logger;
-import net.minecraft.client.Minecraft;
-
 //BUKKIT PORT
 //public class mod_WalledCity extends BlockPopulator implements IBuildingExplorationHandler
 
@@ -37,17 +32,11 @@ public class mod_WalledCity extends BuildingExplorationHandler
 {
 	public final static int MIN_CITY_LENGTH=40;
 	private final static int MAX_EXPLORATION_DISTANCE=30;
-	public final static File SETTINGS_FILE, STYLES_DIRECTORY,STREETS_DIRECTORY, LOG_FILE;
 	public final static int CITY_TYPE_WALLED=0, CITY_TYPE_UNDERGROUND=1;
-	static{
-		//BUKKIT PORT / MP PORT
-		//File baseDir=new File(".");
-		File baseDir=Minecraft.getMinecraftDir();
-		SETTINGS_FILE=new File(baseDir,"WalledCitySettings.txt");
-		LOG_FILE=new File(baseDir,"walled_city_log.txt");
-		STYLES_DIRECTORY=new File(new File(baseDir,"resources"),"walledcity");
-		STREETS_DIRECTORY=new File(STYLES_DIRECTORY,"streets");
-	}
+	private final static String SETTINGS_FILE_NAME="WalledCitySettings.txt",
+								LOG_FILE_NAME="walled_city_log.txt",
+								CITY_TEMPLATES_FOLDER_NAME="walledcity",
+								STREET_TEMPLATES_FOLDER_NAME="streets";
 
 	//USER MODIFIABLE PARAMETERS, values here are defaults
 	public float GlobalFrequency=0.05F, UndergroundGlobalFrequency=0.005F;
@@ -62,10 +51,6 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	private HashMap<Long,ArrayList<int[]> > worldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >(),
 											undergroundWorldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >();
 	public LinkedList<int[]> citiesBuiltMessages=new LinkedList<int[]>();
-	//private LinkedList<WorldGeneratorThread> exploreThreads=new LinkedList<WorldGeneratorThread>();
-	
-	//BUKKIT PORT / MP PORT - uncomment
-	//public static Logger logger=MinecraftServer.logger;
 
 	//****************************  CONSTRUCTOR - mod_WalledCity  *************************************************************************************//
 	public mod_WalledCity() {
@@ -82,27 +67,18 @@ public class mod_WalledCity extends BuildingExplorationHandler
 		return WALLED_CITY_MOD_STRING;
 	}
 	
-	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
-	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
-	public void ModsLoaded(){
-		if(!dataFilesLoaded){
-			initializeHumansPlusReflection();
-		 	loadDataFiles();
-		}
-	}
-	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public void loadDataFiles(){
 		try {
 			//read and check values from file
-			lw= new PrintWriter( new BufferedWriter( new FileWriter(LOG_FILE ) ));
+			lw= new PrintWriter( new BufferedWriter( new FileWriter(new File(BASE_DIRECTORY,LOG_FILE_NAME)) ));
 			
 			logOrPrint("Loading options and templates for the Walled City Generator.");
 			getGlobalOptions();
 			
-
-			cityStyles=TemplateWall.loadWallStylesFromDir(STYLES_DIRECTORY,this);
-			TemplateWall.loadStreets(cityStyles,STREETS_DIRECTORY,this);
+			File stylesDirectory=new File(new File(BASE_DIRECTORY,RESOURCES_FOLDER_NAME),CITY_TEMPLATES_FOLDER_NAME);
+			cityStyles=TemplateWall.loadWallStylesFromDir(stylesDirectory,this);
+			TemplateWall.loadStreets(cityStyles,new File(stylesDirectory,STREET_TEMPLATES_FOLDER_NAME),this);
 			for(int m=0; m<cityStyles.size(); m++){
 				if(cityStyles.get(m).underground){
 					TemplateWall uws = cityStyles.remove(m);
@@ -146,14 +122,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
 	public void updateWorldExplored(World world_) {
 		if(Building.getWorldCode(world_)!=explrWorldCode){
-			world=world_;
- 			explrWorldCode=Building.getWorldCode(world);
-			chunksExploredThisTick=0;
-			chunksExploredFromStart=0;
-			if(world.isNewWorld && world.worldInfo.getWorldTime()==0){
-				isCreatingDefaultChunks=true;
-			}
-			logOrPrint("Starting to survey a world for city generation...");
+			setNewWorld(world_,"Starting to survey a world for city generation...");
 			
 			//kill zombies
 			for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
@@ -245,40 +214,38 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	}
 	
 	//****************************  FUNCTION - OnTickInGame  *************************************************************************************//
-	//MP Port
-	//public boolean OnTickInGame() {
 	@Override
-	public boolean OnTickInGame(float tick, net.minecraft.client.Minecraft game) {
+	public void OnTickInGame() {
 		//if(exploreThreads.size()==0) doQueuedLighting();
 		flushGenThreads(NO_CALL_CHUNK);
 		runWorldGenThreads();	
-		return true;
 	}
 	
 
 	
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//
 	public void getGlobalOptions() {
-		if(SETTINGS_FILE.exists()){
+		File settingsFile=new File(BASE_DIRECTORY,SETTINGS_FILE_NAME);
+		if(settingsFile.exists()){
 			BufferedReader br = null;
 			try{
-				br=new BufferedReader( new FileReader(SETTINGS_FILE) );
+				br=new BufferedReader( new FileReader(settingsFile) );
 				String read = br.readLine();  
 				lw.println("Getting global options...");    
 		
 				while( read != null ) {
 		
 					//outer wall parameters
-					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = TemplateWall.readFloatParam(lw,GlobalFrequency,":",read);
-					if(read.startsWith( "UndergroundGlobalFrequency" )) UndergroundGlobalFrequency = TemplateWall.readFloatParam(lw,UndergroundGlobalFrequency,":",read);
-					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = TemplateWall.readIntParam(lw,TriesPerChunk,":",read);
-					if(read.startsWith( "MinCitySeparation" )) MinCitySeparation= TemplateWall.readIntParam(lw,MinCitySeparation,":",read);
-					if(read.startsWith( "MinUndergroundCitySeparation" )) UndergroundMinCitySeparation= TemplateWall.readIntParam(lw,UndergroundMinCitySeparation,":",read);
+					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
+					if(read.startsWith( "UndergroundGlobalFrequency" )) UndergroundGlobalFrequency = readFloatParam(lw,UndergroundGlobalFrequency,":",read);
+					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
+					if(read.startsWith( "MinCitySeparation" )) MinCitySeparation= readIntParam(lw,MinCitySeparation,":",read);
+					if(read.startsWith( "MinUndergroundCitySeparation" )) UndergroundMinCitySeparation= readIntParam(lw,UndergroundMinCitySeparation,":",read);
 		
-					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = TemplateWall.readIntParam(lw,ConcaveSmoothingScale,":",read);
-					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = TemplateWall.readIntParam(lw,ConvexSmoothingScale,":",read);
-					if(read.startsWith( "BacktrackLength" )) BacktrackLength = TemplateWall.readIntParam(lw,BacktrackLength,":",read);
-					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = TemplateWall.readIntParam(lw,1,":",read)==1;
+					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = readIntParam(lw,ConcaveSmoothingScale,":",read);
+					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = readIntParam(lw,ConvexSmoothingScale,":",read);
+					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
+					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = readIntParam(lw,1,":",read)==1;
 					
 					readChestItemsList(lw,read,br);
 		
@@ -291,7 +258,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			copyDefaultChestItems();
 			PrintWriter pw=null;
 			try{
-				pw=new PrintWriter( new BufferedWriter( new FileWriter(SETTINGS_FILE) ) );
+				pw=new PrintWriter( new BufferedWriter( new FileWriter(settingsFile) ) );
 				pw.println("<-README: put this file in the main minecraft folder->");
 				pw.println();
 				pw.println("<-GlobalFrequency/UndergroundGlobalFrequency controls how likely aboveground/belowground cities are to appear. Should be between 0.0 and 1.0. Lower to make less common->");

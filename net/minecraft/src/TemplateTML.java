@@ -103,7 +103,7 @@ public class TemplateTML
 				rulesArrayList.add( new TemplateRule(parts[1],explorationHandler,true) );
 			}
 			else if(line.startsWith( "dimensions" )){
-				int[] dim=TemplateWall.readIntList(lw,null,"=",line);
+				int[] dim=BuildingExplorationHandler.readIntList(lw,null,"=",line);
 				if(dim==null || dim.length!=3)
 					throw new Exception( "Bad dimension input!" );
 				height = dim[0];
@@ -112,15 +112,15 @@ public class TemplateTML
 			}
 			//else if(line.startsWith("acceptable_target_blocks" )) targets=WallStyle.readIntList(lw,targets,"=",line);
 			else if(line.startsWith("weight" )) {
-				weight = TemplateWall.readIntParam(lw,weight,"=",line);
+				weight = BuildingExplorationHandler.readIntParam(lw,weight,"=",line);
 				if(weight<=0) throw ZERO_WEIGHT_EXCEPTION;
 			}
-			else if(line.startsWith("embed_into_distance" )) embed = TemplateWall.readIntParam(lw,embed,"=",line);
-			else if(line.startsWith("max_cut_in" )) cutIn = TemplateWall.readIntParam(lw,cutIn ,"=",line);
-			else if(line.startsWith("max_leveling" )) leveling = TemplateWall.readIntParam(lw,leveling,"=",line);
+			else if(line.startsWith("embed_into_distance" )) embed = BuildingExplorationHandler.readIntParam(lw,embed,"=",line);
+			else if(line.startsWith("max_cut_in" )) cutIn = BuildingExplorationHandler.readIntParam(lw,cutIn ,"=",line);
+			else if(line.startsWith("max_leveling" )) leveling = BuildingExplorationHandler.readIntParam(lw,leveling,"=",line);
 			else if(line.startsWith("water_height" )){
 				if(line.indexOf(NO_WATER_CHECK_STR)!=-1) waterHeight=NO_WATER_CHECK;
-				else waterHeight = TemplateWall.readIntParam(lw,waterHeight,"=",line);
+				else waterHeight = BuildingExplorationHandler.readIntParam(lw,waterHeight,"=",line);
 			}
 			else if(line!=null && line.length()>0){
 				String[] spl=line.split("=");

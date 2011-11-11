@@ -18,6 +18,7 @@ package net.minecraft.src;
  */
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -25,6 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 
@@ -76,9 +78,16 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	public final static String GREAT_WALL_MOD_STRING="mod_GreatWall "+VERSION_STRING;
 	public final static String WALLED_CITY_MOD_STRING="mod_WalledCity "+VERSION_STRING;
 	
+	protected final static String RESOURCES_FOLDER_NAME="resources";
+	//MP PORT
+	//protected final static File BASE_DIRECTORY=new File(".");
+	protected final static File BASE_DIRECTORY=Minecraft.getMinecraftDir();
+	
 	
 	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
 	
+	protected BuildingExplorationHandler masterExplorationHandler=null;
+	protected long explrWorldCode;
 	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;
 	protected LinkedList<int[]> lightingList=new LinkedList<int[]>();
@@ -106,10 +115,50 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	abstract public void updateWorldExplored(World world);
 	abstract public boolean isGeneratorStillValid(WorldGeneratorThread wgt);
 	abstract public void loadDataFiles();
-	public boolean OnTickInGame() { return true;} //for the  multiplayer port, don't have to do anything here
+	abstract public void OnTickInGame();
+	//public boolean OnTickInGame() { return true;} //for the  multiplayer port, don't have to do anything here
 	
 	int[] chestTries=new int[]{4,6,6,6};
 	int[][][] chestItems=new int[][][]{null,null,null,null};
+	
+	//****************************  FUNCTION - OnTickInGame *************************************************************************************//
+	//MP PORT - comment out
+	@Override
+	public boolean OnTickInGame(float tick, net.minecraft.client.Minecraft game) {
+		OnTickInGame();
+		return true;
+	}
+	
+	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
+	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
+	//Do everything here instead of subclasses so it is easier to create new subclasses
+	public void ModsLoaded(){
+		if(this.toString().equals(GREAT_WALL_MOD_STRING)){
+			//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
+			for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
+				if(mod.toString().equals(WALLED_CITY_MOD_STRING)){
+					BuildingExplorationHandler wcp=(BuildingExplorationHandler)mod;
+					if(!wcp.dataFilesLoaded) wcp.ModsLoaded();
+					if(!wcp.errFlag){
+						masterExplorationHandler=wcp;
+						System.out.println("Combining chunk explorers for "+toString()+" and "+masterExplorationHandler.toString()+".");
+					}
+					break;
+			}}
+			
+			initializeHumansPlusReflection();
+			loadDataFiles();
+		}else if(this.toString().equals(WALLED_CITY_MOD_STRING)){
+			if(!dataFilesLoaded){
+				initializeHumansPlusReflection();
+			 	loadDataFiles();
+			}
+		}else{
+			if(!dataFilesLoaded){
+			 	loadDataFiles();
+			}
+		}
+	}
 	
 	//****************************  FUNCTION - killZombie *************************************************************************************//
 	public void killZombie(WorldGeneratorThread wgt){
@@ -124,6 +173,18 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 			}
 			System.out.println("Killed a zombie thread.");
 		}
+	}
+	
+	//****************************  FUNCTION - setNewWorld *************************************************************************************//
+	public void setNewWorld(World world_,String newWorldStr){
+		world=world_;
+		explrWorldCode=Building.getWorldCode(world);
+		chunksExploredThisTick=0;
+		chunksExploredFromStart=0;
+		if(world.isNewWorld && world.worldInfo.getWorldTime()==0){
+			isCreatingDefaultChunks=true;
+		}
+		logOrPrint(newWorldStr);
 	}
 	
 	//****************************  FUNCTION - initializeHumansPlusReflection *************************************************************************************//
@@ -204,7 +265,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 			isFlushingGenThreads=true;
 			flushCallChunk=callChunk;
 			while(exploreThreads.size() > 0) 
-				OnTickInGame(0F,mc);
+				OnTickInGame();
 			
 			isFlushingGenThreads=false;
 			isCreatingDefaultChunks=false;
@@ -289,7 +350,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		}
 		
 		if(triesIdx!=-1){
-			chestTries[triesIdx]=TemplateWall.readIntParam(lw,1,":",br.readLine());
+			chestTries[triesIdx]=readIntParam(lw,1,":",br.readLine());
 			ArrayList<String> lines=new ArrayList<String>();
 			for(line=br.readLine(); !(line==null || line.length()==0); line=br.readLine())
 				lines.add(line);
@@ -357,5 +418,88 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		try {
 			if(wgt.hasTerminated) wgt.join();
 		}catch (InterruptedException e){}
+	}
+	
+	//****************************************  FUNCTIONS - error handling parameter readers  *************************************************************************************//
+	public static int readIntParam(PrintWriter lw,int defaultVal,String splitString, String read){
+		try{
+			defaultVal=Integer.parseInt(read.split(splitString)[1].trim());
+		} catch(Exception e) { 
+			lw.println("Error parsing int: "+e.toString());
+			lw.println("Using default "+defaultVal+". Line:"+read); 
+		}
+		return defaultVal;
+	}
+
+	public static float readFloatParam(PrintWriter lw,float defaultVal,String splitString, String read){
+		try{
+			defaultVal=Float.parseFloat(read.split(splitString)[1].trim());
+		} catch(Exception e) { 
+			lw.println("Error parsing double: "+e.toString());
+			lw.println("Using default "+defaultVal+". Line:"+read); 
+		}
+		return defaultVal;
+	}
+	
+	public static int[] readNamedCheckList(PrintWriter lw,int[] defaultVals,String splitString, String read, String[] names, String allStr){
+		if(defaultVals==null || names.length!=defaultVals.length) defaultVals=new int[names.length];
+		try{
+			int[] newVals=new int[names.length];
+			for(int i=0;i<newVals.length;i++) newVals[i]=0;
+			if((read.split(splitString)[1]).trim().toUpperCase().equals(allStr)){
+				for(int i=0;i<newVals.length;i++) newVals[i]=1;
+			}else{
+				for(String check : (read.split(splitString)[1]).split(",")){
+					boolean found=false;
+					for(int i=0;i<names.length;i++){
+						if(names[i].toLowerCase().equals(check.trim().toLowerCase())){
+							found=true;
+							newVals[i]++;
+						}
+					}
+					if(!found) 
+						lw.println("Warning, named checklist item not found:"+check+". Line:"+read);
+				}
+			}	
+			return newVals;
+		}catch(Exception e) { 
+			lw.println("Error parsing checklist input: "+e.toString());
+			lw.println("Using default. Line:"+read); 
+		}
+		return defaultVals;
+	}
+
+	
+	public static int[] readIntList(PrintWriter lw,int[] defaultVals,String splitString,  String read){
+		try{
+			String[] check = (read.split(splitString)[1]).split(",");
+			int[] newVals=new int[check.length];
+
+			for(int i=0;i<check.length;i++){
+				int val=Integer.parseInt(check[i].trim());
+				newVals[i]=val;
+			}
+			return newVals;
+
+		}catch(Exception e) { 
+			lw.println("Error parsing intlist input: "+e.toString());
+			lw.println("Using default. Line:"+read); 
+		}
+		return defaultVals;
+	}
+	
+	//if an integer ruleId: try reading from rules and return.
+	//If a rule: parse the rule, add it to rules, and return.
+	public TemplateRule readRuleIdOrRule(String splitString, String read, TemplateRule[] rules) throws Exception{
+		String postSplit=read.split(splitString)[1].trim();
+		try{
+			int ruleId=Integer.parseInt(postSplit);
+			return rules[ruleId];
+		} catch(NumberFormatException e) { 
+			TemplateRule r=new TemplateRule(postSplit,this,false);
+			return r;
+		}catch(Exception e) { 
+			throw new Exception("Error reading block rule for variable: "+e.toString()+". Line:"+read);
+		}
 	}
 }

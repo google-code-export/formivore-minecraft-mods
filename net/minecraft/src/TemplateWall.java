@@ -78,43 +78,43 @@ public class TemplateWall extends TemplateTML{
 	public void readTowerParameters() throws Exception{
 		float mobProb=0.0F, pigZombieProb=0.0F, endermanProb=0.0F, caveSpiderProb=0.0F; //deprecated, for backawards compatability
 		
-		if(extraOptions.containsKey("biomes")) Biomes=readNamedCheckList(lw,Biomes,"=",(String)extraOptions.get("biomes"),BIOME_NAMES,"ALL");
-		if(extraOptions.containsKey("street_density")) StreetDensity=readIntParam(lw,StreetDensity,"=",(String)extraOptions.get("street_density"));
-		if(extraOptions.containsKey("level_interior")) LevelInterior=readIntParam(lw,1,"=",(String)extraOptions.get("level_interior")) == 1;
-		if(extraOptions.containsKey("walk_height")) WalkHeight=readIntParam(lw,WalkHeight,"=",(String)extraOptions.get("walk_height"));
-		if(extraOptions.containsKey("min_length")) MinL=readIntParam(lw,MinL,"=",(String)extraOptions.get("min_length"));
-		if(extraOptions.containsKey("max_length")) MaxL=readIntParam(lw,MaxL,"=",(String)extraOptions.get("max_length"));
-		if(extraOptions.containsKey("tower_rule")) TowerRule=readRuleIdOrRule("=",(String)extraOptions.get("tower_rule"));
-		if(extraOptions.containsKey("building_interval")) BuildingInterval=readIntParam(lw,BuildingInterval,"=",(String)extraOptions.get("building_interval"));
-		if(extraOptions.containsKey("make_buildings")) MakeBuildings=readIntParam(lw,1,"=",(String)extraOptions.get("make_buildings")) == 1;
-		if(extraOptions.containsKey("make_gatehouse_towers")) MakeGatehouseTowers=readIntParam(lw,1,"=",(String)extraOptions.get("make_gatehouse_towers")) == 1;
-		if(extraOptions.containsKey("make_end_towers")) MakeEndTowers=readIntParam(lw,1,"=",(String)extraOptions.get("make_end_towers")) == 1;
-		if(extraOptions.containsKey("make_underground_entranceways")) MakeUndergroundEntranceways=readIntParam(lw,1,"=",(String)extraOptions.get("make_underground_entranceways")) == 1;
-		if(extraOptions.containsKey("merge_walls")) MergeWalls=readIntParam(lw,0,"=",(String)extraOptions.get("merge_walls")) == 1;
-		if(extraOptions.containsKey("default_tower_weight")) DefaultTowerWeight=readIntParam(lw,DefaultTowerWeight,"=",(String)extraOptions.get("default_tower_weight"));
-		if(extraOptions.containsKey("tower_offset")) TowerXOffset=readIntParam(lw,TowerXOffset,"=",(String)extraOptions.get("tower_offset"));
-		if(extraOptions.containsKey("spawner_rule")) SpawnerRule=readRuleIdOrRule("=",(String)extraOptions.get("spawner_rule"));
-		if(extraOptions.containsKey("spawner_count")) SpawnerCount=readIntParam(lw,SpawnerCount,"=",(String)extraOptions.get("spawner_count"));
-		if(extraOptions.containsKey("mob_probability")) mobProb=readFloatParam(lw,mobProb,"=",(String)extraOptions.get("mob_probability"));
-		if(extraOptions.containsKey("pig_zombie_probability")) pigZombieProb=readFloatParam(lw,pigZombieProb,"=",(String)extraOptions.get("pig_zombie_probability"));
-		if(extraOptions.containsKey("enderman_probability")) endermanProb=readFloatParam(lw,endermanProb,"=",(String)extraOptions.get("enderman_probability"));
-		if(extraOptions.containsKey("cave_spider_probability")) caveSpiderProb=readFloatParam(lw,caveSpiderProb,"=",(String)extraOptions.get("cave_spider_probability"));
-		if(extraOptions.containsKey("populate_furniture")) PopulateFurniture=readFloatParam(lw,0,"=",(String)extraOptions.get("populate_furniture")) == 1;
-		if(extraOptions.containsKey("make_doors")) MakeDoors=readFloatParam(lw,0,"=",(String)extraOptions.get("make_doors")) == 1;
-		if(extraOptions.containsKey("circular_probability")) CircularProb=readFloatParam(lw,CircularProb,"=",(String)extraOptions.get("circular_probability"));
-		if(extraOptions.containsKey("chest_rule")) ChestRule=readRuleIdOrRule("=",(String)extraOptions.get("chest_rule"));
-		if(extraOptions.containsKey("square_min_height")) SqrMinHeight=readIntParam(lw,SqrMinHeight,"=",(String)extraOptions.get("square_min_height"));
-		if(extraOptions.containsKey("square_max_height")) SqrMaxHeight=readIntParam(lw,SqrMaxHeight,"=",(String)extraOptions.get("square_max_height"));
-		if(extraOptions.containsKey("square_min_width")) SqrMinWidth=readIntParam(lw,SqrMinWidth,"=",(String)extraOptions.get("square_min_width"));
-		if(extraOptions.containsKey("square_max_width")) SqrMaxWidth=readIntParam(lw,SqrMaxWidth,"=",(String)extraOptions.get("square_max_width"));
-		if(extraOptions.containsKey("square_roof_styles")) SqrRoofStyles=readNamedCheckList(lw,SqrRoofStyles,"=",(String)extraOptions.get("square_roof_styles"),BuildingTower.ROOFSTYLE_NAMES,"");
-		if(extraOptions.containsKey("square_roof_rule")) SqrRoofRule=readRuleIdOrRule("=",(String)extraOptions.get("square_roof_rule"));
-		if(extraOptions.containsKey("circular_tower_min_height")) CircMinHeight=readIntParam(lw,CircMinHeight,"=",(String)extraOptions.get("circular_tower_min_height"));
-		if(extraOptions.containsKey("circular_tower_max_height")) CircMaxHeight=readIntParam(lw,CircMaxHeight,"=",(String)extraOptions.get("circular_tower_max_height"));
-		if(extraOptions.containsKey("circular_tower_min_width")) CircMinWidth=readIntParam(lw,CircMinWidth,"=",(String)extraOptions.get("circular_tower_min_width"));
-		if(extraOptions.containsKey("circular_tower_max_width")) CircMaxWidth=readIntParam(lw,CircMaxWidth,"=",(String)extraOptions.get("circular_tower_max_width"));
-		if(extraOptions.containsKey("circular_tower_roof_styles")) CircRoofStyles=readNamedCheckList(lw,CircRoofStyles,"=",(String)extraOptions.get("circular_tower_roof_styles"),BuildingTower.ROOFSTYLE_NAMES,"");
-		if(extraOptions.containsKey("circular_tower_roof_rule")) CircRoofRule=readRuleIdOrRule("=",(String)extraOptions.get("circular_tower_roof_rule"));
+		if(extraOptions.containsKey("biomes")) Biomes=BuildingExplorationHandler.readNamedCheckList(lw,Biomes,"=",(String)extraOptions.get("biomes"),BIOME_NAMES,"ALL");
+		if(extraOptions.containsKey("street_density")) StreetDensity=BuildingExplorationHandler.readIntParam(lw,StreetDensity,"=",(String)extraOptions.get("street_density"));
+		if(extraOptions.containsKey("level_interior")) LevelInterior=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("level_interior")) == 1;
+		if(extraOptions.containsKey("walk_height")) WalkHeight=BuildingExplorationHandler.readIntParam(lw,WalkHeight,"=",(String)extraOptions.get("walk_height"));
+		if(extraOptions.containsKey("min_length")) MinL=BuildingExplorationHandler.readIntParam(lw,MinL,"=",(String)extraOptions.get("min_length"));
+		if(extraOptions.containsKey("max_length")) MaxL=BuildingExplorationHandler.readIntParam(lw,MaxL,"=",(String)extraOptions.get("max_length"));
+		if(extraOptions.containsKey("tower_rule")) TowerRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("tower_rule"),rules);
+		if(extraOptions.containsKey("building_interval")) BuildingInterval=BuildingExplorationHandler.readIntParam(lw,BuildingInterval,"=",(String)extraOptions.get("building_interval"));
+		if(extraOptions.containsKey("make_buildings")) MakeBuildings=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("make_buildings")) == 1;
+		if(extraOptions.containsKey("make_gatehouse_towers")) MakeGatehouseTowers=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("make_gatehouse_towers")) == 1;
+		if(extraOptions.containsKey("make_end_towers")) MakeEndTowers=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("make_end_towers")) == 1;
+		if(extraOptions.containsKey("make_underground_entranceways")) MakeUndergroundEntranceways=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("make_underground_entranceways")) == 1;
+		if(extraOptions.containsKey("merge_walls")) MergeWalls=BuildingExplorationHandler.readIntParam(lw,0,"=",(String)extraOptions.get("merge_walls")) == 1;
+		if(extraOptions.containsKey("default_tower_weight")) DefaultTowerWeight=BuildingExplorationHandler.readIntParam(lw,DefaultTowerWeight,"=",(String)extraOptions.get("default_tower_weight"));
+		if(extraOptions.containsKey("tower_offset")) TowerXOffset=BuildingExplorationHandler.readIntParam(lw,TowerXOffset,"=",(String)extraOptions.get("tower_offset"));
+		if(extraOptions.containsKey("spawner_rule")) SpawnerRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("spawner_rule"),rules);
+		if(extraOptions.containsKey("spawner_count")) SpawnerCount=BuildingExplorationHandler.readIntParam(lw,SpawnerCount,"=",(String)extraOptions.get("spawner_count"));
+		if(extraOptions.containsKey("mob_probability")) mobProb=BuildingExplorationHandler.readFloatParam(lw,mobProb,"=",(String)extraOptions.get("mob_probability"));
+		if(extraOptions.containsKey("pig_zombie_probability")) pigZombieProb=BuildingExplorationHandler.readFloatParam(lw,pigZombieProb,"=",(String)extraOptions.get("pig_zombie_probability"));
+		if(extraOptions.containsKey("enderman_probability")) endermanProb=BuildingExplorationHandler.readFloatParam(lw,endermanProb,"=",(String)extraOptions.get("enderman_probability"));
+		if(extraOptions.containsKey("cave_spider_probability")) caveSpiderProb=BuildingExplorationHandler.readFloatParam(lw,caveSpiderProb,"=",(String)extraOptions.get("cave_spider_probability"));
+		if(extraOptions.containsKey("populate_furniture")) PopulateFurniture=BuildingExplorationHandler.readFloatParam(lw,0,"=",(String)extraOptions.get("populate_furniture")) == 1;
+		if(extraOptions.containsKey("make_doors")) MakeDoors=BuildingExplorationHandler.readFloatParam(lw,0,"=",(String)extraOptions.get("make_doors")) == 1;
+		if(extraOptions.containsKey("circular_probability")) CircularProb=BuildingExplorationHandler.readFloatParam(lw,CircularProb,"=",(String)extraOptions.get("circular_probability"));
+		if(extraOptions.containsKey("chest_rule")) ChestRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("chest_rule"),rules);
+		if(extraOptions.containsKey("square_min_height")) SqrMinHeight=BuildingExplorationHandler.readIntParam(lw,SqrMinHeight,"=",(String)extraOptions.get("square_min_height"));
+		if(extraOptions.containsKey("square_max_height")) SqrMaxHeight=BuildingExplorationHandler.readIntParam(lw,SqrMaxHeight,"=",(String)extraOptions.get("square_max_height"));
+		if(extraOptions.containsKey("square_min_width")) SqrMinWidth=BuildingExplorationHandler.readIntParam(lw,SqrMinWidth,"=",(String)extraOptions.get("square_min_width"));
+		if(extraOptions.containsKey("square_max_width")) SqrMaxWidth=BuildingExplorationHandler.readIntParam(lw,SqrMaxWidth,"=",(String)extraOptions.get("square_max_width"));
+		if(extraOptions.containsKey("square_roof_styles")) SqrRoofStyles=BuildingExplorationHandler.readNamedCheckList(lw,SqrRoofStyles,"=",(String)extraOptions.get("square_roof_styles"),BuildingTower.ROOFSTYLE_NAMES,"");
+		if(extraOptions.containsKey("square_roof_rule")) SqrRoofRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("square_roof_rule"),rules);
+		if(extraOptions.containsKey("circular_tower_min_height")) CircMinHeight=BuildingExplorationHandler.readIntParam(lw,CircMinHeight,"=",(String)extraOptions.get("circular_tower_min_height"));
+		if(extraOptions.containsKey("circular_tower_max_height")) CircMaxHeight=BuildingExplorationHandler.readIntParam(lw,CircMaxHeight,"=",(String)extraOptions.get("circular_tower_max_height"));
+		if(extraOptions.containsKey("circular_tower_min_width")) CircMinWidth=BuildingExplorationHandler.readIntParam(lw,CircMinWidth,"=",(String)extraOptions.get("circular_tower_min_width"));
+		if(extraOptions.containsKey("circular_tower_max_width")) CircMaxWidth=BuildingExplorationHandler.readIntParam(lw,CircMaxWidth,"=",(String)extraOptions.get("circular_tower_max_width"));
+		if(extraOptions.containsKey("circular_tower_roof_styles")) CircRoofStyles=BuildingExplorationHandler.readNamedCheckList(lw,CircRoofStyles,"=",(String)extraOptions.get("circular_tower_roof_styles"),BuildingTower.ROOFSTYLE_NAMES,"");
+		if(extraOptions.containsKey("circular_tower_roof_rule")) CircRoofRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("circular_tower_roof_rule"),rules);
 
 		if(MaxL <= MinL) MaxL=MinL+1;
 		if(StreetDensity<0) StreetDensity=0;
@@ -229,89 +229,6 @@ public class TemplateWall extends TemplateTML{
 	public int pickTHeight(boolean circular,Random random){ 
 		return circular ? CircMinHeight + random.nextInt(CircMaxHeight - CircMinHeight + 1) : 
 			                     SqrMinHeight + random.nextInt(SqrMaxHeight - SqrMinHeight + 1);
-	}
-
-	//****************************************  FUNCTIONS - error handling parameter readers  *************************************************************************************//
-	public static int readIntParam(PrintWriter lw,int defaultVal,String splitString, String read){
-		try{
-			defaultVal=Integer.parseInt(read.split(splitString)[1].trim());
-		} catch(Exception e) { 
-			lw.println("Error parsing int: "+e.toString());
-			lw.println("Using default "+defaultVal+". Line:"+read); 
-		}
-		return defaultVal;
-	}
-
-	public static float readFloatParam(PrintWriter lw,float defaultVal,String splitString, String read){
-		try{
-			defaultVal=Float.parseFloat(read.split(splitString)[1].trim());
-		} catch(Exception e) { 
-			lw.println("Error parsing double: "+e.toString());
-			lw.println("Using default "+defaultVal+". Line:"+read); 
-		}
-		return defaultVal;
-	}
-	
-	public static int[] readNamedCheckList(PrintWriter lw,int[] defaultVals,String splitString, String read, String[] names, String allStr){
-		if(defaultVals==null || names.length!=defaultVals.length) defaultVals=new int[names.length];
-		try{
-			int[] newVals=new int[names.length];
-			for(int i=0;i<newVals.length;i++) newVals[i]=0;
-			if((read.split(splitString)[1]).trim().toUpperCase().equals(allStr)){
-				for(int i=0;i<newVals.length;i++) newVals[i]=1;
-			}else{
-				for(String check : (read.split(splitString)[1]).split(",")){
-					boolean found=false;
-					for(int i=0;i<names.length;i++){
-						if(names[i].toLowerCase().equals(check.trim().toLowerCase())){
-							found=true;
-							newVals[i]++;
-						}
-					}
-					if(!found) 
-						lw.println("Warning, named checklist item not found:"+check+". Line:"+read);
-				}
-			}	
-			return newVals;
-		}catch(Exception e) { 
-			lw.println("Error parsing checklist input: "+e.toString());
-			lw.println("Using default. Line:"+read); 
-		}
-		return defaultVals;
-	}
-
-	
-	public static int[] readIntList(PrintWriter lw,int[] defaultVals,String splitString,  String read){
-		try{
-			String[] check = (read.split(splitString)[1]).split(",");
-			int[] newVals=new int[check.length];
-
-			for(int i=0;i<check.length;i++){
-				int val=Integer.parseInt(check[i].trim());
-				newVals[i]=val;
-			}
-			return newVals;
-
-		}catch(Exception e) { 
-			lw.println("Error parsing intlist input: "+e.toString());
-			lw.println("Using default. Line:"+read); 
-		}
-		return defaultVals;
-	}
-	
-	//if an integer ruleId: try reading from rules and return.
-	//If a rule: parse the rule, add it to rules, and return.
-	public TemplateRule readRuleIdOrRule(String splitString, String read) throws Exception{
-		String postSplit=read.split(splitString)[1].trim();
-		try{
-			int ruleId=Integer.parseInt(postSplit);
-			return rules[ruleId];
-		} catch(NumberFormatException e) { 
-			TemplateRule r=new TemplateRule(postSplit,explorationHandler,false);
-			return r;
-		}catch(Exception e) { 
-			throw new Exception("Error reading block rule for variable: "+e.toString()+". Line:"+read);
-		}
 	}
 
 	//****************************************  FUNCTION - loadTemplatesFromDir *************************************************************************************//
