@@ -24,50 +24,30 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.io.*;
 
-//MP PORT
-//import net.minecraft.server.MinecraftServer;
-//import java.util.logging.Logger;
-import net.minecraft.client.Minecraft;
 
 //BUKKIT PORT
 //public class mod_GreatWall extends BlockPopulator implements IBuildingExplorationHandler 
 
 public class mod_GreatWall extends BuildingExplorationHandler
 {
-	public final static File SETTINGS_FILE, STYLES_DIRECTORY, LOG_FILE;
 	private final static int MAX_EXPLORATION_DISTANCE=30;
 	public final static float ACCEPT_ALPHA=50.0F;
-	static{
-		//BUKKIT PORT / MP PORT
-		//File baseDir=new File(".");
-		File baseDir=Minecraft.getMinecraftDir();
-		SETTINGS_FILE=new File(baseDir,"GreatWallModSettings.txt");
-		LOG_FILE=new File(baseDir,"great_wall_log.txt");
-		STYLES_DIRECTORY=new File(new File(baseDir,"resources"),"greatwall");
-	}
-	
+	private final static String SETTINGS_FILE_NAME="GreatWallSettings.txt",
+								LOG_FILE_NAME="great_wall_log.txt",
+								CITY_TEMPLATES_FOLDER_NAME="greatwall";
 
 	//USER MODIFIABLE PARAMETERS, values below are defaults
 	public float GlobalFrequency=0.0015F;
 	public int TriesPerChunk=1;
-	//public int hL=500;
 	public float CurveBias=0.0F;
 	public int LengthBiasNorm=200;
 	
 
 	//DATA VARIABLES
-	public BuildingExplorationHandler walledCityMod=null;
 	public ArrayList<TemplateWall> wallStyles=null;
-	private long explrWorldCode;
-	//public LinkedList<WorldGeneratorThread> exploreThreads;
-	
 	public int[] placedCoords=null;
 	public World placedWorld=null;
 	//public final Block surveyorsRod= new BlockSurveyorsRod(131, 0,this).setHardness(2.0F).setResistance(5.0F).setBlockName("SureveyorsRod");
-	
-	
-	//BUKKIT PORT / MP PORT - uncomment
-	//public static Logger logger=MinecraftServer.logger;
 
 	//****************************  CONSTRUCTOR - mod_GreatWall*************************************************************************************//
 	public mod_GreatWall() {
@@ -77,6 +57,8 @@ public class mod_GreatWall extends BuildingExplorationHandler
 		//ModLoader.AddRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
 		
 		ModLoader.SetInGameHook(this,true,true);
+		loadingMessage="Generating walls";
+		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 		
 		//MP PORT - uncomment
 		//loadDataFiles();
@@ -87,38 +69,16 @@ public class mod_GreatWall extends BuildingExplorationHandler
 		return GREAT_WALL_MOD_STRING;
 	}
 	
-	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
-	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
-	//MP PORT - comment out function
-	public void ModsLoaded(){
-		//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-		for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
-			if(mod.toString().equals(WALLED_CITY_MOD_STRING)){
-				BuildingExplorationHandler wcp=(BuildingExplorationHandler)mod;
-				if(!wcp.dataFilesLoaded) wcp.ModsLoaded();
-				if(!wcp.errFlag){
-					walledCityMod=wcp;
-					System.out.println("Combining chunk explorers for "+toString()+" and "+walledCityMod.toString()+".");
-				}
-				break;
-		}}
-		
-		initializeHumansPlusReflection();
-		loadDataFiles();
-	}
-	
 	//****************************  FUNCTION - loadDataFiles *************************************************************************************//
 	public void loadDataFiles(){
 		try {
 			//read and check values from file
-			lw= new PrintWriter( new BufferedWriter( new FileWriter(LOG_FILE) ) );
-			loadingMessage="Generating walls";
+			lw= new PrintWriter( new BufferedWriter( new FileWriter(new File(BASE_DIRECTORY,LOG_FILE_NAME)) ));
 			logOrPrint("Loading options and templates for the Great Wall Mod.");
 			getGlobalOptions();
-
-			max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 			
-			wallStyles=TemplateWall.loadWallStylesFromDir(STYLES_DIRECTORY,this);
+			File stylesDirectory=new File(new File(BASE_DIRECTORY,RESOURCES_FOLDER_NAME),CITY_TEMPLATES_FOLDER_NAME);
+			wallStyles=TemplateWall.loadWallStylesFromDir(stylesDirectory,this);
 
 			lw.println("\nTemplate loading complete.");
 			lw.println("Probability of generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
@@ -135,32 +95,21 @@ public class mod_GreatWall extends BuildingExplorationHandler
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
 	public synchronized void updateWorldExplored(World world_) {
 		if(Building.getWorldCode(world_)!=explrWorldCode){
-			world=world_;
-			explrWorldCode=Building.getWorldCode(world);
-			chunksExploredThisTick=0;
-			chunksExploredFromStart=0;
-			if(world.isNewWorld && world.worldInfo.getWorldTime()==0) {
-				isCreatingDefaultChunks=true;
-			}
+			setNewWorld(world_,"Starting to survey a world for wall generation...");
 			
-			if(walledCityMod==null){
+			if(masterExplorationHandler==null){
 				//kill zombies
 				for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
 				exploreThreads=new LinkedList<WorldGeneratorThread>();
 			} else {
-				walledCityMod.updateWorldExplored(world);
-				exploreThreads=walledCityMod.exploreThreads;
+				masterExplorationHandler.updateWorldExplored(world);
+				exploreThreads=masterExplorationHandler.exploreThreads;
 			}
-			
-			
-			logOrPrint("Starting to survey a world for wall generation...");
 		}
 	}
 	
 	//****************************  FUNCTION - isGeneratorStillValid *************************************************************************************//
-	public boolean isGeneratorStillValid(WorldGeneratorThread wgt){
-		return true;
-	}
+	public boolean isGeneratorStillValid(WorldGeneratorThread wgt){ return true; }
 
 	//****************************  FUNCTION - GenerateSurface  *************************************************************************************//
 	//BUKKIT PORT
@@ -173,10 +122,11 @@ public class mod_GreatWall extends BuildingExplorationHandler
 		
 		//Put flushGenThreads before the exploreThreads enqueues and include the callChunk argument.
 		//This is to avoid putting mineral deposits in cities etc.
-		if(walledCityMod==null && isCreatingDefaultChunks) flushGenThreads(new int[]{i,k});
+		if(masterExplorationHandler==null && isCreatingDefaultChunks) flushGenThreads(new int[]{i,k});
 		
 		if(random.nextFloat() < GlobalFrequency)
-			exploreThreads.add(new WorldGenGreatWall(this,walledCityMod==null ? this : walledCityMod, world, random, i, k,TriesPerChunk, GlobalFrequency));
+			exploreThreads.add(new WorldGenGreatWall(this,masterExplorationHandler==null ? this:masterExplorationHandler, 
+					                                 world, random, i, k,TriesPerChunk, GlobalFrequency));
 	}
 	
 	public void GenerateNether( World world, Random random, int chunkI, int chunkK ) {
@@ -184,34 +134,32 @@ public class mod_GreatWall extends BuildingExplorationHandler
 	}
 	
 	//****************************  FUNCTION - OnTickInGame  *************************************************************************************//
-	//MP Port
-	//public boolean OnTickInGame() {
 	@Override
-	public boolean OnTickInGame(float tick, net.minecraft.client.Minecraft game) {
-		if(walledCityMod!=null) return true;
+	public void OnTickInGame() {
+		if(masterExplorationHandler!=null) return;
 		//if(exploreThreads.size()==0) doQueuedLighting();
 		flushGenThreads(NO_CALL_CHUNK);
 		runWorldGenThreads();
-		return true;
 	}
 
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//
 	private void getGlobalOptions(){
-		if(SETTINGS_FILE.exists()){
+		File settingsFile=new File(BASE_DIRECTORY,SETTINGS_FILE_NAME);
+		if(settingsFile.exists()){
 			BufferedReader br = null;
 			try{
-				br=new BufferedReader( new FileReader(SETTINGS_FILE) );
+				br=new BufferedReader( new FileReader(settingsFile) );
 				String read = br.readLine();
 				lw.println("Getting global options...");    
 	
 				while( read != null ) {
-					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = TemplateWall.readFloatParam(lw,GlobalFrequency,":",read);
-					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = TemplateWall.readIntParam(lw,TriesPerChunk,":",read);
-					if(read.startsWith( "CurveBias" )) CurveBias = TemplateWall.readFloatParam(lw,CurveBias,":",read);
-					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = TemplateWall.readIntParam(lw,LengthBiasNorm,":",read);
-					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = TemplateWall.readIntParam(lw,ConcaveSmoothingScale,":",read);
-					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = TemplateWall.readIntParam(lw,ConvexSmoothingScale,":",read);
-					if(read.startsWith( "BacktrackLength" )) BacktrackLength = TemplateWall.readIntParam(lw,BacktrackLength,":",read);
+					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
+					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
+					if(read.startsWith( "CurveBias" )) CurveBias = readFloatParam(lw,CurveBias,":",read);
+					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = readIntParam(lw,LengthBiasNorm,":",read);
+					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = readIntParam(lw,ConcaveSmoothingScale,":",read);
+					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = readIntParam(lw,ConvexSmoothingScale,":",read);
+					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
 					
 					readChestItemsList(lw,read,br);
 					
@@ -228,7 +176,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 			copyDefaultChestItems();
 			PrintWriter pw=null;
 			try{
-				pw=new PrintWriter( new BufferedWriter( new FileWriter(SETTINGS_FILE) ) );
+				pw=new PrintWriter( new BufferedWriter( new FileWriter(settingsFile) ) );
 				pw.println("<-README: put this file in the main minecraft folder, e.g. C:\\Users\\Administrator\\AppData\\Roaming\\.minecraft\\->");
 				pw.println();
 				pw.println("<-GlobalFrequency controls how likely walls are to appear. Should be between 0.0 and 1.0. Lower to make less common->");

@@ -36,8 +36,6 @@ public class TemplateRule {
     
     public final static TemplateRule AIR_RULE=new TemplateRule(AIR_BLOCK);
     
-    //public final static TemplateRule DEFAULT_SPAWNER_RULE= new TemplateRule(HARD_SPAWNER_BLOCK);
-    
     private int[] blockIDs, blockMDs;
     public int chance = 100, condition = 0;
     public int[] primaryBlock=null;
@@ -66,12 +64,7 @@ public class TemplateRule {
         }
         
         setPrimaryBlock();
-    }
-    
-    public void readBlockID() throws Exception{
-    	
-    }
-    
+    } 
 
     public TemplateRule(int[] block){
     	blockIDs=new int[]{block[0]};
@@ -131,6 +124,16 @@ public class TemplateRule {
     
     public int[] getBlockIDs(){
     	return blockIDs;
+    }
+    
+    @Override
+    public String toString(){
+    	String str=condition +","+chance;
+    	for(int m=0; m<blockIDs.length; m++){
+    		str+=","+blockIDs[m];
+    		if(blockMDs[m]!=0) str+="-"+blockMDs[m];
+    	}
+    	return str;
     }
 
     

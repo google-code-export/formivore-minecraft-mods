@@ -536,6 +536,18 @@ public class BuildingWall extends Building
 				TemplateTML building=ws.buildings.get(Building.selectWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
 				int y1=(building==TemplateWall.DEFAULT_TOWER ? -2 : (building.length-tw)/2 - 2);
 
+				/*
+				th=10+random.nextInt(10);
+				int x1=twrDXMid+(clearSide==bHand ? bWidth:-1);
+				BuildingCellularAutomaton bca=new BuildingCellularAutomaton(bID+n,wgt, rotateDir(bDir,clearSide), clearSide, tw, th,tl, getIJKPt(x1,twrDZMid,y1));
+				if(bca.queryCanBuild(0)){ 
+					if(bca.build()){
+						n+=ws.BuildingInterval;
+						built=true;
+					}
+				}
+				*/
+				
 				if(building==TemplateWall.DEFAULT_TOWER){
 					int ybuffer=(isAvenue ? 0:1) - ws.TowerXOffset;
 					int x1=twrDXMid+(clearSide==bHand ? (bWidth - ybuffer):ybuffer-1);
