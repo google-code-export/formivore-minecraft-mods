@@ -49,6 +49,11 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	public WorldGenWalledCity (mod_WalledCity wc_,World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
 		super(wc_, world_, random_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
 		wc=wc_;
+		ConcaveSmoothingScale=wc.ConcaveSmoothingScale;
+		ConvexSmoothingScale=wc.ConcaveSmoothingScale;
+		BacktrackLength=wc.BacktrackLength;
+		chestTries=wc.chestTries;
+		chestItems=wc.chestItems;
 		setName("WorldGenWalledCityThread");
 	}
 	
@@ -179,7 +184,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		//=================================== Build it! =========================================
 		exploreArea(corner1, corner2, true);
 		willBuild=true;
-		if(!explorationHandler.isFlushingGenThreads) suspendGen();
+		if(!master.isFlushingGenThreads) suspendGen();
 		
 		wc.chatBuildingCity("\n***** Building "+ows.name+" city"+", ID="+ID+" between "+walls[0].globalCoordString(0,0,0)+" and "+walls[2].globalCoordString(0,0,0) + " ******\n");
 		if(ows.LevelInterior) levelCity();
@@ -241,7 +246,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 
 		
 		
-		if(!explorationHandler.isFlushingGenThreads) suspendGen();
+		if(!master.isFlushingGenThreads) suspendGen();
 		//===============================================      streets   ===============================================
 		//build avenues and cross avenues
 		LinkedList<BuildingDoubleWall> branchAvenues=new LinkedList<BuildingDoubleWall>();
@@ -266,7 +271,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 
 		for(int tries=0;tries<maxTries; tries++){
 			
-			if(tries % 5==0 && !explorationHandler.isFlushingGenThreads) suspendGen();
+			if(tries % 5==0 && !master.isFlushingGenThreads) suspendGen();
 			int[] pt=randInteriorPoint();
 			sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,true);
 			if(pt!=null && pt[1]!=-1){
@@ -284,7 +289,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(BuildingDoubleWall avenue : branchAvenues)
 			avenue.buildTowers(true,true,false,ows.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2, true);
 		for(BuildingDoubleWall street : plannedStreets){
-			if(!explorationHandler.isFlushingGenThreads) suspendGen();
+			if(!master.isFlushingGenThreads) suspendGen();
 			street.buildTowers(true,true,sws.MakeGatehouseTowers,ows.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2, false);
 		}
 		
@@ -431,7 +436,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			for(int chunkK=corner1[2]>>4; ((corner2[2]>>4)-chunkK)*incK > 0; chunkK+=incK)
 				world.getChunkFromChunkCoords(chunkI,chunkK).generateHeightMap();
 		
-		if(!explorationHandler.isFlushingGenThreads) suspendGen();
+		if(!master.isFlushingGenThreads) suspendGen();
 	}
 	
 	//****************************************  FUNCTION - chooseDirection *************************************************************************************//

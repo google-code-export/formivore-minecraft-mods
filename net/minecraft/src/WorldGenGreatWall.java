@@ -29,9 +29,14 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 	private mod_GreatWall gw;
 	
 	//****************************  CONSTRUCTOR - WorldGenGreatWall *************************************************************************************//
-	public WorldGenGreatWall (mod_GreatWall gw_, BuildingExplorationHandler beh_,World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
-		super(beh_, world_, random_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
+	public WorldGenGreatWall (mod_GreatWall gw_, BuildingExplorationHandler master,World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
+		super(master, world_, random_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
 		gw=gw_;
+		ConcaveSmoothingScale=gw.ConcaveSmoothingScale;
+		ConvexSmoothingScale=gw.ConcaveSmoothingScale;
+		BacktrackLength=gw.BacktrackLength;
+		chestTries=gw.chestTries;
+		chestItems=gw.chestItems;
 		setName("WorldGenGreatWallThread");
 	}
 

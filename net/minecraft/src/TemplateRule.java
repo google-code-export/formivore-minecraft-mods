@@ -77,6 +77,12 @@ public class TemplateRule {
     	chance=chance_;
     }
     
+    public TemplateRule(int[] blockIDs_, int[] blockMDs_, int chance_){
+    	blockIDs=blockIDs_;
+    	blockMDs=blockMDs_;
+    	chance=chance_;
+    }
+    
     public void setFixedRule(Random random){
     	if(condition==FIXED_FOR_BUILDING){
 	    	int m=random.nextInt(blockIDs.length);

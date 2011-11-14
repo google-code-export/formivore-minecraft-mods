@@ -59,7 +59,7 @@ public class BuildingWall extends Building
 		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, new int[]{ws_.WWidth,ws_.WHeight,0}, new int[]{i0_,j0_,k0_});
 		constructorHelper(ws_,maxLength_,i0_,j0_,k0_);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
-		Backtrack=wgt.explorationHandler.BacktrackLength;
+		Backtrack=wgt.BacktrackLength;
 		if(maxLength>0){
 			xArray[0]=0;
 			zArray[0]=0;
@@ -70,7 +70,7 @@ public class BuildingWall extends Building
 		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, new int[]{ws_.WWidth,ws_.WHeight,0}, sourcePt);
 		constructorHelper(ws_,maxLength_,sourcePt[0],sourcePt[1],sourcePt[2]);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
-		Backtrack=wgt.explorationHandler.BacktrackLength;
+		Backtrack=wgt.BacktrackLength;
 		if(maxLength>0){
 			xArray[0]=0;
 			zArray[0]=0;

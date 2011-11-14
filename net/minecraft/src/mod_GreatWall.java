@@ -41,7 +41,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 	public int TriesPerChunk=1;
 	public float CurveBias=0.0F;
 	public int LengthBiasNorm=200;
-	
+	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
 
 	//DATA VARIABLES
 	public ArrayList<TemplateWall> wallStyles=null;
@@ -97,49 +97,22 @@ public class mod_GreatWall extends BuildingExplorationHandler
 		if(Building.getWorldCode(world_)!=explrWorldCode){
 			setNewWorld(world_,"Starting to survey a world for wall generation...");
 			
-			if(masterExplorationHandler==null){
+			if(this==master){
 				//kill zombies
 				for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
 				exploreThreads=new LinkedList<WorldGeneratorThread>();
 			} else {
-				masterExplorationHandler.updateWorldExplored(world);
-				exploreThreads=masterExplorationHandler.exploreThreads;
+				master.updateWorldExplored(world);
+				exploreThreads=master.exploreThreads;
 			}
 		}
 	}
 	
-	//****************************  FUNCTION - isGeneratorStillValid *************************************************************************************//
-	public boolean isGeneratorStillValid(WorldGeneratorThread wgt){ return true; }
-
-	//****************************  FUNCTION - GenerateSurface  *************************************************************************************//
-	//BUKKIT PORT
-	//public void populate(World world, Random random, Chunk source){
-	//	int chunkI=source.getX(), chunkK=source.getZ();
-	public void GenerateSurface( World world, Random random, int i, int k ) {
-		if(errFlag) return;
-		updateWorldExplored(world);
-		chunksExploredFromStart++;
-		
-		//Put flushGenThreads before the exploreThreads enqueues and include the callChunk argument.
-		//This is to avoid putting mineral deposits in cities etc.
-		if(masterExplorationHandler==null && isCreatingDefaultChunks) flushGenThreads(new int[]{i,k});
-		
-		if(random.nextFloat() < GlobalFrequency)
-			exploreThreads.add(new WorldGenGreatWall(this,masterExplorationHandler==null ? this:masterExplorationHandler, 
-					                                 world, random, i, k,TriesPerChunk, GlobalFrequency));
-	}
-	
-	public void GenerateNether( World world, Random random, int chunkI, int chunkK ) {
-		GenerateSurface(world,random,chunkI,chunkK);
-	}
-	
-	//****************************  FUNCTION - OnTickInGame  *************************************************************************************//
+	//****************************  FUNCTION - generate *************************************************************************************//
 	@Override
-	public void OnTickInGame() {
-		if(masterExplorationHandler!=null) return;
-		//if(exploreThreads.size()==0) doQueuedLighting();
-		flushGenThreads(NO_CALL_CHUNK);
-		runWorldGenThreads();
+	public void generate( World world, Random random, int i, int k ) {
+		if(random.nextFloat() < GlobalFrequency)
+			exploreThreads.add(new WorldGenGreatWall(this,master,world, random, i, k,TriesPerChunk, GlobalFrequency));
 	}
 
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//
