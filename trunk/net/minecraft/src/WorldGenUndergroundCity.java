@@ -38,6 +38,11 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	public WorldGenUndergroundCity (mod_WalledCity wc_,World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
 		super(wc_, world_, random_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
 		wc=wc_;
+		ConcaveSmoothingScale=wc.ConcaveSmoothingScale;
+		ConvexSmoothingScale=wc.ConcaveSmoothingScale;
+		BacktrackLength=wc.BacktrackLength;
+		chestTries=wc.chestTries;
+		chestItems=wc.chestItems;
 		setName("WorldGenCavernThread");
 	}
 	
@@ -66,7 +71,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 				entranceway.street.buildTowers(true,true,false,false,false);
 		}}
 		for(BuildingDoubleWall street : streets) {
-			if(!explorationHandler.isFlushingGenThreads) suspendGen();
+			if(!master.isFlushingGenThreads) suspendGen();
 			street.buildTowers(true,true,false,pws.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2,false);
 		}
 
@@ -186,7 +191,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		//fills hollows with roads/buildings
 		int successes=0;
 		for(int tries=0; tries<pws.StreetDensity * 4; tries++){
-			if(!explorationHandler.isFlushingGenThreads) suspendGen();
+			if(!master.isFlushingGenThreads) suspendGen();
 			int[] hollow=hollows.get(random.nextInt(hollows.size()));
 			
 			int[] pt=new int[]{random.nextInt(hollow[3]),0,random.nextInt(hollow[3])};

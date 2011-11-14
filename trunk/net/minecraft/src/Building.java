@@ -361,7 +361,7 @@ public class Building
  			//sometimes get an array out of bound error from minecraft (?!)
 	        TileEntityChest tileentitychest=(TileEntityChest)world.getBlockTileEntity(pt[0],pt[1],pt[2]);
 	 		
-		    for(int m=0; m<wgt.explorationHandler.chestTries[chestType]; m++){
+		    for(int m=0; m<wgt.chestTries[chestType]; m++){
 		    	if(random.nextBoolean()){
 			    	ItemStack itemstack=getChestItemstack(chestType);
 			    	
@@ -381,7 +381,7 @@ public class Building
  		if(chestType==TOWER_CHEST && random.nextInt(4)==0){ //for tower chests, chance of returning the tower block
  			return new ItemStack(bRule.primaryBlock[0],random.nextInt(10),bRule.primaryBlock[1]);
  		}
- 		int[][] itempool=wgt.explorationHandler.chestItems[chestType];
+ 		int[][] itempool=wgt.chestItems[chestType];
  		int idx=selectWeightedOption(random,itempool[3],itempool[0]);
  		return new ItemStack(itempool[1][idx], 
  							 itempool[4][idx] + random.nextInt(itempool[5][idx]-itempool[4][idx]+1), 
@@ -425,7 +425,7 @@ public class Building
  	//MP PORT
  	//public void setHumansPlusFactionFlag(int[] pt, int blockID, int metadata){}
     public void setHumansPlusFactionFlag(int[] pt, int blockID, int metadata){
-    	if(!wgt.explorationHandler.humansPlusLoaded) return;
+    	if(!wgt.master.humansPlusLoaded) return;
     	
     	int dir=rotateMetaDirToLocalAxes(LADDER_META_TO_DIR[metadata]);
     	if(dir==DIR_NORTH || dir==DIR_SOUTH) pt[0]+=dir/2; else pt[2]+=dir;
@@ -434,8 +434,8 @@ public class Building
     	try {
     		//call constructor using reflection
     		Object arglist[] = new Object[]{world,new Integer(pt[0]), new Integer(pt[1]), new Integer(pt[2]),faceDir};
-    		Object h_EntityFlagObj = wgt.explorationHandler.h_EntityFlagConstr.newInstance(arglist);
-    		Object retobj = wgt.explorationHandler.updateFlagMethod.invoke(h_EntityFlagObj,new Object[]{});
+    		Object h_EntityFlagObj = wgt.master.h_EntityFlagConstr.newInstance(arglist);
+    		Object retobj = wgt.master.updateFlagMethod.invoke(h_EntityFlagObj,new Object[]{});
     		if(((Boolean)retobj).booleanValue()){
     			if(!world.multiplayerWorld){
     				world.entityJoinedWorld((Entity)h_EntityFlagObj);
@@ -445,15 +445,15 @@ public class Building
     		//now change the "flag" enum field to the desired faction
     		Object factionObj=null;
     		switch(blockID){
-	    		case HUMANS_PLUS_ASSASIN_FLAG_ID: factionObj=wgt.explorationHandler.enumAssassinObj; break;
-	    		case HUMANS_PLUS_ROGUE_FLAG_ID: factionObj=wgt.explorationHandler.enumRogueObj; break;
-	    		case HUMANS_PLUS_BANDIT_FLAG_ID: factionObj=wgt.explorationHandler.enumBanditObj; break;
-	    		case HUMANS_PLUS_PEACEFUL_FLAG_ID: factionObj=wgt.explorationHandler.enumPeacefulObj; break;
-	    		case HUMANS_PLUS_MILITIA_FLAG_ID: factionObj=wgt.explorationHandler.enumMilitiaObj; break;
-	    		case HUMANS_PLUS_SHADOW_FLAG_ID: factionObj=wgt.explorationHandler.enumShadowObj; break;
+	    		case HUMANS_PLUS_ASSASIN_FLAG_ID: factionObj=wgt.master.enumAssassinObj; break;
+	    		case HUMANS_PLUS_ROGUE_FLAG_ID: factionObj=wgt.master.enumRogueObj; break;
+	    		case HUMANS_PLUS_BANDIT_FLAG_ID: factionObj=wgt.master.enumBanditObj; break;
+	    		case HUMANS_PLUS_PEACEFUL_FLAG_ID: factionObj=wgt.master.enumPeacefulObj; break;
+	    		case HUMANS_PLUS_MILITIA_FLAG_ID: factionObj=wgt.master.enumMilitiaObj; break;
+	    		case HUMANS_PLUS_SHADOW_FLAG_ID: factionObj=wgt.master.enumShadowObj; break;
     		}
     		if(factionObj!=null)
-    			wgt.explorationHandler.h_EntityFlagFlagfFld.set(h_EntityFlagObj, factionObj);
+    			wgt.master.h_EntityFlagFlagfFld.set(h_EntityFlagObj, factionObj);
     	}
     	catch (Throwable e) {
     		System.err.println(e);

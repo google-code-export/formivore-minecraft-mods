@@ -43,6 +43,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	public int TriesPerChunk=1;
 	public int MinCitySeparation=500, UndergroundMinCitySeparation=250;
 	public boolean CityBuiltMessage=true;
+	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
 
 	//DATA VARIABLES
 	public ArrayList<TemplateWall> cityStyles=null, undergroundCityStyles=new ArrayList<TemplateWall>();
@@ -179,24 +180,12 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	
 
 
-	//****************************  FUNCTION - GenerateSurface  *************************************************************************************//
-	//BUKKIT PORT
-	//public void populate(World world, Random random, Chunk source){
-	//	int chunkI=source.getX(), chunkK=source.getZ();
-	public void GenerateSurface( World world, Random random, int i, int k ) {
-		if(errFlag) return;
-		updateWorldExplored(world);
-		chunksExploredFromStart++;
-
-		
+	//****************************  FUNCTION - generate *************************************************************************************//
+	public void generate( World world, Random random, int i, int k ) {
 		//BUKKIT PORT / MP PORT - Comment out below block
 		if(CityBuiltMessage && mc.thePlayer!=null)
 			while(citiesBuiltMessages.size()>0) 
 				chatCityBuilt(citiesBuiltMessages.remove());
-
-		//Put flushGenThreads before the exploreThreads enqueues and include the callChunk argument.
-		//This is to avoid putting mineral deposits in cities etc.
-		if(isCreatingDefaultChunks) flushGenThreads(new int[]{i,k});
 		
 		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_WALLED) && random.nextFloat() < GlobalFrequency){
 			exploreThreads.add(new WorldGenWalledCity(this, world, random, i, k,TriesPerChunk, GlobalFrequency));
@@ -208,20 +197,6 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			exploreThreads.add(wgt);
 		}
 	}
-	
-	public void GenerateNether( World world, Random random, int chunkI, int chunkK ) {
-		GenerateSurface(world,random,chunkI,chunkK);
-	}
-	
-	//****************************  FUNCTION - OnTickInGame  *************************************************************************************//
-	@Override
-	public void OnTickInGame() {
-		//if(exploreThreads.size()==0) doQueuedLighting();
-		flushGenThreads(NO_CALL_CHUNK);
-		runWorldGenThreads();	
-	}
-	
-
 	
 	//****************************  FUNCTION - getGlobalOptions  *************************************************************************************//
 	public void getGlobalOptions() {

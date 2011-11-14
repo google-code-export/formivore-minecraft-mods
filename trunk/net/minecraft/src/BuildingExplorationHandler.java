@@ -83,10 +83,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//protected final static File BASE_DIRECTORY=new File(".");
 	protected final static File BASE_DIRECTORY=Minecraft.getMinecraftDir();
 	
-	
-	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
-	
-	protected BuildingExplorationHandler masterExplorationHandler=null;
+	protected BuildingExplorationHandler master=null;
 	protected long explrWorldCode;
 	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;
@@ -110,16 +107,19 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//BUKKIT PORT / MP PORT - uncomment
 	//public static Logger logger=MinecraftServer.logger;
 	public Minecraft mc=ModLoader.getMinecraftInstance();
-	
 	public String Version(){ return VERSION_STRING;}	
 	abstract public void updateWorldExplored(World world);
-	abstract public boolean isGeneratorStillValid(WorldGeneratorThread wgt);
 	abstract public void loadDataFiles();
-	abstract public void OnTickInGame();
-	//public boolean OnTickInGame() { return true;} //for the  multiplayer port, don't have to do anything here
+	abstract public void generate(World world, Random random, int i, int k);
 	
 	int[] chestTries=new int[]{4,6,6,6};
 	int[][][] chestItems=new int[][][]{null,null,null,null};
+	
+	//****************************  FUNCTION - isGeneratorStillValid *************************************************************************************//
+	//override this with e.g. the walled city generator
+	public boolean isGeneratorStillValid(WorldGeneratorThread wgt){
+		return true;
+	}
 	
 	//****************************  FUNCTION - OnTickInGame *************************************************************************************//
 	//MP PORT - comment out
@@ -129,34 +129,63 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		return true;
 	}
 	
+	public void OnTickInGame(){
+		if(this==master){
+			flushGenThreads(NO_CALL_CHUNK);
+			runWorldGenThreads();
+		}
+	}
+	
+	
+	//****************************  FUNCTION - GenerateSurface  *************************************************************************************//
+	//BUKKIT PORT
+	//public void populate(World world, Random random, Chunk source){
+	//	int chunkI=source.getX(), chunkK=source.getZ();
+	@Override
+	public void GenerateSurface( World world, Random random, int i, int k ) {
+		if(errFlag) return;
+		updateWorldExplored(world);
+		chunksExploredFromStart++;
+		
+		//Put flushGenThreads before the exploreThreads enqueues and include the callChunk argument.
+		//This is to avoid putting mineral deposits in cities etc.
+		if(this==master && isCreatingDefaultChunks)
+			flushGenThreads(new int[]{i,k});
+		
+		generate(world,random,i,k);
+	}
+	
+	@Override
+	public void GenerateNether( World world, Random random, int chunkI, int chunkK ) {
+		GenerateSurface(world,random,chunkI,chunkK);
+	}
+	
 	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
 	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
 	//Do everything here instead of subclasses so it is easier to create new subclasses
 	public void ModsLoaded(){
-		if(this.toString().equals(GREAT_WALL_MOD_STRING)){
-			//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
-			for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
-				if(mod.toString().equals(WALLED_CITY_MOD_STRING)){
-					BuildingExplorationHandler wcp=(BuildingExplorationHandler)mod;
-					if(!wcp.dataFilesLoaded) wcp.ModsLoaded();
-					if(!wcp.errFlag){
-						masterExplorationHandler=wcp;
-						System.out.println("Combining chunk explorers for "+toString()+" and "+masterExplorationHandler.toString()+".");
-					}
-					break;
-			}}
-			
-			initializeHumansPlusReflection();
-			loadDataFiles();
-		}else if(this.toString().equals(WALLED_CITY_MOD_STRING)){
+		if(this.toString().equals(WALLED_CITY_MOD_STRING)){
+			master=this;
 			if(!dataFilesLoaded){
 				initializeHumansPlusReflection();
 			 	loadDataFiles();
 			}
-		}else{
-			if(!dataFilesLoaded){
-			 	loadDataFiles();
-			}
+		}
+		else{
+			//see if the walled city mod is loaded. If it is, make it load its templates (if not already loaded) and then combine explorers.
+			for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
+				if(mod.toString().equals(WALLED_CITY_MOD_STRING)){
+					BuildingExplorationHandler wcm=(BuildingExplorationHandler)mod;
+					if(!wcm.dataFilesLoaded) wcm.ModsLoaded();
+					if(!wcm.errFlag){
+						master=wcm;
+						System.out.println("Combining chunk explorers for "+toString()+" and "+master.toString()+".");
+					}
+					break;
+			}}
+			if(master==null) master=this;
+			initializeHumansPlusReflection();
+			loadDataFiles();
 		}
 	}
 	

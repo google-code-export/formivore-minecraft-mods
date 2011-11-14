@@ -36,20 +36,25 @@ public abstract class WorldGeneratorThread extends Thread {
 	public Random random;
 	public int chunkI, chunkK, TriesPerChunk;
 	public double ChunkTryProb;
-	public BuildingExplorationHandler explorationHandler;
+	public BuildingExplorationHandler master;
 	private int min_spawn_height=0, max_spawn_height=127;
 	public boolean spawn_surface=true;
 	public boolean willBuild=false;
 	
+	//All WorldGeneratorThreads will have these, even if not used.
+	int[] chestTries=null;
+	int[][][] chestItems=null;
+	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
+	
 	//****************************  CONSTRUCTOR - WorldGeneratorThread *************************************************************************************//
-	public WorldGeneratorThread(BuildingExplorationHandler beh_, World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_){
+	public WorldGeneratorThread(BuildingExplorationHandler master_, World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_){
 		world=world_;
 		random=random_;
 		chunkI=chunkI_;
 		chunkK=chunkK_;
 		TriesPerChunk=TriesPerChunk_;
 		ChunkTryProb=ChunkTryProb_;
-		explorationHandler=beh_;
+		master=master_;
 	}
 	
 	//****************************  FUNCTION - abstract and stub functions  *************************************************************************************//
@@ -83,10 +88,10 @@ public abstract class WorldGeneratorThread extends Thread {
 			}while(!success && tries<TriesPerChunk && j0!=Building.HIT_WATER);
 		} catch(InterruptedException e){ }
 		
-		synchronized(explorationHandler){
+		synchronized(master){
 			hasTerminated=true;
 			threadSuspended=true;
-			explorationHandler.notifyAll();
+			master.notifyAll();
 		}
 	}
 
@@ -111,7 +116,7 @@ public abstract class WorldGeneratorThread extends Thread {
     	if(world.blockExists(i,0,k)) return true;
     	
     	//else this chunk does not exist
-    	int threadAction=explorationHandler.queryChunk(i>>4, k>>4);
+    	int threadAction=master.queryChunk(i>>4, k>>4);
     	if(threadAction==BuildingExplorationHandler.THREAD_TERMINATE) return false;
     	if(threadAction==BuildingExplorationHandler.THREAD_SUSPEND){
     		//suspend this thread
@@ -119,8 +124,8 @@ public abstract class WorldGeneratorThread extends Thread {
     	}
     	
     	//check if we are trying to build in a chunk in middle of generation, if so terminate
-    	if(explorationHandler.flushCallChunk!=BuildingExplorationHandler.NO_CALL_CHUNK){
-    		if(i>>4==explorationHandler.flushCallChunk[0] && k>>4==explorationHandler.flushCallChunk[1])
+    	if(master.flushCallChunk!=BuildingExplorationHandler.NO_CALL_CHUNK){
+    		if(i>>4==master.flushCallChunk[0] && k>>4==master.flushCallChunk[1])
     			return false;
     	}
     		
@@ -136,8 +141,8 @@ public abstract class WorldGeneratorThread extends Thread {
 		threadSuspended=true;
             synchronized(this) {
                 while (threadSuspended){
-                	synchronized(explorationHandler){
-                		explorationHandler.notifyAll();
+                	synchronized(master){
+                		master.notifyAll();
                 	}
                 	wait();
                 }

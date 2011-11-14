@@ -20,10 +20,10 @@ public class WorldGenSingleWall extends WorldGeneratorThread{
 			generate(pt[0],pt[1],pt[2]);
 		} catch(InterruptedException e){ }
 
-		synchronized(explorationHandler){
+		synchronized(master){
 			hasTerminated=true;
 			threadSuspended=true;
-			explorationHandler.notifyAll();
+			master.notifyAll();
 		}
 	}
 	
