@@ -523,7 +523,7 @@ public class BuildingWall extends Building
 				
 				if(DEBUG>1) System.out.println("Building gatehouse for "+IDString()+" at n="+n+" "+globalCoordString(0,0,0)+" width "+tw);
 				BuildingTower tower = new BuildingTower(bID+n, this, -bDir, -bHand, tw, th, tl, getIJKPt(twrDXMid+bWidth/2-tw/2,twrDZMid,-2));
-				if(!tower.isObstructedRoof()){
+				if(!tower.isObstructedRoof(-1)){
 					wgt.setLayoutCode(tower.getIJKPt(0,0,0),tower.getIJKPt(tw-1,0,tw-1), WorldGeneratorThread.LAYOUT_CODE_TOWER);
 					tower.build(xArray[n-1]-xArray[twrNMid], xArray[n-tw-2]-xArray[twrNMid], false);
 					
@@ -586,6 +586,9 @@ public class BuildingWall extends Building
 				if(tower.queryCanBuild(1,overlapTowers)){
 					tower.build(0,0,true);
 					break;
+				}else{
+					int a=2+2;
+					int b=a;
 				}
 				tl--;
 			}

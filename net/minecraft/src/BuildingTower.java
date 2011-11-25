@@ -72,7 +72,7 @@ public class BuildingTower extends Building
 		}
 		
 		//check if obstructed at roof
-		if(isObstructedRoof()) return false;
+		if(isObstructedRoof(ybuffer)) return false;
 		
 		//check if obstructed on body
 		if(wgt.isLayoutGenerator()){
@@ -88,10 +88,10 @@ public class BuildingTower extends Building
 		return true;
 	}
 	
-	public boolean isObstructedRoof(){
+	public boolean isObstructedRoof(int ybuffer){
 		int rBuffer=(roofStyle==ROOF_CRENEL ? 1:( roofStyle==ROOF_DOME || roofStyle==ROOF_CONE) ? 0:-1);
 		int rHeight=(roofStyle==ROOF_CRENEL ? 2 : minHorizDim/2);
-		if(isObstructedSolid(new int[]{rBuffer,bHeight,rBuffer},
+		if(isObstructedSolid(new int[]{rBuffer,bHeight,Math.max(rBuffer, ybuffer)},
 				             new int[]{bWidth-1-rBuffer,bHeight+rHeight,bLength-1-rBuffer}) ) {
 			if(BuildingWall.DEBUG>0) System.out.println("Cannot build Tower "+IDString()+". Obstructed!");
 			return true;
