@@ -92,7 +92,7 @@ public class BuildingUndergroundEntranceway extends Building{
 		
 		flushDelayed();
 		
-		street=new BuildingWall(bID,wgt,ws,-bDir,-bHand, ws.MaxL,true,getIJKPt((PASSAGE_WIDTH-ws.WWidth)/2,0,-1));
+		street=new BuildingWall(bID,wgt,ws,flipDir(bDir),-bHand, ws.MaxL,true,getIJKPt((PASSAGE_WIDTH-ws.WWidth)/2,0,-1));
 		street.plan(1, 0,BuildingWall.DEFAULT_LOOKAHEAD,true);
 		
 		return true;

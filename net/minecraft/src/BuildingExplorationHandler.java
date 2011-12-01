@@ -74,7 +74,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	public final static int MAX_CHUNKS_PER_TICK=1;
 	public final static int[] NO_CALL_CHUNK=null;
 	
-	public final static String VERSION_STRING="v2.1.2";
+	public final static String VERSION_STRING="v2.2.0";
 	public final static String GREAT_WALL_MOD_STRING="mod_GreatWall "+VERSION_STRING;
 	public final static String WALLED_CITY_MOD_STRING="mod_WalledCity "+VERSION_STRING;
 	
@@ -107,7 +107,8 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//BUKKIT PORT / MP PORT - uncomment
 	//public static Logger logger=MinecraftServer.logger;
 	public Minecraft mc=ModLoader.getMinecraftInstance();
-	public String Version(){ return VERSION_STRING;}	
+	public String getVersion(){ return VERSION_STRING;}
+	public void load(){} //should things be done here instead of in constructors? eh.
 	abstract public void updateWorldExplored(World world);
 	abstract public void loadDataFiles();
 	abstract public void generate(World world, Random random, int i, int k);

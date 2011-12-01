@@ -135,10 +135,12 @@ public class BuildingWall extends Building
 	//Sets building class cursor to wall origin
 	public void setCursor(int n){
 		if(n>=0 && (n<bLength || bLength==0))
-			setOrigin(i0+EW*axX*xArray[n]+NS*axY*n, j0+zArray[n], k0+NS*axX*xArray[n]+EW*axY*n);
+			//setOrigin(i0+EW*axX*xArray[n]+NS*axY*n, j0+zArray[n], k0+NS*axX*xArray[n]+EW*axY*n);
+			setOriginLocal(i0,j0,k0,xArray[n],zArray[n],n);
 		else
 			System.out.println("ERROR:tried to set wall cursor out of bounds n="+n+" planL="+bLength);
 	}
+	
 
 	//****************************************  FUNCTION  - setTarget  *************************************************************************************//
 	//Sets a target coordinate that the plan function can use to path towards
@@ -147,22 +149,14 @@ public class BuildingWall extends Building
 	public boolean setTarget(int[] targ){
 		if( targ[1] > 20 && Math.abs(j0-targ[1]) < Math.max(Math.abs(i0-targ[0]),Math.abs(k0-targ[2])) ){
 			target=true;
-			if(Math.abs(i0-targ[0]) > Math.abs(k0-targ[2])){
-				setPrimaryAx( signum(targ[0]-i0,0)==1 ? DIR_SOUTH:DIR_NORTH );
-				x_targ=axX*(targ[2]-k0);
-				z_targ=targ[1]-j0;
-				y_targ=axY*(targ[0]-i0);
-			}
-			else{
-				setPrimaryAx( signum(targ[2]-k0,0)==1 ? DIR_WEST:DIR_EAST);
-				x_targ=axX*(targ[0]-i0);
-				z_targ=targ[1]-j0;
-				y_targ=axY*(targ[2]-k0);
-			}
-			if(DEBUG>1){
-				setCursor(0);
-				System.out.println("Set target for "+IDString()+"to "+globalCoordString(x_targ,z_targ,y_targ)+"!");
-			}
+			setPrimaryAx( Math.abs(i0-targ[0]) > Math.abs(k0-targ[2])
+						  	? (targ[0] > i0 ? DIR_EAST:DIR_WEST) 
+						    : (targ[2] > k0 ? DIR_SOUTH:DIR_NORTH));
+			setCursor(0);
+			x_targ=getX(targ);
+			z_targ=getZ(targ);
+			y_targ=getY(targ);
+			if(DEBUG>1) System.out.println("Set target for "+IDString()+"to "+globalCoordString(x_targ,z_targ,y_targ)+"!");
 		}
 		else System.out.println("Could not set target for "+IDString());
 		return target;
@@ -191,10 +185,16 @@ public class BuildingWall extends Building
 	public int plan(int startN, int depth, int lookahead, boolean stopAtWall) throws InterruptedException {
 		if(startN<1 || startN >=maxLength) {System.err.println("Error, bad start length at BuildingWall.plan:"+startN+"."); return 0; }
 		int fails=0;
+		
+		
+		
+		//i1=i0+EW*xArray[bLength-1]*axX+NS*bLength*axY;
+		//j1=j0+zArray[startN-1];
+		//k1=k0+NS*xArray[bLength-1]*axX+EW*bLength*axY;
+		setOriginLocal(i0,j0,k0,xArray[startN-1],zArray[startN-1],startN);
 		bLength=startN;
-		i1=i0+EW*xArray[bLength-1]*axX+NS*bLength*axY;
-		j1=j0+zArray[startN-1];
-		k1=k0+NS*xArray[bLength-1]*axX+EW*bLength*axY;
+		
+		
 		if(DEBUG>1 && depth > 0) System.out.println("planWall "+IDString()+", depth="+depth+" n="+startN+" maxlLen="+maxLength+" at ("+i1+","+j1+","+k1+")");
 		//int searchUp=Math.min(Math.max(MIN_SEARCHUP,WalkHeight+1),MAX_SEARCHUP);
 		int searchUp=MIN_SEARCHUP;
@@ -245,7 +245,9 @@ public class BuildingWall extends Building
 			} else gradx=0;
 			
 
-			shiftOrigin(gradx,gradz,1);
+			//shiftOrigin(gradx,gradz,1);
+			setOriginLocal(i1,j1,k1,gradx,gradz,1);
+			
 			xArray[bLength]=xArray[bLength-1]+gradx;
 			zArray[bLength]=zArray[bLength-1]+gradz;
 			bLength++;
@@ -404,37 +406,43 @@ public class BuildingWall extends Building
 
 			//wall
 			for(int x1=0; x1<bWidth;x1++){
-				
-				//come down from top, clear everything below first non-wall block
 				boolean keepWallFromAbove=true;
 				for(int z1=bHeight+OVERHEAD_CLEARENCE-1; z1>=-ws.embed; z1--){
-					boolean isWall=isWallBlock(x1,z1,0);
-					idAndMeta= z1<bHeight ? ws.rules[layer[z1+ws.embed][x1]].getBlockOrHole(random) : TemplateRule.AIR_BLOCK;
-					if(!(isWall && (idAndMeta[0]==0 || idAndMeta[0]==TemplateRule.HOLE_ID))) keepWallFromAbove=false;
-					
-					
-					//TODO - do we still need this keepWallFromAbove stuff with new build order?
-					if(!keepWallFromAbove){
-						if(idAndMeta[0]!=WALL_STAIR_ID){
-							if(z1<WalkHeight || !( x1==0 && (isWall || isWallBlock(-1,WalkHeight-1,0) || isWallBlock(-1,WalkHeight-2,0))) 
-									&& !( x1==bWidth-1 && (isWall || isFloor(bWidth,WalkHeight-1,0) || isWallBlock(bWidth,WalkHeight-2,0))) ){  //don't clutter if merging walls
-								if(idAndMeta[0]==TemplateRule.HOLE_ID) setBlockAndMetadataLocal(x1,z1,0,AIR_ID,0,true); //force lighting update for holes
-								setBlockAndMetadataLocal(x1,z1,0,idAndMeta[0],idAndMeta[1]);  //straightforward build from template
-						}}
-						else if(!isWall){
+					boolean wallBlockPresent=isWallBlock(x1,z1,0);
+					idAndMeta= z1<bHeight 
+								? ws.rules[layer[z1+ws.embed][x1]].getBlockOrHole(random) 
+								: TemplateRule.HOLE_BLOCK;
+
+					//starting from top, preserve old wall block until we run into a non-wall block
+					if(keepWallFromAbove && wallBlockPresent && (idAndMeta[0]==AIR_ID || idAndMeta[0]==HOLE_ID)){
+						continue;
+					} else keepWallFromAbove=false;
+										
+					if(idAndMeta[0]==WALL_STAIR_ID){
+						if(!wallBlockPresent && !IS_LIQUID_BLOCK[getBlockIdLocal(x1,z1,0)]){
 							if(n>0 && zArray[n-1]>zArray[n]){  //stairs, going down
 								if((n==1 || zArray[n-2]==zArray[n-1]) && (n==bLength-1 || zArray[n]==zArray[n+1]))
 									setBlockAndMetadataLocal(x1, z1, 0, STEP_ID, idAndMeta[1]);
-								else setBlockAndMetadataLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1]],0);
+								else setBlockAndMetadataLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1]],2);
 							}
 							else if(n<bLength-1 && zArray[n]<zArray[n+1]){ //stairs, going up
 								if((n==0 || zArray[n-1]==zArray[n]) && (n==bLength-2 || zArray[n+1]==zArray[n+2]))
 									setBlockAndMetadataLocal(x1, z1, 0, STEP_ID, idAndMeta[1]);
-								else setBlockAndMetadataLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1]],1);
+								else setBlockAndMetadataLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1]],3);
 							}
-							else setBlockLocal(x1,z1,0,AIR_ID);
+							else setBlockLocal(x1,z1,0,HOLE_ID);
 						}
+					}else{ //not a stair
+						// if merging walls, don't clutter with crenelations etc.
+						if(z1>=WalkHeight && ( x1==0 &&        (wallBlockPresent || isWallBlock(-1,WalkHeight-1,0) || isWallBlock(-1,WalkHeight-2,0)) 
+						                 ||    x1==bWidth-1 && (wallBlockPresent || isFloor(bWidth,WalkHeight-1,0) || isWallBlock(bWidth,WalkHeight-2,0))) ){  
+							continue;
+						}
+						
+						if(idAndMeta[0]==HOLE_ID && z1<bHeight) setBlockAndMetadataLocal(x1,z1,0,HOLE_ID,0,true); //force lighting update for holes
+						else setBlockAndMetadataLocal(x1,z1,0,idAndMeta[0],idAndMeta[1]);  //straightforward build from template
 					}
+					
 				}
 			}
 			//base
@@ -522,7 +530,7 @@ public class BuildingWall extends Building
 															   && curvature(xArray[n-tw-3], xArray[twrNMid], xArray[n], 2)==0){
 				
 				if(DEBUG>1) System.out.println("Building gatehouse for "+IDString()+" at n="+n+" "+globalCoordString(0,0,0)+" width "+tw);
-				BuildingTower tower = new BuildingTower(bID+n, this, -bDir, -bHand, tw, th, tl, getIJKPt(twrDXMid+bWidth/2-tw/2,twrDZMid,-2));
+				BuildingTower tower = new BuildingTower(bID+n, this, flipDir(bDir), -bHand, tw, th, tl, getIJKPt(twrDXMid+bWidth/2-tw/2,twrDZMid,-2));
 				if(!tower.isObstructedRoof(-1)){
 					wgt.setLayoutCode(tower.getIJKPt(0,0,0),tower.getIJKPt(tw-1,0,tw-1), WorldGeneratorThread.LAYOUT_CODE_TOWER);
 					tower.build(xArray[n-1]-xArray[twrNMid], xArray[n-tw-2]-xArray[twrNMid], false);
@@ -551,7 +559,7 @@ public class BuildingWall extends Building
 				if(building==TemplateWall.DEFAULT_TOWER){
 					int ybuffer=(isAvenue ? 0:1) - ws.TowerXOffset;
 					int x1=twrDXMid+(clearSide==bHand ? (bWidth - ybuffer):ybuffer-1);
-					BuildingTower tower=new BuildingTower(bID+n,this, rotateDir(bDir,clearSide), clearSide, tw, th, tl, getIJKPt(x1,twrDZMid,y1));
+					BuildingTower tower=new BuildingTower(bID+n,this, rotDir(bDir,clearSide), clearSide, tw, th, tl, getIJKPt(x1,twrDZMid,y1));
 					if(tower.queryCanBuild(ybuffer,overlapTowers)){
 						tower.build(0,0,true);
 						n+=ws.BuildingInterval;
@@ -560,7 +568,7 @@ public class BuildingWall extends Building
 				}
 				else{
 					int x1=twrDXMid+(clearSide==bHand ? bWidth:-1);
-					BuildingTML buildingTML=new BuildingTML(bID+n,wgt,rotateDir(bDir,clearSide),clearSide,building,getIJKPt(x1,twrDZMid,y1));
+					BuildingTML buildingTML=new BuildingTML(bID+n,wgt,rotDir(bDir,clearSide),clearSide,building,getIJKPt(x1,twrDZMid,y1));
 					if(buildingTML.queryCanBuild(0)){
 						buildingTML.build();
 						n+=ws.BuildingInterval;
@@ -571,6 +579,7 @@ public class BuildingWall extends Building
 			
 			if(!built) n++;
 		}
+		setCursor(0);
 
 		//build towers at endpoints
 		if(endTLength >= BuildingTower.TOWER_UNIV_MIN_WIDTH){
@@ -581,8 +590,8 @@ public class BuildingWall extends Building
 				int endTX=( bLength>1 ? xArray[bLength-2] : (bLength<=0 ? 0:xArray[0]))+bWidth/2-tw/2;
 				int endTZ=bLength>1 ? zArray[bLength-2] : (bLength<=0 ? 0:zArray[0]);
 				int endTY=bLength>1 ? bLength-1 : 0;
-				BuildingTower tower=new BuildingTower(bID+bLength,this,bDir,bHand,tw, ws.pickTHeight(circular,random), tl,
-										new int[]{i0+EW*axX*endTX+NS*axY*endTY,j0+endTZ,k0+NS*axX*endTX+EW*axY*endTY});
+				BuildingTower tower=new BuildingTower(bID+bLength,this,bDir,bHand,tw, ws.pickTHeight(circular,random), tl, getIJKPt(endTX,endTZ,endTY));
+																//OLD DIRECTION new int[]{i0+EW*axX*endTX+NS*axY*endTY,j0+endTZ,k0+NS*axX*endTX+EW*axY*endTY});
 				if(tower.queryCanBuild(1,overlapTowers)){
 					tower.build(0,0,true);
 					break;
@@ -593,7 +602,6 @@ public class BuildingWall extends Building
 				tl--;
 			}
 		}
-		setCursor(0);
 	}
 
 
@@ -629,9 +637,9 @@ public class BuildingWall extends Building
 			{
 				setCursor(n-gateWidth);
 				int tw=ws.pickTWidth(circular,random), th=ws.getTMaxHeight(circular);
-				if(rs!=null){
-					avenues=new BuildingWall[]{ new BuildingWall(bID,wgt,rs,rotateDir(bDir,bHand),XHand, XMaxLen,false,getIJKPt(bWidth,0,XHand==-bHand ? 0 :gateWidth-1))
-					         ,new BuildingWall(bID,wgt,rs,rotateDir(bDir,-bHand),antiXHand, antiXMaxLen,false,getIJKPt(-1,0,antiXHand==bHand ? 0 :gateWidth-1))};
+				if(rs!=null){ 
+					avenues=new BuildingWall[]{ new BuildingWall(bID,wgt,rs,rotDir(bDir,bHand),XHand, XMaxLen,false,getIJKPt(bWidth,0,XHand==-bHand ? 0 :gateWidth-1))
+					         ,new BuildingWall(bID,wgt,rs,rotDir(bDir,-bHand),antiXHand, antiXMaxLen,false,getIJKPt(-1,0,antiXHand==bHand ? 0 :gateWidth-1))};
 
 					avenues[0].setTarget(XTarget==null ? getIJKPt(bWidth+tw,0,XHand==-bHand ? 0 :gateWidth-1) : XTarget);
 					avenues[0].plan(1,0,DEFAULT_LOOKAHEAD,true);
@@ -676,7 +684,7 @@ public class BuildingWall extends Building
 						int tnMid1=n-tw/2;
 						int dx1=xArray[tnMid1]-xArray[n];
 						int tx1=(flankTHand==bHand ? (bWidth-1+(dx1<0 ? dx1:0)+ws.TowerXOffset) : (-ws.TowerXOffset + dx1>0 ? dx1:0));
-						BuildingTower precedingTower=new BuildingTower(0,this, rotateDir(bDir,flankTHand), bHand, tw, th, tw,
+						BuildingTower precedingTower=new BuildingTower(0,this, rotDir(bDir,flankTHand), bHand, tw, th, tw,
 																getIJKPt(tx1,zArray[tnMid1]-zArray[n],-1));
 						precedingTower.build(0,0,false);
 						
@@ -684,7 +692,7 @@ public class BuildingWall extends Building
 						int tnMid2=n+gateWidth+tw/2;
 						int dx2=xArray[tnMid2]-xArray[n];
 						int tx2=(flankTHand==bHand ? (bWidth-1+(dx2<0 ? dx2:0)+ws.TowerXOffset) : (-ws.TowerXOffset + dx2>0 ? dx2:0));
-						BuildingTower followingTower=new BuildingTower(0,this, rotateDir(bDir,flankTHand),-bHand, tw, th+zArray[tnMid1]-zArray[tnMid2], tw,
+						BuildingTower followingTower=new BuildingTower(0,this, rotDir(bDir,flankTHand),-bHand, tw, th+zArray[tnMid1]-zArray[tnMid2], tw,
 																getIJKPt(tx2, zArray[tnMid2]-zArray[n], gateWidth));
 						followingTower.build(0,0,false);
 						

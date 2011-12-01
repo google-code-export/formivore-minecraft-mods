@@ -201,7 +201,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 				pt[1]=Building.findSurfaceJ(world, pt[0], pt[2], hollow[1]-(hollow[3]+1)/2, false,false);
 				TemplateWall sws=TemplateWall.pickBiomeWeightedWallStyle(pws.streets,world,pt[0],pt[2],random,true);
 				sws.MergeWalls=true;
-				BuildingDoubleWall street=new BuildingDoubleWall(tries,this,sws,Building.pickDir(random),Building.R_HAND,pt);
+				BuildingDoubleWall street=new BuildingDoubleWall(tries,this,sws,random.nextInt(4),Building.R_HAND,pt);
 				if(street.plan()) {
 					street.build(LAYOUT_CODE_NOCODE);
 					streets.add(street);

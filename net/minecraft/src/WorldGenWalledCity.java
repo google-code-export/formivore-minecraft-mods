@@ -33,7 +33,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	private final static int LEVELLING_DEVIATION_SLOPE=18;
 	private final static int MIN_SIDE_LENGTH=10; //can be less than MIN_CITY_LENGTH due to squiggles
 
-	private final static int[] DIR_GROUP_TO_DIR_CODE=new int[]{Building.DIR_NORTH,Building.DIR_EAST,Building.DIR_SOUTH,Building.DIR_WEST};
+	//private final static int[] DIR_GROUP_TO_DIR_CODE=new int[]{Building.DIR_NORTH,Building.DIR_EAST,Building.DIR_SOUTH,Building.DIR_WEST};
 
 	//**** WORKING VARIABLES **** 
 	private mod_WalledCity wc;
@@ -162,7 +162,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 				pt=randInteriorPoint();
 				if(pt==null || pt[1]==-1 || pt[1]==Building.HIT_WATER) waterCount++;
 			}
-			if(waterCount>9) {
+			if(waterCount>20) {
 				wc.logOrPrint("Rejected city "+ID+", too much water! Sampled "+waterCount+" out of 50 water blocks.");
 				return false;
 			}
@@ -186,7 +186,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		willBuild=true;
 		if(!master.isFlushingGenThreads) suspendGen();
 		
-		wc.chatBuildingCity("\n***** Building "+ows.name+" city"+", ID="+ID+" between "+walls[0].globalCoordString(0,0,0)+" and "+walls[2].globalCoordString(0,0,0) + " ******\n");
+		wc.chatBuildingCity("\n***** Building "+ows.name+" city"+", ID="+ID+" in "+TemplateWall.BIOME_NAMES[TemplateWall.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(walls[0].i0>>4,walls[0].k0>>4))]+" biome between "+walls[0].globalCoordString(0,0,0)+" and "+walls[2].globalCoordString(0,0,0) + " ******\n");
 		if(ows.LevelInterior) levelCity();
 		
 		TemplateWall avenueWS=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
@@ -203,7 +203,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			if(BuildingWall.DEBUG > 1) w.printWall();
 			w.endTLength=0;
 			w.buildFromTML();
-			BuildingWall[] avenues=w.buildGateway(w.bLength/4,3*w.bLength/4,GATE_HEIGHT,avenueWS.WWidth,avenueWS,random.nextInt(6)<gateFlankingTowers ? 0:axXHand,500,null,-axXHand,150,cityCenter,w.bDir>0 ? 1:-1);
+			BuildingWall[] avenues=w.buildGateway(w.bLength/4,3*w.bLength/4,GATE_HEIGHT,avenueWS.WWidth,avenueWS,random.nextInt(6)<gateFlankingTowers ? 0:axXHand,500,null,-axXHand,150,cityCenter,w.bDir>1 ? 1:-1);
 			w.buildTowers(axXHand==-1,axXHand==1,true,false, false);
 			if(w.gatewayStart!=BuildingWall.NO_GATEWAY) gateFlankingTowers++;
 
@@ -216,7 +216,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			}else {
 				//no gateway on this city side, try just building an interior avenue from midpoint
 				w.setCursor(w.bLength/2);
-				BuildingWall midpointAvenue=new BuildingWall(0, this,sws,Building.rotateDir(w.bDir,-axXHand),w.bDir>0 ? 1:-1, ows.MaxL,false,w.getSurfaceIJKPt(-1, 0,Building.WORLD_HEIGHT, false,false));
+				BuildingWall midpointAvenue=new BuildingWall(0, this,sws,Building.rotDir(w.bDir,-axXHand),w.bDir>1 ? 1:-1, ows.MaxL,false,w.getSurfaceIJKPt(-1, 0,Building.WORLD_HEIGHT, false,false));
 				midpointAvenue.setTarget(cityCenter);
 				midpointAvenue.plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,true);
 				if(midpointAvenue.bLength > 20){
@@ -254,7 +254,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(BuildingWall avenue : interiorAvenues){
 			for(int n=avenue.bLength-avInterval; n>=25; n-=avInterval){
 				avenue.setCursor(n);
-				BuildingDoubleWall crossAvenue=new BuildingDoubleWall(ID,this,sws,Building.rotateDir(avenue.bDir,Building.ROT_R),Building.R_HAND,avenue.getIJKPt(0,0,0));
+				BuildingDoubleWall crossAvenue=new BuildingDoubleWall(ID,this,sws,Building.rotDir(avenue.bDir,Building.ROT_R),Building.R_HAND,avenue.getIJKPt(0,0,0));
 				if(crossAvenue.plan())
 					branchAvenues.add(crossAvenue);
 			}
@@ -277,7 +277,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			if(pt!=null && pt[1]!=-1){
 
 				//streets
-				BuildingDoubleWall street=new BuildingDoubleWall(ID+tries,this,sws,Building.pickDir(random),Building.R_HAND,pt);
+				BuildingDoubleWall street=new BuildingDoubleWall(ID+tries,this,sws,random.nextInt(4),Building.R_HAND,pt);
 				if(street.plan()) plannedStreets.add(street);
 			}
 		}
@@ -443,27 +443,27 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 	private void chooseDirection(int chunkI, int chunkK){	
 		//BUKKIT PORT - comment out below block
 		boolean[] exploredChunk = new boolean[4];
-		exploredChunk[0]=world.blockExists((chunkI-1) << 4, 0, chunkK << 4); //North
-		exploredChunk[1]=world.blockExists(chunkI << 4, 0, (chunkK-1) << 4); //East
-		exploredChunk[2]=world.blockExists((chunkI+1) << 4, 0, chunkK << 4); //South
-		exploredChunk[3]=world.blockExists(chunkI << 4, 0, (chunkK+1) << 4); //West
+		exploredChunk[0]=world.blockExists(chunkI << 4, 0, (chunkK-1) << 4); //North
+		exploredChunk[1]=world.blockExists((chunkI+1) << 4, 0, chunkK << 4); //East
+		exploredChunk[2]=world.blockExists(chunkI << 4, 0, (chunkK+1) << 4); //South
+		exploredChunk[3]=world.blockExists((chunkI-1) << 4, 0, chunkK << 4); //West
 
 		//pick an explored direction if it exists
-		int dir0=random.nextInt(4), dir1=(dir0+1)%4;
+		dir=new int[4];
+		int randDir=random.nextInt(4);
+		
 		//BUKKIT PORT - comment out below
-		for(; dir1!=dir0; dir1=(dir1+1)%4) if(exploredChunk[dir1]) break;
+		for(dir[0]=(randDir+1)%4; dir[0]!=randDir; dir[0]=(dir[0]+1)%4)
+			if(exploredChunk[dir[0]]) break;  //this chunk has been explored so we want to go in this direction
 
 		//Choose axXHand (careful it is opposite the turn direction of the square).
 		//if RH direction explored, then turn RH; else turn LH;
 		//BUKKIT PORT - comment out below
 		//axXHand=2*random.nextInt(2)-1;
-		axXHand= exploredChunk[(dir1+1)%4] ? -1 : 1;
-
-		dir=new int[4];
-		dir[0]=DIR_GROUP_TO_DIR_CODE[dir1];
-		dir[1]=Building.rotateDir(dir[0],-axXHand);
-		dir[2]=Building.rotateDir(dir[1],-axXHand);
-		dir[3]=Building.rotateDir(dir[2],-axXHand);
+		axXHand= exploredChunk[(dir[0]+1)%4] ? -1 : 1;
+		dir[1]=(dir[0]-axXHand+4) % 4;
+		dir[2]=(dir[1]-axXHand+4) % 4;
+		dir[3]=(dir[2]-axXHand+4) % 4;
 
 	}
 
