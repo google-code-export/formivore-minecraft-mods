@@ -27,14 +27,13 @@ public class BuildingTower extends Building
 	public final static String[] ROOFSTYLE_NAMES={"Crenel","Steep","Steep Trim","Shallow","Dome","Cone","Two Sided"};
 	public final static int[] ROOF_STYLE_IDS=new int[ROOFSTYLE_NAMES.length];
 	public final static TemplateRule RULE_NOT_PROVIDED=null;
-	public final static int SURFACE_PORTAL_ODDS=20;
-	public final static int NETHER_PORTAL_ODDS=10;
-	public final static int BOOKSHELF_ODDS=3;
-	public final static int BED_ODDS=4;
+	public final static int SURFACE_PORTAL_ODDS=20, NETHER_PORTAL_ODDS=10; 
+	public final static int BOOKSHELF_ODDS=3, BED_ODDS=4, CAULDRON_ODDS=4; 
 	public final static int ROOF_CRENEL=0, ROOF_STEEP=1, ROOF_TRIM=2, ROOF_SHALLOW=3, ROOF_DOME=4,ROOF_CONE=5,ROOF_TWO_SIDED=6;
 	private final static int[] EAST_FACE_LADDER_BLOCK=new int[]{LADDER_ID,LADDER_DIR_TO_META[DIR_EAST]},
 							   NORTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,TORCH_DIR_TO_META[DIR_NORTH]},
 							   SOUTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,TORCH_DIR_TO_META[DIR_SOUTH]};
+	public final static int NORTH_FACE_DOOR_META=3, EAST_FACE_DOOR_META=0, SOUTH_FACE_DOOR_META=1, WEST_FACE_DOOR_META=2;
 							   
 	
 	static{ 
@@ -43,12 +42,31 @@ public class BuildingTower extends Building
 	
 	public int baseHeight,roofStyle,minHorizDim;
 	public boolean PopulateFurniture, MakeDoors,circular;
-	private int SpawnerCount;
 	private int[][][][] buffer;
 	private int[][] circle_shape;
 	private TemplateRule roofRule, SpawnerRule, ChestRule;
 
 	//****************************************  CONSTRUCTOR - BuildingTower *************************************************************************************//
+	//      ----
+	//     -    -
+	//    -      -
+	//   -        -
+	//  -          -
+	// -------------- bHeight
+	// -            -
+	// -            -
+	// -            -
+	// --------------	
+	// -            -
+	// -            -
+	// -            -
+	// --------------
+	// -            -
+	// -            -
+	// -            -
+	// -            -  baseHeight==ws.WalkHeight
+	// --------------  baseHeight-1 (floor)
+	//
 	public BuildingTower(int ID_,BuildingWall wall,int dir_,int axXHand_, int TWidth_, int THeight_,int TLength_, int[] sourcePt){
 		super(ID_,wall.wgt, wall.towerRule,dir_,axXHand_,new int[]{TWidth_,THeight_,TLength_},sourcePt);
 		baseHeight=wall.WalkHeight;
@@ -59,7 +77,6 @@ public class BuildingTower extends Building
 		ChestRule=wall.ws.ChestRule;
 		roofRule= wall.roofRule;
 		SpawnerRule=wall.ws.SpawnerRule;
-		SpawnerCount=wall.ws.SpawnerCount;
 		PopulateFurniture=wall.ws.PopulateFurniture;
 		MakeDoors=wall.ws.MakeDoors;
 		if(circular) bLength=bWidth=minHorizDim; //enforce equal horizontal dimensions if circular
@@ -67,7 +84,7 @@ public class BuildingTower extends Building
 
 	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
 	public boolean queryCanBuild(int ybuffer, boolean overlapTowers) throws InterruptedException{
-		int rooftopJ=j1 + bHeight + (roofStyle==ROOF_CONE ? minHorizDim : minHorizDim/2)+2; 
+		int rooftopJ=j0 + bHeight + (roofStyle==ROOF_CONE ? minHorizDim : minHorizDim/2)+2; 
 		if(rooftopJ >= WORLD_HEIGHT) bHeight-= WORLD_HEIGHT - rooftopJ;
 		if(bHeight < baseHeight + 4) 
 			return false;
@@ -154,10 +171,10 @@ public class BuildingTower extends Building
 						else buffer[x1+1][z1+1][y1+1]=TemplateRule.HOLE_BLOCK;
 					}
 					
-					//column above base
+					//column above source point
 					for(int z1=-1; z1<baseHeight-1; z1++) buffer[x1+1][z1+1][y1+1]=bRule.getBlockOrHole(random);
 	
-					//column below base, set zmin to taper overhangs
+					//column below source point, set zmin to taper overhangs
 					
 					
 					//int zmin=hanging && y1>=TWidth/2 && isWallable(x1,-BUILDDOWN,y1) ?  Math.max(2*(y1-TWidth/2)+3*Math.abs(x1-TWidth/2)-5*TWidth/2,-BUILDDOWN) : -BUILDDOWN;
@@ -213,8 +230,7 @@ public class BuildingTower extends Building
 				if(IS_HUMANS_PLUS_FLAG[spawnerBlock]){
 					buffer[bWidth-2+1][z1+2+1][bLength/2+1+1]=new int[]{spawnerBlock,2};
 				}
-				else for(int x1=bWidth/2-(SpawnerCount-1)/2; x1<=bWidth/2+SpawnerCount/2; x1++)
-						buffer[x1+1][z1+1+1][bLength/2+1]=SpawnerRule.getNonAirBlock(random);
+				else buffer[bWidth/2+1][z1+1+1][bLength/2+1]=SpawnerRule.getNonAirBlock(random);
 			}
 			
 			
@@ -265,8 +281,9 @@ public class BuildingTower extends Building
 		//furniture
 		if(PopulateFurniture){
 			for(int z1=baseHeight;z1<bHeight-2;z1+=4){
-				if(!hasUndeadSpawner) populateBeds(z1);
-				if(bHeight-baseHeight>8) populateBookshelves(z1);
+				if(!hasUndeadSpawner && random.nextInt(BED_ODDS)==0) populateBeds(z1);
+				if(bHeight-baseHeight>8 && random.nextInt(BOOKSHELF_ODDS)==0) populateBookshelves(z1);
+				if(random.nextInt(CAULDRON_ODDS)==0) populateFurnitureBlock(z1,new int[]{CAULDRON_BLOCK_ID,random.nextInt(4)});
 				if(z1==baseHeight) z1++;
 			}
 		}
@@ -293,7 +310,9 @@ public class BuildingTower extends Building
 		if(!IS_WALLABLE[getBlockIdLocal(x,z+height-2,y+yFace)]) return;
 		
 		if(buildWoodDoor){
-			int metadata=xFace==0 ? 1-yFace : 2-xFace;
+			int metadata=xFace==0 
+							? (yFace > 0 ? SOUTH_FACE_DOOR_META : NORTH_FACE_DOOR_META ) 
+							: (xFace > 0 ? WEST_FACE_DOOR_META : EAST_FACE_DOOR_META);
 			buffer[x+1][z+1][y+1]=new int[]{WOODEN_DOOR_ID,metadata};
 			buffer[x+1][z+1+1][y+1]=new int[]{WOODEN_DOOR_ID,metadata+8};
 			if(isFloor(x+xFace,z-1,y+yFace) && x+xFace+1>=0 && x+xFace+1<buffer.length && y+yFace+1>=0 && y+yFace+1<buffer[0][0].length){
@@ -310,24 +329,25 @@ public class BuildingTower extends Building
 	
 	//****************************************  FUNCTIONS  - populators *************************************************************************************//
 	private void populateBeds(int z){
-		if(random.nextInt(BED_ODDS)!=0) return;
-		
 		int dir=random.nextInt(4);
 		int x1=random.nextInt(bWidth-2)+1;
 		int y1=random.nextInt(bLength-2)+1;
-		int xinc=dir%2==0 ? 1-dir : 0;
-		int yinc=dir%2==1 ? dir-2 : 0;
-		int x2=x1+xinc, y2=y1+yinc;
-		if(isFloor(x1,z,y1) && isFloor(x2,z,y2) && !isDoorway(x2+xinc,z,y2+yinc) && !isDoorway(x1-xinc,z,y1-yinc)
-			&& !isDoorway(x1+yinc,z,y1+xinc) && !isDoorway(x1-yinc,z,y1-xinc) && !isDoorway(x2-yinc,z,y2-xinc) && !isDoorway(x2-yinc,z,y2-xinc)	){
+		int x2 = x1+(dir%2==1 ? 2-dir:0), y2 = y1+(dir%2==0 ? 1-dir:0);
+		if(isFloor(x1,z,y1) && !isNextToDoorway(x1,z,y1) && isFloor(x2,z,y2) && !isNextToDoorway(x2,z,y2)){
 			setBlockAndMetadataLocal(x1,z,y1,BED_BLOCK_ID,dir+8);
 			setBlockAndMetadataLocal(x2,z,y2,BED_BLOCK_ID,dir);
 		}
 	}
 	
+	private void populateFurnitureBlock(int z, int[] block){
+		int x1=random.nextInt(bWidth-2)+1;
+		int y1=random.nextInt(bLength-2)+1;
+		if(isFloor(x1,z,y1) && !isNextToDoorway(x1,z,y1)){
+			setBlockAndMetadataLocal(x1,z,y1,block[0],block[1]);
+		}
+	}
+	
 	private void populateBookshelves(int z){
-		if(random.nextInt(BOOKSHELF_ODDS)!=0) return;
-		
 		int x1=random.nextInt(bWidth-2)+1;
 		int y1=random.nextInt(bLength-2)+1;
 		int dir=random.nextInt(4);
