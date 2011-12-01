@@ -19,9 +19,10 @@ package net.minecraft.src;
 import java.util.Random;
 
 public class TemplateRule {
-    public final static int HOLE_ID=-1;
+    //public final static int HOLE_ID=-1;
     public final static int[] AIR_BLOCK=new int[]{0,0};
-    public final static int[] HOLE_BLOCK=new int[]{HOLE_ID,0};
+   // public final static int[] AIR_OR_LIQUID_BLOCK= new int[]{Building.HOLE_ID,0};
+    public final static int[] HOLE_BLOCK=new int[]{Building.HOLE_ID,0};
     public final static int[] PRESERVE_BLOCK=new int[]{Building.PRESERVE_ID,0};
     public final static int[] HARD_SPAWNER_BLOCK=new int[]{Building.HARD_SPAWNER_ID,0};
     public final static int[] PIG_ZOMBIE_SPAWNER_BLOCK=new int[]{Building.PIG_ZOMBIE_SPAWNER_ID,0};

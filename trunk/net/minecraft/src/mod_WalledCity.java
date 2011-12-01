@@ -47,7 +47,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 
 	//DATA VARIABLES
 	public ArrayList<TemplateWall> cityStyles=null, undergroundCityStyles=new ArrayList<TemplateWall>();
-	private long explrWorldCode;
+	//private long explrWorldCode;
 	private ArrayList<int[]> cityLocations, undergroundCityLocations;
 	private HashMap<Long,ArrayList<int[]> > worldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >(),
 											undergroundWorldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >();
@@ -169,9 +169,11 @@ public class mod_WalledCity extends BuildingExplorationHandler
 				dirStr="nearby";
 			}
 			dirStr="to the ";
-			if(Math.abs(dI)>2*Math.abs(dK)) dirStr+= dI>0 ? "south" : "north";
-			else if(Math.abs(dK)>2*Math.abs(dI)) dirStr+= dK>0 ? "west" : "east";
-			else dirStr+= dI > 0 ? (dK>0 ? "southwest" : "southeast") : (dK>0 ? "northwest" : "northeast");
+			if(Math.abs(dI)>2*Math.abs(dK)) dirStr+= dI>0 ? "east" : "west";
+			else if(Math.abs(dK)>2*Math.abs(dI)) dirStr+= dK>0 ? "south" : "north";
+			else dirStr+= dI > 0 
+							? (dK>0 ? "southeast" : "northeast") 
+							: (dK>0 ? "southwest" : "northwest");
 
 			mc.thePlayer.addChatMessage("** Built city "+dirStr+" ("+args[0]+","+args[1]+","+args[2]+")! **");
 		}

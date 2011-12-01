@@ -61,10 +61,16 @@ public class mod_CABuilding extends BuildingExplorationHandler{
 	//****************************   FUNCTION - updateWorldExplored *************************************************************************************//
 	public synchronized void updateWorldExplored(World world_) {
 		if(Building.getWorldCode(world_)!=explrWorldCode){
-			setNewWorld(world_,"Starting to survey a world for automata generation...");
-
-			for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
-			exploreThreads=new LinkedList<WorldGeneratorThread>();
+			setNewWorld(world_,"Starting to survey a world for wall generation...");
+			
+			if(this==master){
+				//kill zombies
+				for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
+				exploreThreads=new LinkedList<WorldGeneratorThread>();
+			} else {
+				master.updateWorldExplored(world);
+				exploreThreads=master.exploreThreads;
+			}
 		}
 	}
 	
@@ -189,7 +195,7 @@ public class mod_CABuilding extends BuildingExplorationHandler{
 	@Override
 	public void generate( World world, Random random, int i, int k ) {
 		if(random.nextFloat() < GlobalFrequency){
-			exploreThreads.add(new WorldGeneratorThread(this, world, random, i, k,TriesPerChunk, GlobalFrequency){
+			exploreThreads.add(new WorldGeneratorThread(master, world, random, i, k,TriesPerChunk, GlobalFrequency){
 				
 					public boolean generate(int i0, int j0, int k0) throws InterruptedException{
 						setName("WorldGenAutomata");
@@ -199,7 +205,7 @@ public class mod_CABuilding extends BuildingExplorationHandler{
 							? BuildingCellularAutomaton.makeLinearSeed(ContainerWidth,random)
 							: BuildingCellularAutomaton.makeSymmetricSeed(SymmetricSeedMaxWidth,SymmetricSeedMaxWidth,SymmetricSeedDensity,random);
 						
-						BuildingCellularAutomaton bca=new BuildingCellularAutomaton(this,blockRule,Building.pickDir(random),1, ContainerWidth, th,ContainerLength, MaxOscillatorCullStep,seed,caRule,new int[]{i0,j0,k0});
+						BuildingCellularAutomaton bca=new BuildingCellularAutomaton(this,blockRule,random.nextInt(4),1, ContainerWidth, th,ContainerLength, MaxOscillatorCullStep,seed,caRule,new int[]{i0,j0,k0});
 						if(bca.queryCanBuild(0))
 							return bca.build();
 						return false;

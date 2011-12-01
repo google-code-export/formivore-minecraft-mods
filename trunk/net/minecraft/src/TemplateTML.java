@@ -37,6 +37,7 @@ public class TemplateTML
 
 	public String name="";
 	//public int[] targets;
+	protected boolean readInWaterHeight=false;
 	public int height = 0, length = 0, width = 0, weight = 1, embed = 1,leveling = 4, cutIn = 0, waterHeight=3;
 	//public int overhang = 0, primary=4, w_off=0, l_off=0, lbuffer =0;
 	//public boolean preserveWater = false, preserveLava = false, preservePlants = false, unique = false;
@@ -119,6 +120,7 @@ public class TemplateTML
 			else if(line.startsWith("max_cut_in" )) cutIn = BuildingExplorationHandler.readIntParam(lw,cutIn ,"=",line);
 			else if(line.startsWith("max_leveling" )) leveling = BuildingExplorationHandler.readIntParam(lw,leveling,"=",line);
 			else if(line.startsWith("water_height" )){
+				readInWaterHeight=true;
 				if(line.indexOf(NO_WATER_CHECK_STR)!=-1) waterHeight=NO_WATER_CHECK;
 				else waterHeight = BuildingExplorationHandler.readIntParam(lw,waterHeight,"=",line);
 			}

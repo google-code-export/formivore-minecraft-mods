@@ -28,11 +28,15 @@ import java.util.Iterator;
 public class TemplateWall extends TemplateTML{
 	public final static String BUILDING_DIRECTORY_NAME="buildings";
 	public final static String ALL_TEMPLATES="ALL", NO_TEMPLATES="NONE";
-	public final static String[] BIOME_NAMES={"Rainforest","Swampland","Seasonal Forest","Forest","Savanna","Shrubland","Taiga","Desert","Plains","Ice Desert","Tundra","Hell","Sky","Hills","Ocean","Underground"};
+	private final static int DEFAULT_WATER_HEIGHT=666;
 	public final static int[] ALL_BIOMES=null;
-	public final static int BIOME_RAINFOREST = 0, BIOME_SWAMPLAND = 1, BIOME_SEASONALFOREST = 2, BIOME_FOREST = 3,BIOME_SAVANNA = 4,
-							BIOME_SHRUBLAND = 5, BIOME_TAIGA = 6, BIOME_DESERT = 7, BIOME_PLAINS = 8, BIOME_ICEDESERT = 9,
-							BIOME_TUNDRA = 10, BIOME_HELL = 11,BIOME_SKY=12, BIOME_HILLS=13,BIOME_OCEAN=14,BIOME_UNDERGROUND=15;
+	public final static String[] BIOME_NAMES={"Ocean","Plains","Desert","Hills","Forest","Taiga","Swampland",
+											  "River","Hell","Sky","Frozen Ocean","Frozen River","Ice Plains",
+											  "Ice Mountains","Mushroom Island","Mushroom Island Shore","Underground"};
+	public final static int BIOME_OCEAN=0, BIOME_PLAINS=1, BIOME_DESERT=2, BIOME_HILLS=3, BIOME_FOREST=4,BIOME_TAIGA=5, BIOME_SWAMPLAND=6, 
+							BIOME_RIVER=7, BIOME_HELL=8, BIOME_SKY=9, BIOME_FROZEN_OCEAN=10, BIOME_FROZEN_RIVER=11, BIOME_ICE_PLAINS=12,
+							BIOME_ICE_MOUNTAINS=13,BIOME_MUSHROOM_ISLAND=14, BIOME_MUSHROOM_ISLAND_SHORE=15, BIOME_UNDERGROUND=16;
+	
 	
 	public final static TemplateTML DEFAULT_TOWER=null;
 	public final static int NO_RULE=-1;
@@ -62,8 +66,7 @@ public class TemplateWall extends TemplateTML{
 	private int SqrMinHeight=11, SqrMaxHeight=15, SqrMinWidth=7, SqrMaxWidth=7, CircMinHeight=11, CircMaxHeight=15, CircMinWidth=7, CircMaxWidth=7;
 	private int[] SqrRoofStyles={4,1,1,1,1,0,0}, CircRoofStyles={3,0,0,0,1,1,0};
 	private TemplateRule SqrRoofRule=null, CircRoofRule=null;
-
-
+	
 	//****************************************  CONSTRUCTOR - WallStyle*************************************************************************************//
 	public TemplateWall(File wallFile,HashMap<String,TemplateTML> buildingTemplateMap, BuildingExplorationHandler beh)  throws Exception{
 		super(wallFile,beh);
@@ -123,7 +126,7 @@ public class TemplateWall extends TemplateTML{
 		WWidth = width;
 		WHeight = length - embed;
 		WalkHeight-=embed;
-		if(waterHeight>=WalkHeight) waterHeight=WalkHeight-1;
+		if(!readInWaterHeight && waterHeight>=WalkHeight) waterHeight=WalkHeight-1;
 		if(DefaultTowerWeight<0) DefaultTowerWeight=0;
 
 		if(SqrMinWidth < BuildingTower.TOWER_UNIV_MIN_WIDTH) SqrMinWidth=BuildingTower.TOWER_UNIV_MIN_WIDTH;
@@ -345,19 +348,22 @@ public class TemplateWall extends TemplateTML{
 	*/
 	
 	public static int getBiomeNum( BiomeGenBase biomeCheck ) {
-        //if( biomeCheck == BiomeGenBase.rainforest ) 			return BIOME_RAINFOREST;
-        if( biomeCheck == BiomeGenBase.swampland )	 			return BIOME_SWAMPLAND;
-       // else if( biomeCheck == BiomeGenBase.seasonalForest ) 	return BIOME_SEASONALFOREST;
-        else if( biomeCheck == BiomeGenBase.forest ) 			return BIOME_FOREST;
-        //else if( biomeCheck == BiomeGenBase.savanna ) 			return BIOME_SAVANNA;
-        //else if( biomeCheck == BiomeGenBase.shrubland ) 		return BIOME_SHRUBLAND;
-        else if( biomeCheck == BiomeGenBase.taiga ) 			return BIOME_TAIGA;
-		else if( biomeCheck == BiomeGenBase.desert ) 			return BIOME_DESERT;
-        else if( biomeCheck == BiomeGenBase.plains) 			return BIOME_PLAINS;   //MP PORT replace field_35485_c with field_35519_b
-       // else if( biomeCheck == BiomeGenBase.iceDesert ) 		return BIOME_ICEDESERT;
-        //else if( biomeCheck == BiomeGenBase.tundra ) 			return BIOME_TUNDRA;
-        else if( biomeCheck == BiomeGenBase.hell ) 				return BIOME_HELL;
-        else if( biomeCheck == BiomeGenBase.sky ) 				return BIOME_SKY;
+        if( biomeCheck == BiomeGenBase.ocean) 						return BIOME_OCEAN;
+        else if( biomeCheck == BiomeGenBase.plains)	 				return BIOME_PLAINS;
+        else if( biomeCheck == BiomeGenBase.desert ) 				return BIOME_DESERT;
+        else if( biomeCheck == BiomeGenBase.hills ) 				return BIOME_HILLS;
+        else if( biomeCheck == BiomeGenBase.forest ) 				return BIOME_FOREST;
+        else if( biomeCheck == BiomeGenBase.taiga ) 				return BIOME_TAIGA;
+        else if( biomeCheck == BiomeGenBase.swampland) 				return BIOME_SWAMPLAND;
+        else if( biomeCheck == BiomeGenBase.river) 					return BIOME_RIVER;
+        else if( biomeCheck == BiomeGenBase.hell ) 					return BIOME_HELL;
+        else if( biomeCheck == BiomeGenBase.sky ) 					return BIOME_SKY;
+        else if( biomeCheck == BiomeGenBase.frozenOcean) 			return BIOME_FROZEN_OCEAN;
+        else if( biomeCheck == BiomeGenBase.frozenRiver) 			return BIOME_FROZEN_RIVER;
+        else if( biomeCheck == BiomeGenBase.icePlains) 				return BIOME_ICE_PLAINS;
+        else if( biomeCheck == BiomeGenBase.iceMountains) 			return BIOME_ICE_MOUNTAINS;
+        else if( biomeCheck == BiomeGenBase.mushroomIsland) 		return BIOME_MUSHROOM_ISLAND;
+        else if( biomeCheck == BiomeGenBase.mushroomIslandShore ) 	return BIOME_MUSHROOM_ISLAND_SHORE;
 		
 		return BIOME_FOREST;
 	}

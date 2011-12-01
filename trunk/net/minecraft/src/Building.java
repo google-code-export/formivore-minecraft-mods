@@ -15,34 +15,21 @@ package net.minecraft.src;
 
 /*
  *	Building is a general class for buildings. Classes can inherit from Building to build from a local frame of reference.
- *
+ *              
  *  Local frame of reference variables:
  *     i,j,k are coordinate inputs for global frame of reference functions.
  *     x,z,y are coordinate inputs for local frame of reference functions. 
- *     axY and EW determine the Y axis. E.g. EW=0,axY=-1 => Y-axis points north.
- *     axXHand =-1,1 determines whether X-axis points left or right respectively when facing along Y-axis.
+ *     bHand =-1,1 determines whether X-axis points left or right respectively when facing along Y-axis.
  *
- *			         (EW=0,axY=-1,dir=-2)
- *							(-i)
- *                            n
- *                            n
- *  (EW=1,axY=1,dir=1) (+k)www*eee(-k)  (EW=1,axY=-1,dir=-1)
- *                            s
- *                            s
- *							(+i)
- *                    (EW=0,axY=1,dir=2)
- *
- *
- *
- *			       axY=1
- *
- *                   ^
- *                   |
- *        axX=-1   <-*->  axX=1
- *                   |
- *                   v
- *
- *                axY=-1
+ *			     (dir=0)
+ *				  (-k)
+ *                 n
+ *                 n
+ *  (dir=3) (-i)www*eee(+i)  (dir=1)
+ *                 s
+ *                 s
+ *                (+k)
+ *               (dir=2)
 */
 		
 
@@ -69,9 +56,9 @@ import org.bukkit.inventory.Inventory;
 
 public class Building
 {
-		public final static int HIT_WATER=-666;
+		public final static int HIT_WATER=-666, HIT_SWAMP=-667;
 		public final static int EASY_CHEST=0,MEDIUM_CHEST=1,HARD_CHEST=2,TOWER_CHEST=3;
-		public final static int DIR_WEST=1,DIR_EAST=-1,DIR_SOUTH=2,DIR_NORTH=-2;
+		public final static int DIR_NORTH=0,DIR_EAST=1,DIR_SOUTH=2,DIR_WEST=3;
 		public final static int DIR_WEST_EAST=1, DIR_SOUTH_NORTH=0;
 		public final static int ROT_R=1,ROT_L=-1,ROT_180=2;
 		public final static int R_HAND=1,L_HAND=-1;
@@ -87,8 +74,8 @@ public class Building
 		protected WorldGeneratorThread wgt; 
 
 		protected int i1, j1, k1; //origin coordinates. The child class may want to move the origin as it progress to use as a "cursor" position.
-		protected int EW,NS; //one of these should be 1, the other 0
-		protected int axY,axX; //record whether the Y-axis(+-k) and the X-axis (+-i) point in the positive or negative directions.
+		private int xI,yI,xK,yK; //
+		
 		protected int bHand; //hand of secondary axis. Takes values of 1 for right-handed, -1 for left-handed.
 		protected int bDir; //Direction code of primary axis. Takes values of DIR_WEST=1,DIR_EAST=-1,DIR_SOUTH=2,DIR_NORTH=-2.
 
@@ -114,12 +101,14 @@ public class Building
     //******************** ORIENTATION FUNCTIONS *************************************************************************************************************//
     
 	//picks a random direction
+	/*
     public final static int pickDir(Random random){
     	return (2*random.nextInt(2)-1)*(random.nextInt(2)+1);
     }
+    */
   	
   	public void setPrimaryAx(int dir_){
-  		bDir=dir_;
+  		/* OLD DIRECTION
   		switch(bDir){
 	  		case DIR_WEST: EW=1; axY=1; break;
 	  		case DIR_EAST: EW=1; axY=-1; break;
@@ -131,31 +120,43 @@ public class Building
   		if(!(axY==-1 || axY==1)) System.err.println("ERROR: Y-axis must be -1 or 1! axY="+axY+" dir="+bDir);
 			if(!(axX==-1 || axX==1)) System.err.println("ERROR: X-axis must be -1 or 1! axX="+axX+" dir="+bDir);
 			if(!(EW==1 || EW==0)) System.err.println("ERROR: EW must be 1 or 0! dir="+bDir);
+		*/
+  		bDir=dir_;
+  		
+  		//changes of basis
+  		switch(bDir){
+	  		case DIR_NORTH: xI=bHand;  	yI=0;
+	  						xK=0;      	yK=-1; 
+	  		break;
+	  		case DIR_EAST:  xI=0; 		yI=1;  
+	  						xK=bHand;  	yK=0; 
+	  		break;
+	  		case DIR_SOUTH: xI=-bHand; 	yI=0; 
+	  						xK=0; 		yK=1;  
+	  		break;
+	  		case DIR_WEST:  xI=0; 		yI=-1;
+	  						xK=-bHand; 	yK=0; 
+	  		break;
+  		}
+			
+		
   	}
     
-    public final static int rotateDir(int dir,int rotation){
-    	switch(rotation){
-  		case ROT_R:
-  			if(dir==DIR_NORTH) return DIR_EAST;
-  			if(dir==DIR_EAST) return DIR_SOUTH;
-  			if(dir==DIR_SOUTH) return DIR_WEST;
-  			if(dir==DIR_WEST) return DIR_NORTH;
-  		case ROT_L:
-  			if(dir==DIR_NORTH) return DIR_WEST;
-  			if(dir==DIR_EAST) return DIR_NORTH;
-  			if(dir==DIR_SOUTH) return DIR_EAST;
-  			if(dir==DIR_WEST) return DIR_SOUTH;
-  		case ROT_180: return -dir;
-    	}
-    	return dir;
+  	
+    public final static int rotDir(int dir,int rotation){
+    	return (dir+rotation+4) % 4;
     }
     
-    //outputs metadir rotated to this Building's orientation and handedness
-    //metaDir input should be the direction desired if dir==DIR_NORTH and axXHand=R_HAND
-    public int rotateMetaDirToLocalAxes(int metaDir){
-    	if( metaDir==DIR_NORTH  || metaDir==DIR_SOUTH)
-    		return EW==0 ? -axY*metaDir : -axY*metaDir/2;
-    	return EW==0 ? -axY*bHand*metaDir : axY*bHand*metaDir*2;
+    public final static int flipDir(int dir){
+    	return (dir+2) % 4;
+    }
+    
+    //outputs dir rotated to this Building's orientation and handedness
+    //dir input should be the direction desired if bDir==DIR_NORTH and bHand=R_HAND
+    public int orientDirToBDir(int dir){
+    	return bHand < 0 && dir % 2==1
+    			? (bDir + dir + 2) & 0x3
+    			: (bDir + dir) & 0x3;
     }
     
     protected final void setOrigin(int i1_,int j1_, int k1_){
@@ -164,18 +165,30 @@ public class Building
 		k1=k1_;
     }
     
+    protected final void setOriginLocal(int i0,int j0, int k0, int x, int z, int y){
+		i1=i0+yI*y+xI*x;
+		j1=j0+z;
+		k1=k0+yK*y+xK*x;
+    }
+    
+    /*
     protected final void shiftOrigin(int gradX, int gradZ, int gradY){
-		i1+=EW*axX*gradX + NS*axY*gradY;
-		j1+=gradZ;
-		k1+=NS*axX*gradX + EW*axY*gradY;
+    	// OLD DIRECTION
+		//i1+=EW*axX*gradX + NS*axY*gradY;
+		//j1+=gradZ;
+		//k1+=NS*axX*gradX + EW*axY*gradY;
+		
 	}
+	*/
   	
   //******************** LOCAL COORDINATE FUNCTIONS - ACCESSORS *************************************************************************************************************//
     //Use these instead of World.java functions when to build from a local reference frame
     //when i1,j1,k1 are set to working values.
     
     public final int getI(int x, int y){
-		return i1+ EW*axX*x+NS*axY*y;
+    	// OLD DIRECTION
+		//return i1+ EW*axX*x+NS*axY*y;
+    	return i1+yI*y+xI*x;
     }
     
     public final int getJ(int z){
@@ -183,16 +196,22 @@ public class Building
     }
     
     public final int getK(int x, int y){
-		return k1+EW*axY*y+NS*axX*x;
+    	// OLD DIRECTION
+		//return k1+EW*axY*y+NS*axX*x;
+    	return k1+yK*y+xK*x;
     }
     
     public final int[] getIJKPt(int x, int z, int y){
     	int[] pt=new int[3];
+    	// OLD DIRECTION
+    	/*
     	pt[0]=i1+ EW*axX*x+NS*axY*y;
     	pt[1]=j1+z;
-    	pt[2]=k1+EW*axY*y+NS*axX*x;
-    	//if(pt[0] < 0xfe17b800 || pt[2] < 0xfe17b800 || pt[0] >= 0x1e84800 || pt[2] > 0x1e84800 ||pt[1] < 0 || pt[1] >= 128)
-        //    return BAD_COORDINATES_PT;     
+    	pt[2]=k1+EW*axY*y+NS*axX*x;  
+    	*/
+    	pt[0]=i1+yI*y+xI*x;
+    	pt[1]=j1+z;
+    	pt[2]=k1+yK*y+xK*x;
     	return pt;
     }
     
@@ -203,7 +222,7 @@ public class Building
     }
     
     public final int getX(int[] pt){
-		return axX*(EW*(pt[0]-i1)+NS*(pt[2]-k1));
+		return xI*(pt[0]-i1) + xK*(pt[2]-k1);
     }
     
     public final int getZ(int[] pt){
@@ -211,7 +230,7 @@ public class Building
     }
     
     public final int getY(int[] pt){
-		return axY*(NS*(pt[0]-i1)+EW*(pt[2]-k1));
+		return yI*(pt[0]-i1) + yK*(pt[2]-k1);
     }
     
     protected final boolean queryExplorationHandler(int x, int z, int y) throws InterruptedException{
@@ -219,10 +238,12 @@ public class Building
     }
     
     protected final int getBlockIdLocal(int x, int z, int y){
-    	if(bDir==DIR_NORTH) return (axX==1 ? world.getBlockId(i1-y,j1+z,k1+x) : world.getBlockId(i1-y, j1+z,k1-x));
-  		if(bDir==DIR_EAST) return  (axX==1 ? world.getBlockId(i1+x,j1+z,k1-y) : world.getBlockId(i1-x, j1+z,k1-y));
-  		if(bDir==DIR_SOUTH) return (axX==1 ? world.getBlockId(i1+y,j1+z,k1+x) : world.getBlockId(i1+y, j1+z,k1-x));
-  		return (axX==1 ? world.getBlockId(i1+x,j1+z,k1+y) : world.getBlockId(i1-x, j1+z,k1+y));
+    	// OLD DIRECTION
+    	//if(bDir==DIR_NORTH) return (axX==1 ? world.getBlockId(i1-y,j1+z,k1+x) : world.getBlockId(i1-y, j1+z,k1-x));
+  		//if(bDir==DIR_EAST) return  (axX==1 ? world.getBlockId(i1+x,j1+z,k1-y) : world.getBlockId(i1-x, j1+z,k1-y));
+  		//if(bDir==DIR_SOUTH) return (axX==1 ? world.getBlockId(i1+y,j1+z,k1+x) : world.getBlockId(i1+y, j1+z,k1-x));
+  		//return (axX==1 ? world.getBlockId(i1+x,j1+z,k1+y) : world.getBlockId(i1-x, j1+z,k1+y));
+    	return world.getBlockId(i1+yI*y+xI*x,j1+z,k1+yK*y+xK*x);
     }
     
   //******************** LOCAL COORDINATE FUNCTIONS - SET BLOCK FUNCTIONS *************************************************************************************************************//
@@ -240,7 +261,6 @@ public class Building
     
     protected final void setBlockAndMetadataLocal(int x, int z, int y, int blockID, int metadata){
      	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
-     	if(blockID==TemplateRule.HOLE_ID) blockID=AIR_ID;
      	
     	int[] pt=getIJKPt(x,z,y);
     	if(blockID==AIR_ID && world.getBlockId(pt[0], pt[1], pt[2])==AIR_ID) return;
@@ -255,7 +275,6 @@ public class Building
     
     protected final void setBlockAndMetadataLocal(int x, int z, int y, TemplateRule rule){
     	int [] idAndMeta=rule.getBlock(random);
-    	if(idAndMeta[0]==TemplateRule.HOLE_ID) idAndMeta[0]=AIR_ID;
      	if(idAndMeta[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,idAndMeta[0],idAndMeta[1]); return; } 	
      	
     	int[] pt=getIJKPt(x,z,y);
@@ -272,7 +291,6 @@ public class Building
     //allows control of lighting. Also will build even if replacing air with air.
     protected final void setBlockAndMetadataLocal(int x, int z, int y, int blockID, int metadata, boolean lighting){
     	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
-     	if(blockID==TemplateRule.HOLE_ID) blockID=AIR_ID;
      	
     	int[] pt=getIJKPt(x,z,y);
     	if(blockID!=CHEST_ID) emptyIfChest(pt);
@@ -301,7 +319,14 @@ public class Building
   //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setSpecialBlockLocal &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
     protected final void setSpecialBlockLocal(int x, int z, int y, int blockID, int metadata){
     	if(blockID==PRESERVE_ID) return; // preserve existing world block
+    	
     	int[] pt=getIJKPt(x,z,y);
+    	
+    	if(blockID==HOLE_ID){
+    		int presentBlock=world.getBlockId(pt[0], pt[1], pt[2]);
+    		if(presentBlock!=AIR_ID && !IS_LIQUID_BLOCK[presentBlock])
+    			world.setBlock(pt[0], pt[1], pt[2], AIR_ID);
+    	}
     	
     	switch(blockID) {
 			case ZOMBIE_SPAWNER_ID: setMobSpawner(pt,1,0); return;
@@ -412,10 +437,10 @@ public class Building
  	public void setPainting(int[] pt, int metadata){
  		//painting uses same orientation meta as ladders.
  		//Have to adjust ijk since unlike ladders the entity exists at the block it is hung on.
- 		int dir=rotateMetaDirToLocalAxes(LADDER_META_TO_DIR[metadata]);
+ 		int dir=(bDir+LADDER_META_TO_DIR[metadata])%4;
  		if(dir==DIR_NORTH || dir==DIR_SOUTH) pt[0]+=dir/2; else pt[2]+=dir;
  			
- 		EntityPainting entitypainting = new EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir+2]);
+ 		EntityPainting entitypainting = new EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir]);
         if(entitypainting.canStay() && !world.multiplayerWorld)
             world.entityJoinedWorld(entitypainting);
         
@@ -427,9 +452,9 @@ public class Building
     public void setHumansPlusFactionFlag(int[] pt, int blockID, int metadata){
     	if(!wgt.master.humansPlusLoaded) return;
     	
-    	int dir=rotateMetaDirToLocalAxes(LADDER_META_TO_DIR[metadata]);
+    	int dir=(bDir+LADDER_META_TO_DIR[metadata]) % 4;
     	if(dir==DIR_NORTH || dir==DIR_SOUTH) pt[0]+=dir/2; else pt[2]+=dir;
-    	Integer faceDir=PAINTING_DIR_TO_FACEDIR[dir+2]; 
+    	Integer faceDir=PAINTING_DIR_TO_FACEDIR[dir]; 
     	
     	try {
     		//call constructor using reflection
@@ -473,10 +498,7 @@ public class Building
     
   //******************** LOCAL COORDINATE FUNCTIONS - BLOCK TEST FUNCTIONS *************************************************************************************************************//
     protected final boolean isWallable(int x, int z, int y){
-    	if(bDir==DIR_NORTH) return (axX==1 ? IS_WALLABLE[world.getBlockId(i1-y,j1+z,k1+x)] : IS_WALLABLE[world.getBlockId(i1-y, j1+z,k1-x)]);
-  		if(bDir==DIR_EAST) return  (axX==1 ? IS_WALLABLE[world.getBlockId(i1+x,j1+z,k1-y)] : IS_WALLABLE[world.getBlockId(i1-x, j1+z,k1-y)]);
-  		if(bDir==DIR_SOUTH) return (axX==1 ? IS_WALLABLE[world.getBlockId(i1+y,j1+z,k1+x)] : IS_WALLABLE[world.getBlockId(i1+y, j1+z,k1-x)]);
-  		return (axX==1 ? IS_WALLABLE[world.getBlockId(i1+x,j1+z,k1+y)] : IS_WALLABLE[world.getBlockId(i1-x, j1+z,k1+y)]);
+  		return IS_WALLABLE[world.getBlockId(i1+yI*y+xI*x,j1+z,k1+yK*y+xK*x)];
 	  }
 	  
 	 protected final boolean isWallableIJK(int pt[]){
@@ -486,10 +508,7 @@ public class Building
 	 }
 	  
 	 protected final boolean isWallBlock(int x, int z, int y){
-		if(bDir==DIR_NORTH) return (axX==1 ? IS_WALL_BLOCK[world.getBlockId(i1-y,j1+z,k1+x)] : IS_WALL_BLOCK[world.getBlockId(i1-y, j1+z,k1-x)]);
-  		if(bDir==DIR_EAST) return  (axX==1 ? IS_WALL_BLOCK[world.getBlockId(i1+x,j1+z,k1-y)] : IS_WALL_BLOCK[world.getBlockId(i1-x, j1+z,k1-y)]);
-  		if(bDir==DIR_SOUTH) return (axX==1 ? IS_WALL_BLOCK[world.getBlockId(i1+y,j1+z,k1+x)] : IS_WALL_BLOCK[world.getBlockId(i1+y, j1+z,k1-x)]);
-  		return (axX==1 ? IS_WALL_BLOCK[world.getBlockId(i1+x,j1+z,k1+y)] : IS_WALL_BLOCK[world.getBlockId(i1-x, j1+z,k1+y)]);
+		 return IS_WALL_BLOCK[world.getBlockId(i1+yI*y+xI*x,j1+z,k1+yK*y+xK*x)];
     }
 	 
 	protected final boolean isArtificialWallBlock(int x, int z, int y){
@@ -529,18 +548,18 @@ public class Building
     
     
     public final String globalCoordString(int x, int z, int y){
-    	if(EW==1) return "("+(i1+axX*x)+","+(j1+z)+","+(k1+axY*y)+")";
-    	return "("+(i1+axY*y)+","+(j1+z)+","+(k1+axX*x)+")";
+    	int[] pt=getIJKPt(x,z,y);
+    	return "("+pt[0]+","+pt[1]+","+pt[2]+")";
     }
     
     //replaces orientationString
     protected final String IDString(){
     	String str="ID="+bID+" axes(Y,X)=";
     	switch(bDir){
-    		case DIR_SOUTH: return str + "(S," + (axX>0 ? "W)" : "E)");
-    		case DIR_NORTH: return str+ "(N," + (axX>0 ? "W)" : "E)");
-    		case DIR_WEST: return str+ "(W," + (axX>0 ? "S)" : "N)");
-    		case DIR_EAST: return str + "(E," + (axX>0 ? "S)" : "N)");
+    		case DIR_SOUTH: return str + "(S," + (bHand>0 ? "W)" : "E)");
+    		case DIR_NORTH: return str+ "(N," + (bHand>0 ? "E)" : "W)");
+    		case DIR_WEST: return str+ "(W," + (bHand>0 ? "N)" : "S)");
+    		case DIR_EAST: return str + "(E," + (bHand>0 ? "S)" : "N)");
     	}
     	return "Error - bad dir value for ID="+bID;
     }
@@ -644,6 +663,8 @@ public class Building
 	public static long getWorldCode(World world){
 		//BUKKIT PORT
 		//return world.getUID().getLeastSignificantBits();
+		long foo=world.worldInfo.getRandomSeed();
+		int bar=world.worldProvider.worldType;
 		return world.worldInfo.getRandomSeed() + world.worldProvider.worldType;
 	}
     
@@ -672,7 +693,8 @@ public class Building
 				blockId=world.getBlockId(i,j,k);
 				if(!IS_WALLABLE[blockId] && (wallIsSurface || !IS_WALL_BLOCK[blockId])) 
 					return j;
-				if(waterIsSurface && IS_LIQUID_BLOCK[blockId]) return HIT_WATER;
+				if(waterIsSurface && IS_LIQUID_BLOCK[blockId])
+					return IS_LIQUID_BLOCK[world.getBlockId(i, j-1, k)] ? HIT_WATER : HIT_SWAMP;  //so we can still build in swamps...
 			}
 		}
 		return -1;
@@ -784,7 +806,8 @@ public class Building
 		int tempdata = 0;
 		switch( blockID ) {
 		case WOOD_STAIRS_ID: case COBBLESTONE_STAIRS_ID: case BRICK_STAIRS_ID: case STONE_BRICK_STAIRS_ID:
-			return STAIRS_DIR_TO_META[rotateMetaDirToLocalAxes(STAIRS_META_TO_DIR[metadata])+2];
+			return STAIRS_DIR_TO_META[orientDirToBDir(STAIRS_META_TO_DIR[metadata])];
+			
 			
 		case TORCH_ID: case LEVER_ID: case REDSTONE_TORCH_OFF_ID: case REDSTONE_TORCH_ON_ID: case STONE_BUTTON_ID:
 			// check to see if this is a switch or a button and is flagged as thrown
@@ -802,7 +825,7 @@ public class Building
 				// torches on the floor.
 				return metadata;
 			}
-			return TORCH_DIR_TO_META[rotateMetaDirToLocalAxes(TORCH_META_TO_DIR[metadata])+2] + tempdata;
+			return TORCH_DIR_TO_META[orientDirToBDir(TORCH_META_TO_DIR[metadata])] + tempdata;
 
 
 		case LADDER_ID: case DISPENSER_ID: case FURNACE_ID: case BURNING_FURNACE_ID: case WALL_SIGN_ID: case PISTON_ID: case PISTON_EXTENSION_ID:
@@ -814,7 +837,7 @@ public class Building
 				}
 				if(metadata==0 || metadata==1) return metadata + tempdata;
 			}
-			return LADDER_DIR_TO_META[rotateMetaDirToLocalAxes(LADDER_META_TO_DIR[metadata])+2];
+			return LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metadata])];
 			
 		case RAILS_ID:
 			switch( bDir ) {
@@ -935,7 +958,7 @@ public class Building
 					}
 				}
 			}
-			return PUMPKIN_DIR_TO_META[rotateMetaDirToLocalAxes(PUMPKIN_META_TO_DIR[metadata])+2] + tempdata;
+			return BED_DIR_TO_META[orientDirToBDir(BED_META_TO_DIR[metadata])] + tempdata;
 			
 		case BED_BLOCK_ID: case FENCE_GATE_ID:
 			if(blockID==BED_BLOCK_ID){
@@ -951,18 +974,18 @@ public class Building
 					metadata -= 4;
 				}
 			}
-			return BED_DIR_TO_META[rotateMetaDirToLocalAxes(BED_META_TO_DIR[metadata])+2] + tempdata;
+			return BED_DIR_TO_META[orientDirToBDir(BED_META_TO_DIR[metadata])] + tempdata;
 		
 		case VINES_ID:
 			if(metadata==0) return 0;
-			return VINES_DIR_TO_META[rotateMetaDirToLocalAxes(VINES_META_TO_DIR[metadata])+2];
+			return VINES_DIR_TO_META[(bDir+VINES_META_TO_DIR[metadata]) % 4];
 			
 		case TRAP_DOOR_ID:
 			if( metadata - 4 >= 0){
 				tempdata += 4;
 				metadata -= 4;
 			}
-			return TRAPDOOR_DIR_TO_META[rotateMetaDirToLocalAxes(TRAPDOOR_META_TO_DIR[metadata])+2] + tempdata;
+			return TRAPDOOR_DIR_TO_META[orientDirToBDir(TRAPDOOR_META_TO_DIR[metadata])] + tempdata;
 			
 		case SIGN_POST_ID:
 			// sign posts
@@ -1203,9 +1226,23 @@ public class Building
     public final static int FENCE_GATE_ID=107;
     public final static int BRICK_STAIRS_ID=108;
     public final static int STONE_BRICK_STAIRS_ID=109;
+    public final static int MYCELIUM_ID=110;
+    public final static int LILY_PAD_ID=111;
+    public final static int NETHER_BRICK_ID=112;
+    public final static int NETHER_BRICK_FENCE_ID=113;
+    public final static int NETHER_BRICK_STAIRS_ID=114;
+    public final static int NETHER_WART_ID=115;
+    public final static int ENCHANTMENT_TABLE_ID=116;
+    public final static int BREWING_STAND_BLOCK_ID=117;
+    public final static int CAULDRON_BLOCK_ID=118;
+    public final static int END_PORTAL_ID=119;
+    public final static int END_PORTAL_FRAME_ID=120;
+    public final static int END_STONE_ID=121;
+    public final static int DRAGON_EGG_ID=122;
     
     //Special Blocks
-    public final static int SPECIAL_BLOCKID_START=300, SPECIAL_BLOCKID_END=325;
+    public final static int SPECIAL_BLOCKID_START=299, SPECIAL_BLOCKID_END=325;
+    public final static int HOLE_ID=299;
 	public final static int PRESERVE_ID=300;
 	public final static int ZOMBIE_SPAWNER_ID=301;
 	public final static int SKELETON_SPAWNER_ID=302;
@@ -1350,28 +1387,50 @@ public class Building
     public final static int COOKED_CHICKEN_ID=366;
     public final static int ROTTEN_FLESH_ID=367;
     public final static int ENDER_PEARL_ID=368;
-    public final static int GOLD_RECORD_ID=2256;
-    public final static int GREEN_RECORD_ID=2257;
+    public final static int BLAZE_ROD_ID=369;
+    public final static int GHAST_TEAR_ID=370;
+    public final static int GOLD_NUGGET_ID=371;
+    public final static int NETEHR_WART_ID=372;
+    public final static int POTION_ID=373;
+    public final static int GLASS_BOTTLE_ID=374;
+    public final static int SPIDER_EYE_ID=375;
+    public final static int FERMENTED_SPIDER_EYE_ID=376;
+    public final static int BLAZE_POWDER_ID=377;
+    public final static int MAGMA_CREAM_ID=378;
+    public final static int BREWING_STAND_ID=379;
+    public final static int CAULDRON_ID=380;
+    public final static int EYE_OF_ENDER_ID=381;
+    public final static int GLISTERING_MELON_ID=382;
+    public final static int THIRTEEN_DISC_ID=2256;
+    public final static int CAT_DISC_ID=2257;
+    public final static int BLOCKS_DISC_ID=2258;
+    public final static int CHIRP_DISC_ID=2259;
+    public final static int FAR_DISC_ID=2260;
+    public final static int MALL_DISC_ID=2261;
+    public final static int MELLOHI_DISC_ID=2262;
+    public final static int STAL_DISC_ID=2263;
+    public final static int STRAD_DISC_ID=2264;
+    public final static int WARD_DISC_ID=2265;
+    public final static int ELEVEN_DISC_ID=2266;
     
     
 	//maps block metadata to a dir
-	private static int[] 	BED_META_TO_DIR=new int[]	{		DIR_WEST,DIR_NORTH,DIR_EAST,DIR_SOUTH},
-							TORCH_META_TO_DIR=new int[]	{0,		DIR_SOUTH,DIR_NORTH,DIR_WEST,DIR_EAST},
-							STAIRS_META_TO_DIR=new int[]{		DIR_SOUTH,DIR_NORTH,DIR_WEST,DIR_EAST},
-							LADDER_META_TO_DIR=new int[]{0,0,	DIR_EAST,DIR_WEST,DIR_NORTH,DIR_SOUTH},
-							PUMPKIN_META_TO_DIR=new int[]{		DIR_EAST,DIR_SOUTH,DIR_WEST,DIR_NORTH},
-							TRAPDOOR_META_TO_DIR=new int[]{		DIR_WEST,DIR_EAST,DIR_SOUTH,DIR_NORTH},
-							VINES_META_TO_DIR=new int[]{0,		DIR_WEST,DIR_NORTH,0,DIR_EAST,0,0,0,DIR_SOUTH};
+	private static int[] 	BED_META_TO_DIR=new int[]	{		DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
+							TORCH_META_TO_DIR=new int[]	{0,		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
+							STAIRS_META_TO_DIR=new int[]{		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
+							LADDER_META_TO_DIR=new int[]{0,0,	DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
+							TRAPDOOR_META_TO_DIR=new int[]{		DIR_SOUTH,DIR_NORTH,DIR_EAST,DIR_WEST},
+							VINES_META_TO_DIR=new int[]{0,		DIR_SOUTH,DIR_WEST,0,DIR_NORTH,0,0,0,DIR_EAST};
 	
 	//inverse map should be {North_inv,East_inv,dummy,West_inv,South_inv}
-	private static int[] 	BED_DIR_TO_META			=new int[]{1,2,0,0,3},
-							TORCH_DIR_TO_META		=new int[]{2,4,0,3,1},
-							STAIRS_DIR_TO_META		=new int[]{1,3,0,2,0},
-							LADDER_DIR_TO_META		=new int[]{4,2,0,3,5},
-							PUMPKIN_DIR_TO_META		=new int[]{3,0,0,2,1},
-							TRAPDOOR_DIR_TO_META	=new int[]{3,1,0,0,2},
-							VINES_DIR_TO_META		=new int[]{2,4,0,1,8},
-							PAINTING_DIR_TO_FACEDIR =new int[]{3,2,0,0,1};
+    //inverse map should be {North_inv,East_inv,South_inv, West_inv}
+	public static int[] 	BED_DIR_TO_META			=new int[]{2,3,0,1},
+							TORCH_DIR_TO_META		=new int[]{4,1,3,2},
+							STAIRS_DIR_TO_META		=new int[]{3,0,2,1},
+							LADDER_DIR_TO_META		=new int[]{2,5,3,4},
+							TRAPDOOR_DIR_TO_META	=new int[]{1,2,0,3},
+							VINES_DIR_TO_META		=new int[]{4,8,1,2},
+							PAINTING_DIR_TO_FACEDIR =new int[]{3,2,1,0};
     
     public final static boolean[] IS_WALL_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_WALLABLE=new boolean[SPECIAL_BLOCKID_END+1];
@@ -1383,18 +1442,19 @@ public class Building
     //public final static boolean[] IS_SPAWNER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_HUMANS_PLUS_FLAG=new boolean[SPECIAL_BLOCKID_END+1];
     
-    
+
     static{
     	for(int blockID=0;blockID<IS_WALL_BLOCK.length;blockID++){
     		if( blockID==COBBLESTONE_ID || blockID==WOOD_ID || blockID==LAPIS_BLOCK_ID || blockID==SANDSTONE_ID || blockID==GOLD_BLOCK_ID ||
     			blockID==STEP_ID || blockID==DOUBLE_STEP_ID || blockID==MOSSY_COBBLESTONE_ID || blockID==TORCH_ID || blockID==WOOD_STAIRS_ID ||
-    		    blockID==LADDER_ID || blockID==COBBLESTONE_STAIRS_ID || blockID==OBSIDIAN_ID || blockID==GLOWSTONE_ID || blockID==IRON_BARS_ID || 
-    		    blockID==GLASS_PANE_ID || blockID==STONE_BRICK_ID || blockID==FENCE_GATE_ID || blockID==BRICK_STAIRS_ID || blockID==STONE_BRICK_STAIRS_ID){
+    		    blockID==LADDER_ID || blockID==FENCE_ID || blockID==FENCE_GATE_ID || blockID==OBSIDIAN_ID || blockID==GLOWSTONE_ID || blockID==IRON_BARS_ID || 
+    		    blockID==GLASS_PANE_ID || blockID==STONE_BRICK_ID || blockID==BRICK_STAIRS_ID || blockID==STONE_BRICK_STAIRS_ID ||blockID==COBBLESTONE_STAIRS_ID ||
+    		    blockID==NETHER_BRICK_ID || blockID==NETHER_BRICK_FENCE_ID || blockID==NETHER_BRICK_STAIRS_ID){
     			IS_WALL_BLOCK[blockID]=true;
     		} else IS_WALL_BLOCK[blockID]=false;
     		
     		if(blockID==AIR_ID || blockID==SAPLING_ID || blockID==WATER_ID || blockID==STATIONARY_WATER_ID || blockID==LOG_ID || blockID==LEAVES_ID ||
-    		   blockID==LONG_GRASS_ID || blockID==DEAD_BUSH_ID || blockID==YELLOW_FLOWER_ID || blockID==RED_ROSE_ID ||
+    		   blockID==LONG_GRASS_ID || blockID==DEAD_BUSH_ID || blockID==YELLOW_FLOWER_ID || blockID==RED_ROSE_ID || blockID==LILY_PAD_ID ||
     		   blockID==BROWN_MUSHROOM_ID || blockID==RED_MUSHROOM_ID || blockID==SNOW_ID || blockID==ICE_ID || blockID==CACTUS_ID ||
     		   blockID==SUGAR_CANE_BLOCK_ID || blockID==MELON_ID || blockID==PUMPKIN_STEM_ID || blockID==MELON_STEM_ID || blockID==VINES_ID) {
     			IS_WALLABLE[blockID]=true;
@@ -1405,7 +1465,7 @@ public class Building
     			IS_DELAY_BLOCK[blockID]=true;
     		} else IS_DELAY_BLOCK[blockID]=false;
     		
-    		if(blockID==AIR_ID || blockID==TORCH_ID || blockID==LADDER_ID || blockID==PRESERVE_ID || blockID==SAND_ID){
+    		if(blockID==AIR_ID || blockID==TORCH_ID || blockID==LADDER_ID || blockID==PRESERVE_ID || blockID==SAND_ID || blockID==HOLE_ID){
     			IS_LOAD_TRASMITER_BLOCK[blockID]=false;
     		} else IS_LOAD_TRASMITER_BLOCK[blockID]=true;
     		
@@ -1541,24 +1601,28 @@ public class Building
 	//4array - block min stacksize
 	//5array block max stacksize
 	public static int[][][] DEFAULT_CHEST_ITEMS=new int[][][]{
-		{	{0,ARROW_ID,0,1,1,12},
+		{	 //Easy
+			{0,ARROW_ID,0,2,1,12},   
 			{1,IRON_SWORD_ID,0,2,1,1},
 			{2,GOLD_LEGGINGS_ID,0,1,1,1},
 			{3,IRON_SPADE_ID,0,1,1,1},
 			{4,STRING_ID,0,1,1,1},
-			{5,EGG_ID,0,2,4,8},
-			{6,WHEAT_ID,0,3,3,6},
-			{7,IRON_PICKAXE_ID,0,2,1,1},
-			{8,STORAGE_MINECART_ID,0,1,1,1},
-			{9,BONE_ID,0,2,2,5},
-			{10,COAL_ID,0,2,6,9},
-			{11,LEATHER_HELMET_ID,0,1,1,1},
-			{12,LADDER_ID,0,1,8,12}},
-		{	{0,IRON_SWORD_ID,0,2,1,1},
+			{5,IRON_PICKAXE_ID,0,2,1,1},
+			{6,STORAGE_MINECART_ID,0,1,1,1},
+			{7,GLASS_BOTTLE_ID,0,2,2,5},
+			{8,LEATHER_HELMET_ID,0,1,1,1},
+			{9,LADDER_ID,0,1,8,12},
+			{10,GOLD_NUGGET_ID,0,2,1,3},
+			{11,POTION_ID,5,1,1,1}}, //healing
+			//{12,POTION_ID,10,1,1,1}, //slowness
+			//{13,POTION_ID,4,1,1,1}}, //poison
+			
+		{	//Medium
+			{0,IRON_SWORD_ID,0,2,1,1}, 
 			{1,MILK_BUCKET_ID,0,2,1,1},
 			{2,WEB_ID,0,1,8,16},
 			{3,IRON_SPADE_ID,0,1,1,1},
-			{4,POWERED_MINECART_ID,0,1,1,1},
+			{4,POTION_ID,2,1,1,1},
 			{5,DIAMOND_HOE_ID,0,1,0,1},
 			{6,WATCH_ID,0,1,1,1},
 			{7,IRON_PICKAXE_ID,0,3,1,1},
@@ -1567,8 +1631,14 @@ public class Building
 			{10,APPLE_ID,0,2,2,3},
 			{11,COMPASS_ID,0,1,1,1},
 			{12,IRON_INGOT_ID,0,1,5,8},
-			{13,ENDER_PEARL_ID,0,1,1,3}},
-		{	{0,STICKY_PISTON_ID,0,2,6,12},
+			{13,ENDER_PEARL_ID,0,1,1,3},
+			{14,GOLD_NUGGET_ID,0,2,5,9},
+			{15,POTION_ID,5,3,1,1}, //healing
+			{16,POTION_ID,2,1,1,1}, //speed
+			{17,POTION_ID,9,1,1,1}}, //strength
+			
+		{	//Hard
+			{0,STICKY_PISTON_ID,0,2,6,12},  
 			{1,WEB_ID,0,1,8,24},
 			{2,COOKIE_ID,0,2,12,24},
 			{3,DIAMOND_AXE_ID,0,1,1,1},
@@ -1577,11 +1647,17 @@ public class Building
 			{6,LAVA_BUCKET_ID,0,2,1,1},
 			{7,CHAINMAIL_CHESTPLATE_ID,0,1,1,1},
 			{8,MOB_SPAWNER_ID,0,2,2,4},
-			{9,GREEN_RECORD_ID,0,1,1,1},
+			{9,THIRTEEN_DISC_ID,0,1,1,1},
 			{10,GOLDEN_APPLE_ID,0,1,4,8},
 			{11,TNT_ID,0,2,8,20},
-			{12,DIAMOND_ID,0,2,1,4}},
-		{	{0,ARROW_ID,0,1,1,12},
+			{12,DIAMOND_ID,0,2,1,4},
+			{13,GOLD_NUGGET_ID,0,2,30,64},
+			{14,POTION_ID,5,3,1,1}, //healing
+			{15,POTION_ID,3,1,1,1}}, //fire resistance
+			
+			
+		{	//Tower
+			{0,ARROW_ID,0,1,1,12},  
 			{1,RAW_FISH_ID,0,2,1,1},
 			{2,GOLD_HELMET_ID,0,1,1,1},
 			{3,ARROW_ID,0,1,1,12},
@@ -1593,7 +1669,8 @@ public class Building
 			{9,WHEAT_ID,0,2,3,6},
 			{10,SULPHUR_ID,0,1,2,4},
 			{11,LEATHER_CHESTPLATE_ID,0,1,1,1},
-			{12,PUMPKIN_ID,0,1,1,5}}
+			{12,PUMPKIN_ID,0,1,1,5},
+			{13,GOLD_NUGGET_ID,0,2,1,3}}
 
 	};
 

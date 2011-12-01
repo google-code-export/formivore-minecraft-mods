@@ -47,7 +47,7 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 		if(ws==null) return false;
 		
 		
-		BuildingDoubleWall dw=new BuildingDoubleWall(10*(random.nextInt(9000)+1000),this,ws,Building.pickDir(random),1,new int[] {i0,j0,k0});
+		BuildingDoubleWall dw=new BuildingDoubleWall(10*(random.nextInt(9000)+1000),this,ws,random.nextInt(4),1,new int[] {i0,j0,k0});
 		if(!dw.plan()) return false;
 
 		//calculate the integrated curvature
