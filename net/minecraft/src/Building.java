@@ -73,7 +73,7 @@ public class Building
 		private LinkedList<int[]> delayedBuildQueue;
 		protected WorldGeneratorThread wgt; 
 
-		protected int i1, j1, k1; //origin coordinates. The child class may want to move the origin as it progress to use as a "cursor" position.
+		protected int i0, j0, k0; //origin coordinates. The child class may want to move the origin as it progress to use as a "cursor" position.
 		private int xI,yI,xK,yK; //
 		
 		protected int bHand; //hand of secondary axis. Takes values of 1 for right-handed, -1 for left-handed.
@@ -99,28 +99,8 @@ public class Building
 	}
     
     //******************** ORIENTATION FUNCTIONS *************************************************************************************************************//
-    
-	//picks a random direction
-	/*
-    public final static int pickDir(Random random){
-    	return (2*random.nextInt(2)-1)*(random.nextInt(2)+1);
-    }
-    */
   	
   	public void setPrimaryAx(int dir_){
-  		/* OLD DIRECTION
-  		switch(bDir){
-	  		case DIR_WEST: EW=1; axY=1; break;
-	  		case DIR_EAST: EW=1; axY=-1; break;
-	  		case DIR_SOUTH: EW=0; axY=1; break;
-	  		case DIR_NORTH: EW=0; axY=-1; break;
-  		}
-  		NS=1-EW;
-  		axX=axY*bHand*(NS-EW);
-  		if(!(axY==-1 || axY==1)) System.err.println("ERROR: Y-axis must be -1 or 1! axY="+axY+" dir="+bDir);
-			if(!(axX==-1 || axX==1)) System.err.println("ERROR: X-axis must be -1 or 1! axX="+axX+" dir="+bDir);
-			if(!(EW==1 || EW==0)) System.err.println("ERROR: EW must be 1 or 0! dir="+bDir);
-		*/
   		bDir=dir_;
   		
   		//changes of basis
@@ -159,59 +139,39 @@ public class Building
     			: (bDir + dir) & 0x3;
     }
     
-    protected final void setOrigin(int i1_,int j1_, int k1_){
-		i1=i1_;
-		j1=j1_;
-		k1=k1_;
+    protected final void setOrigin(int i0_,int j0_, int k0_){
+		i0=i0_;
+		j0=j0_;
+		k0=k0_;
     }
     
-    protected final void setOriginLocal(int i0,int j0, int k0, int x, int z, int y){
-		i1=i0+yI*y+xI*x;
-		j1=j0+z;
-		k1=k0+yK*y+xK*x;
+    protected final void setOriginLocal(int i1,int j1, int k1, int x, int z, int y){
+		i0=i1+yI*y+xI*x;
+		j0=j1+z;
+		k0=k1+yK*y+xK*x;
     }
-    
-    /*
-    protected final void shiftOrigin(int gradX, int gradZ, int gradY){
-    	// OLD DIRECTION
-		//i1+=EW*axX*gradX + NS*axY*gradY;
-		//j1+=gradZ;
-		//k1+=NS*axX*gradX + EW*axY*gradY;
-		
-	}
-	*/
   	
   //******************** LOCAL COORDINATE FUNCTIONS - ACCESSORS *************************************************************************************************************//
     //Use these instead of World.java functions when to build from a local reference frame
-    //when i1,j1,k1 are set to working values.
+    //when i0,j0,k0 are set to working values.
     
     public final int getI(int x, int y){
-    	// OLD DIRECTION
-		//return i1+ EW*axX*x+NS*axY*y;
-    	return i1+yI*y+xI*x;
+    	return i0+yI*y+xI*x;
     }
     
     public final int getJ(int z){
-		return j1+z;
+		return j0+z;
     }
     
     public final int getK(int x, int y){
-    	// OLD DIRECTION
-		//return k1+EW*axY*y+NS*axX*x;
-    	return k1+yK*y+xK*x;
+    	return k0+yK*y+xK*x;
     }
     
     public final int[] getIJKPt(int x, int z, int y){
     	int[] pt=new int[3];
-    	// OLD DIRECTION
-    	/*
-    	pt[0]=i1+ EW*axX*x+NS*axY*y;
-    	pt[1]=j1+z;
-    	pt[2]=k1+EW*axY*y+NS*axX*x;  
-    	*/
-    	pt[0]=i1+yI*y+xI*x;
-    	pt[1]=j1+z;
-    	pt[2]=k1+yK*y+xK*x;
+    	pt[0]=i0+yI*y+xI*x;
+    	pt[1]=j0+z;
+    	pt[2]=k0+yK*y+xK*x;
     	return pt;
     }
     
@@ -222,15 +182,15 @@ public class Building
     }
     
     public final int getX(int[] pt){
-		return xI*(pt[0]-i1) + xK*(pt[2]-k1);
+		return xI*(pt[0]-i0) + xK*(pt[2]-k0);
     }
     
     public final int getZ(int[] pt){
-		return pt[1]-j1;
+		return pt[1]-j0;
     }
     
     public final int getY(int[] pt){
-		return yI*(pt[0]-i1) + yK*(pt[2]-k1);
+		return yI*(pt[0]-i0) + yK*(pt[2]-k0);
     }
     
     protected final boolean queryExplorationHandler(int x, int z, int y) throws InterruptedException{
@@ -238,12 +198,7 @@ public class Building
     }
     
     protected final int getBlockIdLocal(int x, int z, int y){
-    	// OLD DIRECTION
-    	//if(bDir==DIR_NORTH) return (axX==1 ? world.getBlockId(i1-y,j1+z,k1+x) : world.getBlockId(i1-y, j1+z,k1-x));
-  		//if(bDir==DIR_EAST) return  (axX==1 ? world.getBlockId(i1+x,j1+z,k1-y) : world.getBlockId(i1-x, j1+z,k1-y));
-  		//if(bDir==DIR_SOUTH) return (axX==1 ? world.getBlockId(i1+y,j1+z,k1+x) : world.getBlockId(i1+y, j1+z,k1-x));
-  		//return (axX==1 ? world.getBlockId(i1+x,j1+z,k1+y) : world.getBlockId(i1-x, j1+z,k1+y));
-    	return world.getBlockId(i1+yI*y+xI*x,j1+z,k1+yK*y+xK*x);
+    	return world.getBlockId(i0+yI*y+xI*x,j0+z,k0+yK*y+xK*x);
     }
     
   //******************** LOCAL COORDINATE FUNCTIONS - SET BLOCK FUNCTIONS *************************************************************************************************************//
@@ -347,6 +302,12 @@ public class Building
 			case GHAST_SPAWNER_ID: setMobSpawner(pt,1,5); return;
 			case WALL_STAIR_ID: world.setBlockAndMetadata(pt[0],pt[1],pt[2],STEP_ID,rotateMetadata(STEP_ID,metadata)); return; //this case should not be reached
 			case PAINTING_SPECIAL_ID: delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,metadata}); return;
+			case BLAZE_SPAWNER_ID: setMobSpawner(pt,1,8); return;
+			case SLIME_SPAWNER_ID: setMobSpawner(pt,1,9); return;
+			case LAVA_SLIME_SPAWNER_ID: setMobSpawner(pt,1,10); return;
+			case VILLAGER_SPAWNER_ID: setMobSpawner(pt,1,11); return;
+			case SNOW_GOLEM_SPAWNER_ID: setMobSpawner(pt,1,12); return;
+			case MUSHROOM_COW_SPAWNER_ID: setMobSpawner(pt,1,13); return;
     	}
     	if(IS_HUMANS_PLUS_FLAG[blockID]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,metadata});
     }
@@ -364,6 +325,12 @@ public class Building
         	case 5: mob="Ghast"; break;
         	case 6: mob="Enderman"; break;
         	case 7: mob="CaveSpider"; break;
+        	case 8: mob="Blaze"; break;
+        	case 9: mob="Slime"; break;
+        	case 10: mob="LavaSlime"; break;
+        	case 11: mob="Villager"; break;
+        	case 12: mob="SnowMan"; break;
+        	case 13: mob="MushroomCow"; break;
         	default: mob="Skeleton"; break;
 		} 
         world.setBlock(pt[0],pt[1],pt[2],MOB_SPAWNER_ID);
@@ -498,7 +465,7 @@ public class Building
     
   //******************** LOCAL COORDINATE FUNCTIONS - BLOCK TEST FUNCTIONS *************************************************************************************************************//
     protected final boolean isWallable(int x, int z, int y){
-  		return IS_WALLABLE[world.getBlockId(i1+yI*y+xI*x,j1+z,k1+yK*y+xK*x)];
+  		return IS_WALLABLE[world.getBlockId(i0+yI*y+xI*x,j0+z,k0+yK*y+xK*x)];
 	  }
 	  
 	 protected final boolean isWallableIJK(int pt[]){
@@ -508,7 +475,7 @@ public class Building
 	 }
 	  
 	 protected final boolean isWallBlock(int x, int z, int y){
-		 return IS_WALL_BLOCK[world.getBlockId(i1+yI*y+xI*x,j1+z,k1+yK*y+xK*x)];
+		 return IS_WALL_BLOCK[world.getBlockId(i0+yI*y+xI*x,j0+z,k0+yK*y+xK*x)];
     }
 	 
 	protected final boolean isArtificialWallBlock(int x, int z, int y){
@@ -521,7 +488,11 @@ public class Building
     	return (blkId==STEP_ID || blkId==COBBLESTONE_STAIRS_ID || blkId==WOOD_STAIRS_ID);
     }
     
-  //true if block is air, block below is wall block
+    protected final boolean isNextToDoorway(int x, int z, int y){
+    	return isDoorway(x-1,z,y) || isDoorway(x+1,z,y) || isDoorway(x,z,y-1) || isDoorway(x-1,z,y+1);
+    }
+    
+    
     protected final boolean isDoorway(int x, int z, int y){
     	return isFloor(x,z,y) && (isWallBlock(x+1,z,y) && isWallBlock(x-1,z,y) || isWallBlock(x,z,y+1) && isWallBlock(x-1,z,y-1));
     }
@@ -900,6 +871,10 @@ public class Building
 			}
 			break;
 		case WOODEN_DOOR_ID: case IRON_DOOR_BLOCK_ID:
+			//think of door metas applying to doors with hinges on the left that open in (when seen facing in)
+			//in this case, door metas match the dir in which the door opens
+			//e.g. a door on the south face of a wall, opening in to the north has a meta value of 0 (or 4 if the door is opened).										
+			
 			if( metadata - 8 >= 0 ) {
 				// the top half of the door
 				tempdata += 8;
@@ -907,35 +882,14 @@ public class Building
 			}
 			if( metadata - 4 >= 0 ) {
 				// the door has swung counterclockwise around its hinge
-				tempdata += bHand==1 ? 4:0;
+				//tempdata += bHand==1 ? 4:0;
+				tempdata+=4;
 				metadata -= 4;
 			}
-			else {
-				tempdata += bHand==1 ? 0:4;
-			}
-			switch( bDir ) {
-			case DIR_NORTH:
-				if( metadata == 0 ) { return (bHand==1 ? 0:3) + tempdata; }
-				if( metadata == 1 ) { return (bHand==1 ? 1:2) + tempdata; }
-				if( metadata == 2 ) { return (bHand==1 ? 2:1) + tempdata; }
-				if( metadata == 3 ) { return (bHand==1 ? 3:0) + tempdata; }
-			case DIR_EAST:
-				if( metadata == 0 ) { return (bHand==1 ? 1:0) + tempdata; }
-				if( metadata == 1 ) { return (bHand==1 ? 2:3) + tempdata; }
-				if( metadata == 2 ) { return (bHand==1 ? 3:2) + tempdata; }
-				if( metadata == 3 ) { return (bHand==1 ? 0:1) + tempdata; }
-			case DIR_SOUTH:
-				if( metadata == 0 ) { return (bHand==1 ? 2:1) + tempdata; }
-				if( metadata == 1 ) { return (bHand==1 ? 3:0) + tempdata; }
-				if( metadata == 2 ) { return (bHand==1 ? 0:3) + tempdata; }
-				if( metadata == 3 ) { return (bHand==1 ? 1:2) + tempdata; }
-			case DIR_WEST:
-				if( metadata == 0 ) { return (bHand==1 ? 3:2) + tempdata; }
-				if( metadata == 1 ) { return (bHand==1 ? 0:1) + tempdata; }
-				if( metadata == 2 ) { return (bHand==1 ? 1:0) + tempdata; }
-				if( metadata == 3 ) { return (bHand==1 ? 2:3) + tempdata; }
-			}
-			break;
+			//else {
+			//	tempdata += bHand==1 ? 0:4;
+			//}
+			return DOOR_DIR_TO_META[orientDirToBDir(DOOR_META_TO_DIR[metadata])] + tempdata;
 			
 		case PUMPKIN_ID: case JACK_O_LANTERN_ID: case DIODE_BLOCK_OFF_ID: case DIODE_BLOCK_ON_ID:
 			if( blockID == DIODE_BLOCK_OFF_ID || blockID == DIODE_BLOCK_ON_ID ) {
@@ -1241,7 +1195,7 @@ public class Building
     public final static int DRAGON_EGG_ID=122;
     
     //Special Blocks
-    public final static int SPECIAL_BLOCKID_START=299, SPECIAL_BLOCKID_END=325;
+    public final static int SPECIAL_BLOCKID_START=299, SPECIAL_BLOCKID_END=332;
     public final static int HOLE_ID=299;
 	public final static int PRESERVE_ID=300;
 	public final static int ZOMBIE_SPAWNER_ID=301;
@@ -1268,6 +1222,13 @@ public class Building
 	public final static int HUMANS_PLUS_PEACEFUL_FLAG_ID=324;
 	public final static int HUMANS_PLUS_SHADOW_FLAG_ID=325;
 	public final static int HUMANS_PLUS_MILITIA_FLAG_ID=326;
+	public final static int BLAZE_SPAWNER_ID=327;
+	public final static int SLIME_SPAWNER_ID=328;
+	public final static int LAVA_SLIME_SPAWNER_ID=329;
+	public final static int VILLAGER_SPAWNER_ID=330;
+	public final static int SNOW_GOLEM_SPAWNER_ID=331;
+	public final static int MUSHROOM_COW_SPAWNER_ID=332;
+
 	
 	
 	//Spawner Blocks from other mods
@@ -1420,7 +1381,8 @@ public class Building
 							STAIRS_META_TO_DIR=new int[]{		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
 							LADDER_META_TO_DIR=new int[]{0,0,	DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
 							TRAPDOOR_META_TO_DIR=new int[]{		DIR_SOUTH,DIR_NORTH,DIR_EAST,DIR_WEST},
-							VINES_META_TO_DIR=new int[]{0,		DIR_SOUTH,DIR_WEST,0,DIR_NORTH,0,0,0,DIR_EAST};
+							VINES_META_TO_DIR=new int[]{0,		DIR_SOUTH,DIR_WEST,0,DIR_NORTH,0,0,0,DIR_EAST},
+							DOOR_META_TO_DIR=new int[]{			DIR_EAST,DIR_SOUTH,DIR_WEST,DIR_NORTH};
 	
 	//inverse map should be {North_inv,East_inv,dummy,West_inv,South_inv}
     //inverse map should be {North_inv,East_inv,South_inv, West_inv}
@@ -1430,6 +1392,7 @@ public class Building
 							LADDER_DIR_TO_META		=new int[]{2,5,3,4},
 							TRAPDOOR_DIR_TO_META	=new int[]{1,2,0,3},
 							VINES_DIR_TO_META		=new int[]{4,8,1,2},
+							DOOR_DIR_TO_META		=new int[]{3,0,1,2},
 							PAINTING_DIR_TO_FACEDIR =new int[]{3,2,1,0};
     
     public final static boolean[] IS_WALL_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];

@@ -129,14 +129,14 @@ public class BuildingCellularAutomaton extends Building {
 							    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),128,false,false),
 							    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),128,false,false)
 							    };
-		int minHeight=j1;
-		int maxHeight=j1;
+		int minHeight=j0;
+		int maxHeight=j0;
 		for(int height : heights){
 			if(height < minHeight) minHeight=height;
 			if(height > maxHeight) maxHeight=height;
 		}
 		if(maxHeight - minHeight > maxShift) return false;
-		else j1=minHeight;
+		else j0=minHeight;
 		return true;
 	}
 

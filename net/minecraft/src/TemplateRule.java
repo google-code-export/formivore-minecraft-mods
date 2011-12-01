@@ -70,18 +70,21 @@ public class TemplateRule {
     public TemplateRule(int[] block){
     	blockIDs=new int[]{block[0]};
     	blockMDs=new int[]{block[1]};
+    	setPrimaryBlock();
     }
     
     public TemplateRule(int[] block, int chance_){
     	blockIDs=new int[]{block[0]};
     	blockMDs=new int[]{block[1]};
     	chance=chance_;
+    	setPrimaryBlock();
     }
     
     public TemplateRule(int[] blockIDs_, int[] blockMDs_, int chance_){
     	blockIDs=blockIDs_;
     	blockMDs=blockMDs_;
     	chance=chance_;
+    	setPrimaryBlock();
     }
     
     public void setFixedRule(Random random){

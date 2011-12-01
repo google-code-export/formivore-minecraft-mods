@@ -24,7 +24,7 @@ public class BuildingTML extends Building
 	public BuildingTML (int ID_,WorldGeneratorThread wgt,int bDir_,int axXHand_,TemplateTML tmlt_, int[] sourcePt) {
 		super(ID_,wgt, null, bDir_,axXHand_,new int[]{tmlt_.width,tmlt_.height,tmlt_.length},sourcePt);
 		tmlt=tmlt_;
-		j1-=tmlt.embed;
+		j0-=tmlt.embed;
 	}
 
 	//****************************************  FUNCTION - build *************************************************************************************//
@@ -36,7 +36,7 @@ public class BuildingTML extends Building
 		for(int y=0;y<bLength;y++){ for(int x=0;x<bWidth;x++){
 			if(base!=null) 
 				buildDown(x,-1,y,tmlt.rules[base[y][x]],tmlt.leveling,0,0);
-			else fillDown(getSurfaceIJKPt(x,y,j1-1,false,true),j1-1,world);
+			else fillDown(getSurfaceIJKPt(x,y,j0-1,false,true),j0-1,world);
 		}}
 
 		
@@ -73,7 +73,7 @@ public class BuildingTML extends Building
 	
 	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
    public boolean queryCanBuild(int ybuffer) throws InterruptedException{
-	   if(j1<=0) return false;
+	   if(j0<=0) return false;
 	   
     	if(!( queryExplorationHandler(0,0,bLength-1) && queryExplorationHandler(bWidth-1,0,0) && queryExplorationHandler(bWidth-1,0,bLength-1) )){
 			return false;
@@ -81,7 +81,7 @@ public class BuildingTML extends Building
     	
     	//Don't build if it would require leveling greater than tmlt.leveling
     	for(int y=0 ;y<bLength;y++) for(int x=0 ;x<bWidth;x++)
-    		if(j1 - getSurfaceIJKPt(x,y,j1-1,false,true)[1] > tmlt.leveling + 1) return false;
+    		if(j0 - getSurfaceIJKPt(x,y,j0-1,false,true)[1] > tmlt.leveling + 1) return false;
     	
     	//check to see if we are underwater
     	if(tmlt.waterHeight!=TemplateTML.NO_WATER_CHECK){

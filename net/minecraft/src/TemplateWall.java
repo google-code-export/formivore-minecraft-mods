@@ -61,7 +61,6 @@ public class TemplateWall extends TemplateTML{
 	public int BuildingInterval=75;
 	public int DefaultTowerWeight=1;
 	public int TowerXOffset=0;
-	public int SpawnerCount=1;
 	public float CircularProb=0.3F;
 	private int SqrMinHeight=11, SqrMaxHeight=15, SqrMinWidth=7, SqrMaxWidth=7, CircMinHeight=11, CircMaxHeight=15, CircMinWidth=7, CircMaxWidth=7;
 	private int[] SqrRoofStyles={4,1,1,1,1,0,0}, CircRoofStyles={3,0,0,0,1,1,0};
@@ -97,7 +96,6 @@ public class TemplateWall extends TemplateTML{
 		if(extraOptions.containsKey("default_tower_weight")) DefaultTowerWeight=BuildingExplorationHandler.readIntParam(lw,DefaultTowerWeight,"=",(String)extraOptions.get("default_tower_weight"));
 		if(extraOptions.containsKey("tower_offset")) TowerXOffset=BuildingExplorationHandler.readIntParam(lw,TowerXOffset,"=",(String)extraOptions.get("tower_offset"));
 		if(extraOptions.containsKey("spawner_rule")) SpawnerRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("spawner_rule"),rules);
-		if(extraOptions.containsKey("spawner_count")) SpawnerCount=BuildingExplorationHandler.readIntParam(lw,SpawnerCount,"=",(String)extraOptions.get("spawner_count"));
 		if(extraOptions.containsKey("mob_probability")) mobProb=BuildingExplorationHandler.readFloatParam(lw,mobProb,"=",(String)extraOptions.get("mob_probability"));
 		if(extraOptions.containsKey("pig_zombie_probability")) pigZombieProb=BuildingExplorationHandler.readFloatParam(lw,pigZombieProb,"=",(String)extraOptions.get("pig_zombie_probability"));
 		if(extraOptions.containsKey("enderman_probability")) endermanProb=BuildingExplorationHandler.readFloatParam(lw,endermanProb,"=",(String)extraOptions.get("enderman_probability"));
