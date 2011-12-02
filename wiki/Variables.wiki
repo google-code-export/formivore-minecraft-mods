@@ -104,7 +104,7 @@ Defaults to `0`.
 
 <font color= #800080>`spawner_rule` </font>= `<rule definition>`<br>
 or <font color= #800080>`spawner_rule` </font>= `ruleID`<br>
-Rule for mob spawners in the default towers. Recognizes a number of blockIDs including the minecraft spawner block id 52 (will create a pig spawner), the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>special spawner blocks</a>, and blockIDs from the <a href="http://www.minecraftforum.net/topic/472937-181castle-defendersv202-updated/">Castle Defenders mod</a>. Special behavior is coded in for certain spawner types such as ghasts or the undead to accomadate the environments these mobs like to spawn in.  Can either define a new rule on this line or reference a rule later in the file using a rule number.<br>
+Rule for mob spawners in the default towers. Recognizes a number of blockIDs including the minecraft spawner block id 52 (will create a pig spawner), the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>special spawner blocks</a>, and blockIDs from the <a href="http://www.minecraftforum.net/topic/472937-181castle-defendersv202-updated/">Castle Defenders mod</a>. Special building commands are coded in for certain spawner types such as ghasts or the undead to accomadate the environments these mobs like to spawn in.  Can either define a new rule on this line or reference a rule later in the file using a rule number.<br>
 Defaults to not creating any spawners.
 
 <font color= #800080>`chest_rule` </font>= `<rule definition>`<br>
