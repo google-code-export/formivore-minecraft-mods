@@ -56,21 +56,21 @@ public class BuildingUndergroundEntranceway extends Building{
 					else setBlockLocal(x,z+z1,z,AIR_ID);
 			}}
 			for(int x=0; x<PASSAGE_WIDTH; x++){
-				setBlockAndMetadataLocal(x, z, z, random.nextInt(100) < bRule.chance ? stairsID : 0,1);
+				setBlockLocal(x, z, z, random.nextInt(100) < bRule.chance ? stairsID : 0,STAIRS_DIR_TO_META[DIR_NORTH]);
 				buildDown(x, z-1, z, STONE_RULE,20,0,3);
 			}
 			
 			if(z%SUPPORT_INTERVAL==0 && z<=bLength-PASSAGE_HEIGHT){
 				for(int z1=0; z1<PASSAGE_HEIGHT; z1++) {
-					setBlockAndMetadataLocal(0,z+z1,z,bRule);
-					setBlockAndMetadataLocal(PASSAGE_WIDTH-1,z+z1,z,bRule);
+					setBlockLocal(0,z+z1,z,bRule);
+					setBlockLocal(PASSAGE_WIDTH-1,z+z1,z,bRule);
 				}
 				for(int x=0; x<PASSAGE_WIDTH; x++)
-					setBlockAndMetadataLocal(x,z+PASSAGE_HEIGHT-1,z,bRule);
+					setBlockLocal(x,z+PASSAGE_HEIGHT-1,z,bRule);
 			}
 			if(z%SUPPORT_INTERVAL==SUPPORT_INTERVAL/2 && z<=bLength-PASSAGE_HEIGHT){
-				if(random.nextInt(2)==0) setBlockAndMetadataLocal(0,z+PASSAGE_HEIGHT-3,z,TORCH_ID,3);
-				if(random.nextInt(2)==0) setBlockAndMetadataLocal(PASSAGE_WIDTH-1,z+PASSAGE_HEIGHT-3,z,TORCH_ID,4);
+				if(random.nextInt(2)==0) setBlockLocal(0,z+PASSAGE_HEIGHT-3,z,EAST_FACE_TORCH_BLOCK);
+				if(random.nextInt(2)==0) setBlockLocal(PASSAGE_WIDTH-1,z+PASSAGE_HEIGHT-3,z,WEST_FACE_TORCH_BLOCK);
 			}
 		}
 		

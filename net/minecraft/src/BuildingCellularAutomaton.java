@@ -20,11 +20,12 @@ import java.util.Random;
  */
 public class BuildingCellularAutomaton extends Building {
 	private byte[][][] layers = null;
-	private byte[][] seed=null;
+	public byte[][] seed=null;
 	private byte[][] caRule=null;
 	private final static byte DEAD=0,ALIVE=1;
 	public final static byte DIE=-1,NOCHANGE=0,LIVE=1;
 	private int MaxOscillatorCullStep;
+	public int minFilledX, maxFilledX, minFilledY,maxFilledY;
 	
 	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, int width, int height, int length, int MaxOscillatorCullStep_, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
 		super(0,wgt_, bRule_, bDir_,axXHand_,new int[]{width,height,length},sourcePt);
@@ -35,6 +36,7 @@ public class BuildingCellularAutomaton extends Building {
 		caRule=caRule_;
 	}
 	
+	//unlike other Buildings, this should be called after plan()
 	public boolean queryCanBuild(int ybuffer) throws InterruptedException{
 		if(!( queryExplorationHandler(0,0,bLength-1) && queryExplorationHandler(bWidth-1,0,0) && queryExplorationHandler(bWidth-1,0,bLength-1) )){
 			return false;
@@ -50,7 +52,7 @@ public class BuildingCellularAutomaton extends Building {
 		return true;
 	}
 	
-	public boolean build(){
+	public boolean plan(){
 		if(!shiftBuidlingJDown(15))
 			return false;
 		
@@ -60,8 +62,13 @@ public class BuildingCellularAutomaton extends Building {
 			layers[z][x][y]=DEAD;
 		
 		
+		minFilledX=(bWidth-seed.length)/2;
+		maxFilledX=(bWidth-seed.length)/2+seed.length-1;
+		minFilledY=(bLength-seed[0].length)/2;
+		maxFilledY=(bLength-seed[0].length)/2+seed[0].length-1;
 		for(int x=0; x<seed.length; x++) for(int y=0; y<seed[0].length; y++)
-			layers[0][(bWidth-seed.length)/2+x][(bLength-seed[0].length)/2+y]=seed[x][y];
+			layers[0][minFilledX+x][minFilledY+y]=seed[x][y];
+		
 		
 		int structureDeathHeight=-1;
 		for(int z=1; z<bHeight; z++){
@@ -69,22 +76,29 @@ public class BuildingCellularAutomaton extends Building {
 			boolean layerIsFixed=true;
 			boolean layerIsPeriod2=z>=2;
 			boolean layerIsPeriod3=z>=3;
-			for(int x=0; x<bWidth; x++){ for(int y=0; y<bLength; y++){
-				//try the 8 neighboring points in previous layer
-				int neighbors=0;
-				for(int x1=Math.max(x-1,0); x1<=Math.min(x+1,bWidth-1); x1++)
-					for(int y1=Math.max(y-1,0); y1<=Math.min(y+1,bLength-1); y1++)
-						if(!(x1==x && y1==y))
-							neighbors+=layers[z-1][x1][y1];
+			for(int x=Math.max(0,minFilledX-1); x<=Math.min(bWidth-1,maxFilledX+1); x++){
+				for(int y=Math.max(0,minFilledY-1); y<=Math.min(bLength-1,maxFilledY+1); y++){
+					//try the 8 neighboring points in previous layer
+					int neighbors=0;
+					for(int x1=Math.max(x-1,0); x1<=Math.min(x+1,bWidth-1); x1++)
+						for(int y1=Math.max(y-1,0); y1<=Math.min(y+1,bLength-1); y1++)
+							if(!(x1==x && y1==y))
+								neighbors+=layers[z-1][x1][y1];
+					
+					//update this layer based on the rule
+					layers[z][x][y]=caRule[layers[z-1][x][y]][neighbors];
 				
-				//update this layer based on the rule
-				layers[z][x][y]=caRule[layers[z-1][x][y]][neighbors];
-				
-				//culling checks
-				if(layers[z][x][y]==ALIVE) layerIsAlive=true;
-				if(layers[z][x][y]!=layers[z-1][x][y]) layerIsFixed=false;
-				if(z>=2 && layers[z][x][y]!=layers[z-2][x][y]) layerIsPeriod2=false;
-				if(z>=3 && layers[z][x][y]!=layers[z-3][x][y]) layerIsPeriod3=false;
+					//culling checks and update bounding box
+					if(layers[z][x][y]==ALIVE){
+						if(x<minFilledX) minFilledX=x;
+						if(x>maxFilledX) maxFilledX=x;
+						if(y<minFilledY) minFilledY=y;
+						if(y>maxFilledY) maxFilledY=y;
+						layerIsAlive=true;
+					}
+					if(layers[z][x][y]!=layers[z-1][x][y]) layerIsFixed=false;
+					if(z>=2 && layers[z][x][y]!=layers[z-2][x][y]) layerIsPeriod2=false;
+					if(z>=3 && layers[z][x][y]!=layers[z-3][x][y]) layerIsPeriod3=false;
 				
 			}}
 			if(!layerIsAlive){
@@ -92,9 +106,13 @@ public class BuildingCellularAutomaton extends Building {
 				structureDeathHeight=z+1;
 				break;
 			}
-			if(layerIsFixed && z<MaxOscillatorCullStep) return false;
-			if(layerIsPeriod2 && z-1<MaxOscillatorCullStep) return false;
-			if(layerIsPeriod3 && z-2<MaxOscillatorCullStep) return false;
+			if(layerIsFixed && z<MaxOscillatorCullStep) 
+				return false;
+			if(layerIsPeriod2 && z-1<MaxOscillatorCullStep) 
+				return false;
+			if(layerIsPeriod3 && z-2<MaxOscillatorCullStep) 
+				return false;
+			
 		}
 		
 		//prune top layer
@@ -109,17 +127,22 @@ public class BuildingCellularAutomaton extends Building {
 					layers[0][x][y]=DEAD;
 			}}
 		}
-		
-		
-		//build it
 		if(structureDeathHeight!=-1) bHeight=structureDeathHeight;
+		
+		//now resize building dimensions, we will only build from to filled part of layers[]
+		bWidth=maxFilledX-minFilledX+1;
+		bLength=maxFilledY-minFilledY+1;
+		
+		return true;
+	}
+		
+	public void build(){
 		for(int z=0; z<bHeight; z++){
 			for(int x=0; x<bWidth; x++){ for(int y=0; y<bLength; y++){
-				if(layers[z][x][y]==ALIVE)
-					setBlockAndMetadataLocal(x,bHeight-z-1,y,bRule);
+				if(layers[z][x+minFilledX][y+minFilledY]==ALIVE)
+					setBlockLocal(x,bHeight-z-1,y,bRule);
 			}}
 		}
-		return true;
 	}
 	
 	public boolean shiftBuidlingJDown(int maxShift){
@@ -179,7 +202,7 @@ public class BuildingCellularAutomaton extends Building {
 			}
 			return rule;
 		}catch(Exception e){
-			lw.println("Error parsing automaton rule "+str+": "+e.getMessage());
+			if(lw!=null) lw.println("Error parsing automaton rule "+str+": "+e.getMessage());
 			return null;
 		}
 	}

@@ -349,7 +349,7 @@ public class TemplateWall extends TemplateTML{
         if( biomeCheck == BiomeGenBase.ocean) 						return BIOME_OCEAN;
         else if( biomeCheck == BiomeGenBase.plains)	 				return BIOME_PLAINS;
         else if( biomeCheck == BiomeGenBase.desert ) 				return BIOME_DESERT;
-        else if( biomeCheck == BiomeGenBase.hills ) 				return BIOME_HILLS;
+        else if( biomeCheck == BiomeGenBase.hills ) 				return BIOME_HILLS;   //MP PORT change to BiomeGenBase.extremeHills
         else if( biomeCheck == BiomeGenBase.forest ) 				return BIOME_FOREST;
         else if( biomeCheck == BiomeGenBase.taiga ) 				return BIOME_TAIGA;
         else if( biomeCheck == BiomeGenBase.swampland) 				return BIOME_SWAMPLAND;

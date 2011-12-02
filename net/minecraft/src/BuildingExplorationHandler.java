@@ -43,25 +43,33 @@ import net.minecraft.client.Minecraft;
 3)Fix any remaining errors, should be commented or self-evident
 4)If necessary, add hooks to World.java, ChunkProviderGenerate.java and ChunkProviderHell.java:
 
-	a)Add the following lines to the end of the tick() function in World.java:
-	if(populatorWalledCity!=null) 
-        populatorWalledCity.OnTickInGame();
-    if(populatorGreatWall!=null) 
-        populatorGreatWall.OnTickInGame();
-        
-    b)Declare the following variables at the end of World.java:
+	a)Declare the following variables at the beginning of World.java:
     public PopulatorWalledCity populatorWalledCity;
     public PopulatorGreatWall populatorGreatWall;
+
+	b)Add the following lines to the end of the tick() function in World.java:
+	if(populatorWalledCity!=null) 
+        populatorWalledCity.OnTickInGame();
+    if(populatorGreatWall!=null) {
+        populatorGreatWall.OnTickInGame();
+        populatorGreatWall.master=populatorWalledCity;
+    }
     
     c)Add the following lines to the end of the populate() function in ChunkProviderGenerate.java 
     if(worldObj.populatorWalledCity==null) worldObj.populatorWalledCity=new PopulatorWalledCity();
-    if(worldObj.populatorGreatWall==null) worldObj.populatorGreatWall=new PopulatorGreatWall();
+    if(worldObj.populatorGreatWall==null){
+    	worldObj.populatorGreatWall=new PopulatorGreatWall();
+    	worldObj.populatorGreatWall.master=worldObj.populatorWalledCity;
+   	}
     worldObj.populatorWalledCity.GenerateSurface(worldObj, rand, k, l);
     worldObj.populatorGreatWall.GenerateSurface(worldObj, rand, k, l);
     
     d)Add the following lines to the end of the populate() function in ChunkProviderHell.java.
     if(worldObj.populatorWalledCity==null) worldObj.populatorWalledCity=new PopulatorWalledCity();
-    if(worldObj.populatorGreatWall==null) worldObj.populatorGreatWall=new PopulatorGreatWall();
+    if(worldObj.populatorGreatWall==null){
+    	worldObj.populatorGreatWall=new PopulatorGreatWall();
+    	worldObj.populatorGreatWall.master=worldObj.populatorWalledCity;
+   	}
     worldObj.populatorWalledCity.GenerateSurface(worldObj, hellRNG, k, l);
     worldObj.populatorGreatWall.GenerateSurface(worldObj, hellRNG, k, l); 
 
@@ -83,7 +91,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//protected final static File BASE_DIRECTORY=new File(".");
 	protected final static File BASE_DIRECTORY=Minecraft.getMinecraftDir();
 	
-	protected BuildingExplorationHandler master=null;
+	public BuildingExplorationHandler master=null;
 	protected long explrWorldCode;
 	protected boolean isCreatingDefaultChunks=false, isFlushingGenThreads=false, isAboutToFlushGenThreads=false;
 	protected boolean errFlag=false, dataFilesLoaded=false;
@@ -123,7 +131,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	}
 	
 	//****************************  FUNCTION - OnTickInGame *************************************************************************************//
-	//MP PORT - comment out
+	//MP PORT - comment out this function
 	@Override
 	public boolean OnTickInGame(float tick, net.minecraft.client.Minecraft game) {
 		OnTickInGame();
@@ -142,7 +150,6 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//BUKKIT PORT
 	//public void populate(World world, Random random, Chunk source){
 	//	int chunkI=source.getX(), chunkK=source.getZ();
-	@Override
 	public void GenerateSurface( World world, Random random, int i, int k ) {
 		if(errFlag) return;
 		updateWorldExplored(world);
@@ -156,7 +163,6 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		generate(world,random,i,k);
 	}
 	
-	@Override
 	public void GenerateNether( World world, Random random, int chunkI, int chunkK ) {
 		GenerateSurface(world,random,chunkI,chunkK);
 	}
@@ -164,6 +170,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
 	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
 	//Do everything here instead of subclasses so it is easier to create new subclasses
+	//MP PORT - comment out this function
 	public void ModsLoaded(){
 		if(this.toString().equals(WALLED_CITY_MOD_STRING)){
 			master=this;
@@ -243,14 +250,16 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//****************************  FUNCTION - queryChunk *************************************************************************************//
 	public int queryChunk(int chunkI,int chunkK) {
 		//MP PORT
-		//if(chunksExploredFromStart==0) {
-		//	explrStartChunkI=chunkI;
-		//	explrStartChunkK=chunkK;
-		//}
-		//if(Math.abs(chunkI - explrStartChunkI) > max_exploration_distance
-		//|| Math.abs(chunkK - explrStartChunkK) > max_exploration_distance){
-		//	return THREAD_TERMINATE;
-		//}
+		/*
+		if(chunksExploredFromStart==0) {
+			explrStartChunkI=chunkI;
+			explrStartChunkK=chunkK;
+		}
+		if(Math.abs(chunkI - explrStartChunkI) > max_exploration_distance
+		   || Math.abs(chunkK - explrStartChunkK) > max_exploration_distance){
+			return THREAD_TERMINATE;
+		}
+		 */
 		int iChunkHome=(isCreatingDefaultChunks || mc.thePlayer==null) ? 0 : (int)mc.thePlayer.posX>>4;
 		int kChunkHome=(isCreatingDefaultChunks || mc.thePlayer==null) ? 0 : (int)mc.thePlayer.posZ>>4;
 		if((Math.abs(chunkI - iChunkHome) > max_exploration_distance 

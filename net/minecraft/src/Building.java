@@ -214,7 +214,7 @@ public class Building
     	else setBlockNoLighting(world,pt[0],pt[1],pt[2],blockID);
     }
     
-    protected final void setBlockAndMetadataLocal(int x, int z, int y, int blockID, int metadata){
+    protected final void setBlockLocal(int x, int z, int y, int blockID, int metadata){
      	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
      	
     	int[] pt=getIJKPt(x,z,y);
@@ -228,7 +228,21 @@ public class Building
     	}
     }
     
-    protected final void setBlockAndMetadataLocal(int x, int z, int y, TemplateRule rule){
+    protected final void setBlockLocal(int x, int z, int y, int[] block){
+     	if(block[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,block[0],block[1]); return; }
+     	
+    	int[] pt=getIJKPt(x,z,y);
+    	if(block[0]==AIR_ID && world.getBlockId(pt[0], pt[1], pt[2])==AIR_ID) return;
+    	if(block[0]!=CHEST_ID) emptyIfChest(pt);
+    	if(IS_DELAY_BLOCK[block[0]]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1])});
+    	else{
+    		if(randLightingHash[(x & 0x7) | (y & 0x38) | (z & 0x1c0)])
+    			world.setBlockAndMetadata(pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]));
+    		else setBlockAndMetaNoLighting(world,pt[0],pt[1],pt[2],block[0],rotateMetadata(block[0],block[1]));
+    	}
+    }
+    
+    protected final void setBlockLocal(int x, int z, int y, TemplateRule rule){
     	int [] idAndMeta=rule.getBlock(random);
      	if(idAndMeta[0]>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,idAndMeta[0],idAndMeta[1]); return; } 	
      	
@@ -244,7 +258,7 @@ public class Building
     }
      
     //allows control of lighting. Also will build even if replacing air with air.
-    protected final void setBlockAndMetadataLocal(int x, int z, int y, int blockID, int metadata, boolean lighting){
+    protected final void setBlockWithLightingLocal(int x, int z, int y, int blockID, int metadata, boolean lighting){
     	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,metadata); return; }
      	
     	int[] pt=getIJKPt(x,z,y);
@@ -404,8 +418,9 @@ public class Building
  	public void setPainting(int[] pt, int metadata){
  		//painting uses same orientation meta as ladders.
  		//Have to adjust ijk since unlike ladders the entity exists at the block it is hung on.
- 		int dir=(bDir+LADDER_META_TO_DIR[metadata])%4;
- 		if(dir==DIR_NORTH || dir==DIR_SOUTH) pt[0]+=dir/2; else pt[2]+=dir;
+ 		int dir=orientDirToBDir(LADDER_META_TO_DIR[metadata]);
+ 		if(dir==DIR_NORTH) pt[2]++; else if(dir==DIR_SOUTH) pt[2]--; else if(dir==DIR_WEST) pt[0]++; else pt[0]--;
+ 		
  			
  		EntityPainting entitypainting = new EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir]);
         if(entitypainting.canStay() && !world.multiplayerWorld)
@@ -419,8 +434,8 @@ public class Building
     public void setHumansPlusFactionFlag(int[] pt, int blockID, int metadata){
     	if(!wgt.master.humansPlusLoaded) return;
     	
-    	int dir=(bDir+LADDER_META_TO_DIR[metadata]) % 4;
-    	if(dir==DIR_NORTH || dir==DIR_SOUTH) pt[0]+=dir/2; else pt[2]+=dir;
+    	int dir=orientDirToBDir(LADDER_META_TO_DIR[metadata]);
+    	if(dir==DIR_NORTH) pt[2]++; else if(dir==DIR_SOUTH) pt[2]--; else if(dir==DIR_WEST) pt[0]++; else pt[0]--;
     	Integer faceDir=PAINTING_DIR_TO_FACEDIR[dir]; 
     	
     	try {
@@ -564,7 +579,7 @@ public class Building
 	   
 	   for(int z1=z; z1>stopZ; z1--){
 		   	int[] idAndMeta=buildRule.getBlock(random);
-		   	setBlockAndMetadataLocal(x,z1,y,idAndMeta[0],idAndMeta[1],false);
+		   	setBlockWithLightingLocal(x,z1,y,idAndMeta[0],idAndMeta[1],false);
 		}
    }
    
@@ -1376,7 +1391,7 @@ public class Building
     
     
 	//maps block metadata to a dir
-	private static int[] 	BED_META_TO_DIR=new int[]	{		DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
+	private final static int[] 	BED_META_TO_DIR=new int[]	{	DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
 							TORCH_META_TO_DIR=new int[]	{0,		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
 							STAIRS_META_TO_DIR=new int[]{		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
 							LADDER_META_TO_DIR=new int[]{0,0,	DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
@@ -1386,14 +1401,32 @@ public class Building
 	
 	//inverse map should be {North_inv,East_inv,dummy,West_inv,South_inv}
     //inverse map should be {North_inv,East_inv,South_inv, West_inv}
-	public static int[] 	BED_DIR_TO_META			=new int[]{2,3,0,1},
+	public final static int[] 	BED_DIR_TO_META		=new int[]{2,3,0,1},
 							TORCH_DIR_TO_META		=new int[]{4,1,3,2},
 							STAIRS_DIR_TO_META		=new int[]{3,0,2,1},
 							LADDER_DIR_TO_META		=new int[]{2,5,3,4},
 							TRAPDOOR_DIR_TO_META	=new int[]{1,2,0,3},
 							VINES_DIR_TO_META		=new int[]{4,8,1,2},
 							DOOR_DIR_TO_META		=new int[]{3,0,1,2},
-							PAINTING_DIR_TO_FACEDIR =new int[]{3,2,1,0};
+							PAINTING_DIR_TO_FACEDIR =new int[]{0,3,2,1};
+	
+	 //some prebuilt directional blocks
+    public final static int[] WEST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,TORCH_DIR_TO_META[DIR_WEST]},
+	   						  EAST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,TORCH_DIR_TO_META[DIR_EAST]},
+	   						  NORTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,TORCH_DIR_TO_META[DIR_NORTH]},
+	   						  SOUTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,TORCH_DIR_TO_META[DIR_SOUTH]},
+	   						  EAST_FACE_LADDER_BLOCK=new int[]{LADDER_ID,LADDER_DIR_TO_META[DIR_EAST]},
+	   						  AIR_BLOCK=new int[]{0,0},
+	   						  HOLE_BLOCK=new int[]{Building.HOLE_ID,0},
+	   						  PRESERVE_BLOCK=new int[]{Building.PRESERVE_ID,0},
+	   						  HARD_SPAWNER_BLOCK=new int[]{Building.HARD_SPAWNER_ID,0},
+	   						  PIG_ZOMBIE_SPAWNER_BLOCK=new int[]{Building.PIG_ZOMBIE_SPAWNER_ID,0},
+	   						  ENDERMAN_SPAWNER_BLOCK=new int[]{Building.ENDERMAN_SPAWNER_ID,0},
+	   						  TOWER_CHEST_BLOCK=new int[]{Building.TOWER_CHEST_ID,0},
+	   						  HARD_CHEST_BLOCK=new int[]{Building.HARD_CHEST_ID,0},
+	   						  STONE_BLOCK=new int[]{Building.STONE_ID,0},
+	   						  PORTAL_BLOCK=new int[]{Building.PORTAL_ID,0};
+	   
     
     public final static boolean[] IS_WALL_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_WALLABLE=new boolean[SPECIAL_BLOCKID_END+1];
