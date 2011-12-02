@@ -413,7 +413,7 @@ public class BuildingWall extends Building
 					boolean wallBlockPresent=isWallBlock(x1,z1,0);
 					idAndMeta= z1<bHeight 
 								? ws.rules[layer[z1+ws.embed][x1]].getBlockOrHole(random) 
-								: TemplateRule.HOLE_BLOCK;
+								: HOLE_BLOCK;
 
 					//starting from top, preserve old wall block until we run into a non-wall block
 					if(keepWallFromAbove && wallBlockPresent && (idAndMeta[0]==AIR_ID || idAndMeta[0]==HOLE_ID)){
@@ -424,13 +424,13 @@ public class BuildingWall extends Building
 						if(!wallBlockPresent && !IS_LIQUID_BLOCK[getBlockIdLocal(x1,z1,0)]){
 							if(n0>0 && zArray[n0-1]>zArray[n0]){  //stairs, going down
 								if((n0==1 || zArray[n0-2]==zArray[n0-1]) && (n0==bLength-1 || zArray[n0]==zArray[n0+1]))
-									setBlockAndMetadataLocal(x1, z1, 0, STEP_ID, idAndMeta[1]);
-								else setBlockAndMetadataLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1]],2);
+									setBlockLocal(x1, z1, 0, STEP_ID, idAndMeta[1]);
+								else setBlockLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1]],2);
 							}
 							else if(n0<bLength-1 && zArray[n0]<zArray[n0+1]){ //stairs, going up
 								if((n0==0 || zArray[n0-1]==zArray[n0]) && (n0==bLength-2 || zArray[n0+1]==zArray[n0+2]))
-									setBlockAndMetadataLocal(x1, z1, 0, STEP_ID, idAndMeta[1]);
-								else setBlockAndMetadataLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1]],3);
+									setBlockLocal(x1, z1, 0, STEP_ID, idAndMeta[1]);
+								else setBlockLocal(x1, z1, 0, STEP_TO_STAIRS[idAndMeta[1]],3);
 							}
 							else setBlockLocal(x1,z1,0,HOLE_ID);
 						}
@@ -441,8 +441,8 @@ public class BuildingWall extends Building
 							continue;
 						}
 						
-						if(idAndMeta[0]==HOLE_ID && z1<bHeight) setBlockAndMetadataLocal(x1,z1,0,HOLE_ID,0,true); //force lighting update for holes
-						else setBlockAndMetadataLocal(x1,z1,0,idAndMeta[0],idAndMeta[1]);  //straightforward build from template
+						if(idAndMeta[0]==HOLE_ID && z1<bHeight) setBlockWithLightingLocal(x1,z1,0,HOLE_ID,0,true); //force lighting update for holes
+						else setBlockLocal(x1,z1,0,idAndMeta);  //straightforward build from template
 					}
 					
 				}
@@ -482,17 +482,17 @@ public class BuildingWall extends Building
 	//****************************************  FUNCTION - mergeWallLayer *************************************************************************************//
 	private void mergeWallLayer(){
 		//wall-merging stairs
-		if(isFloor(-1,WalkHeight-1,0))   setBlockAndMetadataLocal(-1, WalkHeight-1, 0, STEP_ID, halfStairValue);
-		if(isFloor(bWidth,WalkHeight-1,0))   setBlockAndMetadataLocal(bWidth, WalkHeight-1, 0, STEP_ID, halfStairValue);
+		if(isFloor(-1,WalkHeight-1,0))   setBlockLocal(-1, WalkHeight-1, 0, STEP_ID, halfStairValue);
+		if(isFloor(bWidth,WalkHeight-1,0))   setBlockLocal(bWidth, WalkHeight-1, 0, STEP_ID, halfStairValue);
 		if(isFloor(-1,WalkHeight+1,0)  && isFloor(-2,WalkHeight+2,0) && isFloor(-2,WalkHeight+2,1)  && isFloor(-2,WalkHeight+2,-1)) 
-			setBlockAndMetadataLocal(0, WalkHeight, 0, STEP_ID,halfStairValue);
+			setBlockLocal(0, WalkHeight, 0, STEP_ID,halfStairValue);
 		if(isFloor(bWidth,WalkHeight+1,0)  && isFloor(bWidth+1,WalkHeight+2,0) && isFloor(bWidth+1,WalkHeight+2,1)  && isFloor(bWidth+1,WalkHeight+2,-1)) 
-			setBlockAndMetadataLocal(bWidth-1, WalkHeight, 0, STEP_ID, halfStairValue);
+			setBlockLocal(bWidth-1, WalkHeight, 0, STEP_ID, halfStairValue);
 
 		if(getBlockIdLocal(-1,WalkHeight-1,0)==COBBLESTONE_STAIRS_ID || getBlockIdLocal(-1,WalkHeight-1,0)==WOOD_STAIRS_ID )
-			setBlockAndMetadataLocal(-1, WalkHeight-1, 0, bRule.primaryBlock[0],bRule.primaryBlock[1]);
+			setBlockLocal(-1, WalkHeight-1, 0, bRule.primaryBlock[0],bRule.primaryBlock[1]);
 		if(getBlockIdLocal(bWidth,WalkHeight-1,0)==COBBLESTONE_STAIRS_ID || getBlockIdLocal(bWidth,WalkHeight-1,0)==WOOD_STAIRS_ID)
-			setBlockAndMetadataLocal(bWidth, WalkHeight-1, 0, bRule.primaryBlock[0],bRule.primaryBlock[1]);
+			setBlockLocal(bWidth, WalkHeight-1, 0, bRule.primaryBlock[0],bRule.primaryBlock[1]);
 	}
 
 
@@ -516,7 +516,6 @@ public class BuildingWall extends Building
 			
 			//towers are built from n1-2 to n1-tw-1
 			int tw=ws.pickTWidth(circular,random);
-			int th=ws.pickTHeight(circular,random);
 			int tl=circular ? tw : ws.pickTWidth(circular,random);
 			int twrNMid=n0-tw/2-2;
 			int clearSide=-bHand*signum(curvature(xArray[n0-tw-3], xArray[twrNMid], xArray[n0], 0),0);
@@ -530,7 +529,8 @@ public class BuildingWall extends Building
 															   && curvature(xArray[n0-tw-3], xArray[twrNMid], xArray[n0], 2)==0){
 				
 				if(DEBUG>1) System.out.println("Building gatehouse for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" width "+tw);
-				BuildingTower tower = new BuildingTower(bID+n0, this, flipDir(bDir), -bHand, tw, th, tl, getIJKPtAtN(twrNMid,bWidth/2-tw/2,0,tw/2));
+				BuildingTower tower = new BuildingTower(bID+n0, this, flipDir(bDir), -bHand, tw, ws.pickTHeight(circular,random), tl, 
+						                                getIJKPtAtN(twrNMid,bWidth/2-tw/2,0,tw/2));
 				if(!tower.isObstructedRoof(-1)){
 					wgt.setLayoutCode(tower.getIJKPt(0,0,0),tower.getIJKPt(tw-1,0,tw-1), WorldGeneratorThread.LAYOUT_CODE_TOWER);
 					tower.build(xArray[n0-1]-xArray[twrNMid], xArray[n0-tw-2]-xArray[twrNMid], false);
@@ -542,22 +542,25 @@ public class BuildingWall extends Building
 				if(DEBUG>1) System.out.println("Building side tower for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" with clearSide="+clearSide+" width "+tw);
 				TemplateTML building=ws.buildings.get(Building.selectWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
 			
-
 				/*
-				th=10+random.nextInt(10);
-				int x1=twrDXMid+(clearSide==bHand ? bWidth:-1);
-				BuildingCellularAutomaton bca=new BuildingCellularAutomaton(bID+n,wgt, rotateDir(bDir,clearSide), clearSide, tw, th,tl, getIJKPt(x1,twrDZMid,y1));
-				if(bca.queryCanBuild(0)){ 
-					if(bca.build()){
-						n+=ws.BuildingInterval;
-						built=true;
+				tw=15;
+				byte[][] caRule=BuildingCellularAutomaton.parseCARule("B36/S013468",null);
+				TemplateRule ghastTowerRule=new TemplateRule(new int[]{NETHER_BRICK_ID}, new int[]{0},100);
+				for(int tries=0; tries < 10; tries++){
+					byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(8,8,0.5F,random);
+					BuildingCellularAutomaton bca=new BuildingCellularAutomaton(wgt,ghastTowerRule,DIR_NORTH,1,tw, 25+random.nextInt(10),tw, 12,seed,caRule,
+																				getIJKPtAtN(twrNMid, clearSide==bHand ? bWidth:-1, 0, tw/2));
+					if(bca.plan() && bca.queryCanBuild(0)){
+						bca.build();
+						break;
 					}
 				}
 				*/
 				
+				
 				if(building==TemplateWall.DEFAULT_TOWER){
 					int ybuffer=(isAvenue ? 0:1) - ws.TowerXOffset;
-					BuildingTower tower=new BuildingTower(bID+n0,this, rotDir(bDir,clearSide), clearSide, tw, th, tl, 
+					BuildingTower tower=new BuildingTower(bID+n0,this, rotDir(bDir,clearSide), clearSide, tw, ws.pickTWidth(circular,random), tl, 
 														  getIJKPtAtN(twrNMid, clearSide==bHand ? (bWidth - ybuffer):ybuffer-1, 0, tw/2));
 					if(tower.queryCanBuild(ybuffer,overlapTowers)){
 						tower.build(0,0,true);
@@ -572,6 +575,7 @@ public class BuildingWall extends Building
 						setCursor(n0+ws.BuildingInterval-1);
 					}
 				}
+				
 			}
 		}
 		setCursor(0);
@@ -663,10 +667,10 @@ public class BuildingWall extends Building
 							for(int z1=0;z1<gateHeight;z1++)
 								if(!((y1==0 || y1==1-gateWidth) && z1==gateHeight-1))
 									setBlockLocal(x1,z1,y1,AIR_ID);
-					if(flankTHand!=-bHand ) setBlockAndMetadataLocal(-1,gateHeight-2,-gateWidth,TORCH_ID,3);
-					if(flankTHand!=-bHand ) setBlockAndMetadataLocal(-1,gateHeight-2,1,TORCH_ID,3);
-					if(flankTHand!=bHand ) setBlockAndMetadataLocal(bWidth,gateHeight-2,-gateWidth,TORCH_ID,4);
-					if(flankTHand!=bHand ) setBlockAndMetadataLocal(bWidth,gateHeight-2,1,TORCH_ID,4);
+					if(flankTHand!=-bHand ) setBlockLocal(-1,gateHeight-2,-gateWidth,WEST_FACE_TORCH_BLOCK);
+					if(flankTHand!=-bHand ) setBlockLocal(-1,gateHeight-2,1,WEST_FACE_TORCH_BLOCK);
+					if(flankTHand!=bHand ) setBlockLocal(bWidth,gateHeight-2,-gateWidth,EAST_FACE_TORCH_BLOCK);
+					if(flankTHand!=bHand ) setBlockLocal(bWidth,gateHeight-2,1,EAST_FACE_TORCH_BLOCK);
 					
 					//build flanking towers
 					if(n0+gateWidth+tw > bLength) flankTHand=0;
@@ -694,6 +698,7 @@ public class BuildingWall extends Building
 		}
 		return null;
 	}
+	
 
 	//=====================================================  HELPER FUNCTIONS ==========================================================================================================//   
 

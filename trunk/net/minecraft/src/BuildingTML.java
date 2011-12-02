@@ -49,7 +49,7 @@ public class BuildingTML extends Building
 		//build
 		for(int z=0;z<bHeight;z++)
 			for(int y=0;y<bLength;y++) for(int x=0;x<bWidth;x++)
-				setBlockAndMetadataLocal(x,z,y,tmlt.rules[tmlt.template[z][y][x]]);
+				setBlockLocal(x,z,y,tmlt.rules[tmlt.template[z][y][x]]);
 
 
 		flushDelayed();

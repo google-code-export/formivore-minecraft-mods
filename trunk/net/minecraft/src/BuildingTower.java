@@ -28,11 +28,8 @@ public class BuildingTower extends Building
 	public final static int[] ROOF_STYLE_IDS=new int[ROOFSTYLE_NAMES.length];
 	public final static TemplateRule RULE_NOT_PROVIDED=null;
 	public final static int SURFACE_PORTAL_ODDS=20, NETHER_PORTAL_ODDS=10; 
-	public final static int BOOKSHELF_ODDS=3, BED_ODDS=4, CAULDRON_ODDS=4; 
+	public final static int BOOKSHELF_ODDS=3, BED_ODDS=5, CAULDRON_ODDS=8,BREWING_STAND_ODDS=8,ENCHANTMENT_TABLE_ODDS=12; 
 	public final static int ROOF_CRENEL=0, ROOF_STEEP=1, ROOF_TRIM=2, ROOF_SHALLOW=3, ROOF_DOME=4,ROOF_CONE=5,ROOF_TWO_SIDED=6;
-	private final static int[] EAST_FACE_LADDER_BLOCK=new int[]{LADDER_ID,LADDER_DIR_TO_META[DIR_EAST]},
-							   NORTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,TORCH_DIR_TO_META[DIR_NORTH]},
-							   SOUTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,TORCH_DIR_TO_META[DIR_SOUTH]};
 	public final static int NORTH_FACE_DOOR_META=3, EAST_FACE_DOOR_META=0, SOUTH_FACE_DOOR_META=1, WEST_FACE_DOOR_META=2;
 							   
 	
@@ -137,15 +134,28 @@ public class BuildingTower extends Building
 		//							Each floor has a 50% chance of building spawners except ground floor.
 		//If floor hasUndeadSpawner =>	Always build spawner_count spawners (resampling for each spawner).
 		//								No windows/doors unless ground floor.
-		boolean hasUndeadSpawner=SpawnerRule!=RULE_NOT_PROVIDED && random.nextInt(100)<SpawnerRule.chance;
-		if(hasUndeadSpawner)
-			for(int blockID : SpawnerRule.getBlockIDs())
-				if(!(blockID==ZOMBIE_SPAWNER_ID || blockID==SKELETON_SPAWNER_ID || blockID==CREEPER_SPAWNER_ID|| 
-						blockID==UPRIGHT_SPAWNER_ID || blockID==EASY_SPAWNER_ID)) 
-					hasUndeadSpawner=false;
+		/*
+		boolean ghastTower=false;
+		for(int blockID : SpawnerRule.getBlockIDs())
+			if(blockID==GHAST_SPAWNER_ID) ghastTower=true;
+		if(ghastTower){
+			if(roofStyle!=ROOF_CRENEL || SpawnerRule.getBlock(random)[0]!=GHAST_SPAWNER_ID){ //chose once for whole tower
+				ghastTower=false;
+				
+			}
+		}
+		*/
+		
+		boolean ghastTower=roofStyle==ROOF_CRENEL && SpawnerRule.getBlock(random)[0]==GHAST_SPAWNER_ID;
+		boolean undeadTower=false;
+		for(int blockID : SpawnerRule.getBlockIDs())
+			if(blockID==ZOMBIE_SPAWNER_ID || blockID==SKELETON_SPAWNER_ID || blockID==CREEPER_SPAWNER_ID|| 
+					blockID==UPRIGHT_SPAWNER_ID || blockID==EASY_SPAWNER_ID) 
+				undeadTower=true;
+		if(ghastTower ||  random.nextInt(100)>SpawnerRule.chance) undeadTower=false;
 
 		
-		if(hasUndeadSpawner && bHeight - baseHeight < 9) bHeight = baseHeight  + 9;
+		if(undeadTower && bHeight - baseHeight < 9) bHeight = baseHeight  + 9;
 		if(baseHeight<0) baseHeight=0;
 
 
@@ -153,7 +163,7 @@ public class BuildingTower extends Building
 		//So to translate from Building coord system need to add +1 to all entries, annoying but that's life.
 		buffer=new int[bWidth+2][bHeight+minHorizDim+3][bLength+2][2];
 		for(int x1=0;x1<bWidth+2;x1++) for(int y1=0;y1<bLength+2;y1++) for(int z1=0;z1<bHeight+minHorizDim+3;z1++)
-			buffer[x1][z1][y1]=TemplateRule.PRESERVE_BLOCK;
+			buffer[x1][z1][y1]=PRESERVE_BLOCK;
 
 		//========================================= build it ==========================================
 		//*** sidewalls and base ***
@@ -168,7 +178,7 @@ public class BuildingTower extends Building
 						{
 							buffer[x1+1][z1+1][y1+1]=bRule.getBlockOrHole(random);
 						}
-						else buffer[x1+1][z1+1][y1+1]=TemplateRule.HOLE_BLOCK;
+						else buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK;
 					}
 					
 					//column above source point
@@ -185,6 +195,7 @@ public class BuildingTower extends Building
 		}
 
 		//*** floors and windows/doors ***
+		int sideWindowY=bLength/2;
 		for(int z1=baseHeight-1;z1<bHeight-3;z1+=4){
 			//windows/doors
 			int winDoorX1=Math.min(Math.max(bWidth/2 + (z1==baseHeight-1 ? doorOffset1 : 0),1),bWidth-2);
@@ -192,12 +203,12 @@ public class BuildingTower extends Building
 			int torchX1=winDoorX1 + (winDoorX1==bWidth-2 ? -1:1);
 			int torchX2=winDoorX2 + (winDoorX2==bWidth-2 ? -1:1);
 		
-			boolean floorHasUndeadSpawner=hasUndeadSpawner && z1>baseHeight-1 && random.nextInt(100)<FLOOR_HAUNTED_CHANCE;
+			boolean floorHasUndeadSpawner=undeadTower && z1>baseHeight-1 && random.nextInt(100)<FLOOR_HAUNTED_CHANCE;
 			
 			if(z1==baseHeight-1 || !floorHasUndeadSpawner){
 				int winH=z1>baseHeight-1 ? 2:3;
-				buildWindowOrDoor(0,z1+2,bLength/2,-1,0,winH);
-				buildWindowOrDoor(bWidth-1,z1+2,bLength/2,1,0,winH);
+				buildWindowOrDoor(0,z1+2,sideWindowY,-1,0,winH);
+				buildWindowOrDoor(bWidth-1,z1+2,sideWindowY,1,0,winH);
 				buildWindowOrDoor(winDoorX1,z1+2,0,0,-1,winH);
 				buildWindowOrDoor(winDoorX2,z1+2, bLength-1,0,1,winH);
 			}
@@ -209,7 +220,7 @@ public class BuildingTower extends Building
 						buffer[x1+1][z1+1][y1+1]= bRule.primaryBlock[0]==LOG_ID ? new int[]{WOOD_ID,0} : bRule.getBlockOrHole(random);
 
 			//door torches
-			if(!hasUndeadSpawner && bRule.chance==100){ 
+			if(!undeadTower && bRule.chance==100){ 
 				buffer[torchX1+1][z1+3+1][1+(circular && bLength==6 ? 1:0)+1]=NORTH_FACE_TORCH_BLOCK; 
 				buffer[torchX2+1][z1+3+1][bLength-2-(circular && bLength==6 ? 1:0)+1]=SOUTH_FACE_TORCH_BLOCK;
 			}
@@ -217,28 +228,29 @@ public class BuildingTower extends Building
 			//*** mob spawners***
 			if(floorHasUndeadSpawner && z1==baseHeight+4 && bRule.chance==100){
 				for(int x1=bWidth/2-1;x1<=bWidth/2+1;x1++){
-					for(int y1=1; y1<Math.min(3, bLength/2-1);y1++)
+					for(int y1=1; y1<Math.min(3, sideWindowY-1);y1++)
 						if(!circular || circle_shape[x1][y1]==0)
-							buffer[x1+1][z1+1][y1+1]=TemplateRule.HOLE_BLOCK;
-					for(int y1=bLength-Math.min(3, bLength/2-1); y1<bLength-1;y1++)
+							buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK;
+					for(int y1=bLength-Math.min(3, sideWindowY-1); y1<bLength-1;y1++)
 						if(!circular || circle_shape[x1][y1]==0)
-							buffer[x1+1][z1+1][y1+1]=TemplateRule.HOLE_BLOCK;
+							buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK;
 				}
 			}
-			else if(SpawnerRule!=RULE_NOT_PROVIDED && random.nextInt(100)<SpawnerRule.chance){
-				int spawnerBlock=SpawnerRule.getNonAirBlock(random)[0];
-				if(IS_HUMANS_PLUS_FLAG[spawnerBlock]){
-					buffer[bWidth-2+1][z1+2+1][bLength/2+1+1]=new int[]{spawnerBlock,2};
+			else if(SpawnerRule!=RULE_NOT_PROVIDED && random.nextInt(100)<SpawnerRule.chance && !ghastTower){
+				int[] spawnerBlock=SpawnerRule.getNonAirBlock(random);
+				if(IS_HUMANS_PLUS_FLAG[spawnerBlock[0]]){
+					buffer[bWidth-2+1][z1+2+1][sideWindowY+1+1]=new int[]{spawnerBlock[0],LADDER_DIR_TO_META[DIR_WEST]};
 				}
-				else buffer[bWidth/2+1][z1+1+1][bLength/2+1]=SpawnerRule.getNonAirBlock(random);
+				else if(spawnerBlock[0]!=GHAST_SPAWNER_ID)
+					buffer[bWidth/2+1][z1+1+1][sideWindowY+1]=spawnerBlock;
 			}
 			
 			
 			//chests
 			if(ChestRule!=RULE_NOT_PROVIDED && random.nextInt(100)<ChestRule.chance)
-				buffer[bWidth-2+1][z1+1+1][bLength/2-1+1]=ChestRule.getNonAirBlock(random);
+				buffer[bWidth-2+1][z1+1+1][sideWindowY-1+1]=ChestRule.getNonAirBlock(random);
 			else if(floorHasUndeadSpawner && random.nextInt(100) < HAUNTED_CHEST_CHANCE) //even if no chest rule, can have chests if floorIsHaunted
-				buffer[bWidth-2+1][z1+1+1][bLength/2-1+1]=z1 < 15 ? TemplateRule.TOWER_CHEST_BLOCK : TemplateRule.HARD_CHEST_BLOCK;
+				buffer[bWidth-2+1][z1+1+1][sideWindowY-1+1]=z1 < 15 ? TOWER_CHEST_BLOCK : HARD_CHEST_BLOCK;
 
 			if(z1==baseHeight-1) z1++; //ground floor is one block higher
 		}
@@ -246,13 +258,13 @@ public class BuildingTower extends Building
 		//*** ladder ***
 		int topFloorHeight=((bHeight-baseHeight-4)/4)*4+baseHeight+1;
 		int ladderHeight=roofStyle==ROOF_CRENEL ? bHeight : (bHeight-baseHeight<8 ? 0 : topFloorHeight);  //don't continue through top floor unless crenellated
-		for(int z1=baseHeight; z1<ladderHeight;z1++) buffer[1+1][z1+1][bLength/2-1+1]=EAST_FACE_LADDER_BLOCK;
+		for(int z1=baseHeight; z1<ladderHeight;z1++) buffer[1+1][z1+1][sideWindowY-1+1]=EAST_FACE_LADDER_BLOCK;
 
 		//*** roof ***
 		buildRoof();
-		if(hasUndeadSpawner && roofStyle==ROOF_CRENEL) 
-			buffer[1+1][bHeight > baseHeight+12 ? baseHeight+9 : bHeight+1][bLength/2-1+1] = bRule.getBlockOrHole(random);
-
+		if(undeadTower && roofStyle==ROOF_CRENEL) 
+			buffer[1+1][bHeight > baseHeight+12 ? baseHeight+9 : bHeight+1][sideWindowY-1+1] = bRule.getBlockOrHole(random);
+		
 		//*** run decay ***
 		int zLim= bRule.chance>=100 ? buffer[0].length : propagateCollapse(bRule.chance);
 
@@ -262,13 +274,13 @@ public class BuildingTower extends Building
 			for(int y1=1;y1<buffer[0][0].length-1;y1++){
 				if(!circular || circle_shape[x1-1][y1-1]>=0){
 					for(int z1=0; z1<Math.min(bHeight,zLim); z1++){
-						setBlockAndMetadataLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1][0],buffer[x1][z1][y1][1]);		
+						setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
 		}}}}
 		//build roof
 		for(int x1=0;x1<buffer.length;x1++){
 			for(int y1=0;y1<buffer[0][0].length;y1++){
 				for(int z1=bHeight; z1<zLim; z1++){
-					setBlockAndMetadataLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1][0],buffer[x1][z1][y1][1]);		
+					setBlockLocal(x1-1,z1-1,y1-1,buffer[x1][z1][y1]);		
 		}}}
 
 
@@ -281,13 +293,18 @@ public class BuildingTower extends Building
 		//furniture
 		if(PopulateFurniture){
 			for(int z1=baseHeight;z1<bHeight-2;z1+=4){
-				if(!hasUndeadSpawner && random.nextInt(BED_ODDS)==0) populateBeds(z1);
-				if(bHeight-baseHeight>8 && random.nextInt(BOOKSHELF_ODDS)==0) populateBookshelves(z1);
-				if(random.nextInt(CAULDRON_ODDS)==0) populateFurnitureBlock(z1,new int[]{CAULDRON_BLOCK_ID,random.nextInt(4)});
+				for(int m=0; m<bLength*bWidth/25; m++){ //scale to floor area
+					if(!undeadTower && random.nextInt(BED_ODDS)==0) populateBeds(z1);
+					if(bHeight-baseHeight>8 && random.nextInt(BOOKSHELF_ODDS)==0) populateBookshelves(z1);
+					if(random.nextInt(CAULDRON_ODDS)==0) populateFurnitureBlock(z1,new int[]{CAULDRON_BLOCK_ID,random.nextInt(4)});
+					if(z1>12 && random.nextInt(BREWING_STAND_ODDS)==0) populateFurnitureBlock(z1,new int[]{BREWING_STAND_BLOCK_ID,random.nextInt(2)+1});
+					if(z1>20 && random.nextInt(ENCHANTMENT_TABLE_ODDS)==0) populateFurnitureBlock(z1,new int[]{ENCHANTMENT_TABLE_ID,0});
+				}
 				if(z1==baseHeight) z1++;
 			}
 		}
-		if(roofStyle==ROOF_CRENEL && bHeight>20 ) populatePortal(bHeight+1);
+		if(ghastTower) populateGhastSpawner(bHeight+1);
+		else if(roofStyle==ROOF_CRENEL && bHeight>20 ) populatePortal(bHeight+1);
 
 		//*** debug signs ***
 		if(BuildingWall.DEBUG_SIGNS){
@@ -319,12 +336,12 @@ public class BuildingTower extends Building
 				buffer[x+xFace+1][z-1+1][y+yFace+1]=new int[]{STEP_ID,blockToStepMeta(bRule.primaryBlock)};//build a step-up
 			}
 		} else for(int z1=z;z1<z+height;z1++) 
-			buffer[x+1][z1+1][y+1]=TemplateRule.HOLE_BLOCK; //carve out the aperture
+			buffer[x+1][z1+1][y+1]=HOLE_BLOCK; //carve out the aperture
 		
 		//clear a step in front of window if there is a floor at z+1
 		if(isFloor(x+xFace,z+2,y+yFace) && isWallBlock(x+xFace,z,y+yFace) &&
 				x+xFace+1>=0 && x+xFace+1<buffer.length && y+yFace+1>=0 && y+yFace+1<buffer[0][0].length)
-			buffer[x+xFace+1][z+1+1][y+yFace+1]=TemplateRule.HOLE_BLOCK;	
+			buffer[x+xFace+1][z+1+1][y+yFace+1]=HOLE_BLOCK;	
 	}
 	
 	//****************************************  FUNCTIONS  - populators *************************************************************************************//
@@ -334,8 +351,8 @@ public class BuildingTower extends Building
 		int y1=random.nextInt(bLength-2)+1;
 		int x2 = x1+(dir%2==1 ? 2-dir:0), y2 = y1+(dir%2==0 ? 1-dir:0);
 		if(isFloor(x1,z,y1) && !isNextToDoorway(x1,z,y1) && isFloor(x2,z,y2) && !isNextToDoorway(x2,z,y2)){
-			setBlockAndMetadataLocal(x1,z,y1,BED_BLOCK_ID,dir+8);
-			setBlockAndMetadataLocal(x2,z,y2,BED_BLOCK_ID,dir);
+			setBlockLocal(x1,z,y1,BED_BLOCK_ID,dir+8);
+			setBlockLocal(x2,z,y2,BED_BLOCK_ID,dir);
 		}
 	}
 	
@@ -343,7 +360,7 @@ public class BuildingTower extends Building
 		int x1=random.nextInt(bWidth-2)+1;
 		int y1=random.nextInt(bLength-2)+1;
 		if(isFloor(x1,z,y1) && !isNextToDoorway(x1,z,y1)){
-			setBlockAndMetadataLocal(x1,z,y1,block[0],block[1]);
+			setBlockLocal(x1,z,y1,block);
 		}
 	}
 	
@@ -375,6 +392,18 @@ public class BuildingTower extends Building
 			if(!isFloor(x1,z,y1)) break;
 		}
 	
+	}
+	
+	private boolean populateGhastSpawner(int z){
+		for(int tries=0; tries < 5; tries++){
+			int x1=random.nextInt(bWidth-2)+1;
+			int y1=random.nextInt(bLength-2)+1;
+			if(isFloor(x1,z,y1)){
+				setBlockLocal(x1,z,y1,GHAST_SPAWNER_ID);
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	private boolean populatePortal(int z){
@@ -442,21 +471,21 @@ public class BuildingTower extends Building
 					buffer[x1+1][bHeight+1][y1+1]=bRule.getBlockOrHole(random);
 				for(int m=0; m<bWidth; m+=2){
 					if(!(getBlockIdLocal(m, bHeight, -1)==bRule.primaryBlock[0]|| getBlockIdLocal(m, bHeight-1, -1)==bRule.primaryBlock[0]))
-						buffer[m+1][bHeight+1+1][0+1]= (m+1)%2==0 ? TemplateRule.HOLE_BLOCK : bRule.getBlockOrHole(random);
+						buffer[m+1][bHeight+1+1][0+1]= (m+1)%2==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
 					if(!(getBlockIdLocal(m, bHeight, bLength)==bRule.primaryBlock[0] || getBlockIdLocal(m, bHeight-1, bLength)==bRule.primaryBlock[0]))
-						buffer[m+1][bHeight+1+1][bLength-1+1] = (m+1)%2==0 ? TemplateRule.HOLE_BLOCK : bRule.getBlockOrHole(random);
+						buffer[m+1][bHeight+1+1][bLength-1+1] = (m+1)%2==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
 				}
 				for(int m=0; m<bLength; m+=2){
 					if(!(getBlockIdLocal(-1, bHeight, m)==bRule.primaryBlock[0] || getBlockIdLocal(-1, bHeight-1, m)==bRule.primaryBlock[0]))
-						buffer[0+1][ bHeight+1+1][ m+1]= (m+1)%2==0 ? TemplateRule.HOLE_BLOCK : bRule.getBlockOrHole(random);
+						buffer[0+1][ bHeight+1+1][ m+1]= (m+1)%2==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
 					if(!(getBlockIdLocal(bWidth,bHeight,m)==bRule.primaryBlock[0] || getBlockIdLocal(bWidth, bHeight-1, m)==bRule.primaryBlock[0]))
-						buffer[bWidth-1+1][bHeight+1+1][ m+1]= (m+1)%2==0 ? TemplateRule.HOLE_BLOCK : bRule.getBlockOrHole(random);
+						buffer[bWidth-1+1][bHeight+1+1][ m+1]= (m+1)%2==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
 				}
 				for(int y1=1; y1<bLength-1;y1++)
 					for(int x1=1; x1<bWidth-1;x1++)
 						if(isWallBlock(x1, bHeight, y1) && 
 								!(isWallBlock(x1+1, bHeight, y1) || isWallBlock(x1-1, bHeight, y1) || isWallBlock(x1, bHeight, y1+1) ||isWallBlock(x1, bHeight, y1-1) ))
-							buffer[x1+1][bHeight+1-1+1][y1+1] = TemplateRule.HOLE_BLOCK;
+							buffer[x1+1][bHeight+1-1+1][y1+1] = HOLE_BLOCK;
 			}
 			buffer[2][bHeight+1][bLength/2]=EAST_FACE_LADDER_BLOCK;
 			buffer[2][bHeight+2][bLength/2]=new int[]{TRAP_DOOR_ID,3};
@@ -465,7 +494,7 @@ public class BuildingTower extends Building
 			for(int m=0; m<(minHorizDim+1)/2; m++){
 				for(int x1=m; x1<bWidth-m; x1++){
 					for(int y1=m; y1<bLength-m; y1++) {
-						buffer[x1+1][ bHeight+m+1][ y1+1]= TemplateRule.HOLE_BLOCK;
+						buffer[x1+1][ bHeight+m+1][ y1+1]= HOLE_BLOCK;
 						if(m==(bWidth+1)/2-1)
 							buffer[x1+1][ bHeight+m+1+1][ y1+1] = trimRule.getBlockOrHole(random);
 					}
@@ -508,7 +537,7 @@ public class BuildingTower extends Building
 					for(int y1=z12; y1<bLength-z12;y1++) for(int x1=z12; x1<bWidth-z12;x1++)
 						buffer[x1+1][z1+bHeight+1][y1+1] =doubleStepRule.getBlockOrHole(random);
 					for(int y1=z12+2; y1<bLength-z12-2;y1++) for(int x1=z12+2; x1<bWidth-z12-2;x1++)
-						buffer[x1+1][z1+bHeight+1][y1+1] =TemplateRule.HOLE_BLOCK;
+						buffer[x1+1][z1+bHeight+1][y1+1] =HOLE_BLOCK;
 					buffer[z12+1][z1+bHeight+1+1][z12+1] = stepRule.getBlockOrHole(random);
 					buffer[z12+1][z1+bHeight+1+1][bLength-z12-1+1] = stepRule.getBlockOrHole(random);
 					buffer[bWidth-z12-1+1][z1+bHeight+1+1][z12+1] = stepRule.getBlockOrHole(random);
@@ -523,7 +552,7 @@ public class BuildingTower extends Building
 				for(int y1=0; y1<diam;y1++){ for(int x1=0; x1<diam;x1++){
 					if(CIRCLE_SHAPE[diam][x1][y1]>=0)
 						buffer[x1+(bWidth-diam)/2+1][bHeight+z1+1+1][ y1+(bLength-diam)/2+1]
-						    = (CIRCLE_SHAPE[diam][x1][y1]==1 || z1>=(minHorizDim+1)/2-2) ? roofRule.getBlockOrHole(random) : TemplateRule.HOLE_BLOCK;
+						    = (CIRCLE_SHAPE[diam][x1][y1]==1 || z1>=(minHorizDim+1)/2-2) ? roofRule.getBlockOrHole(random) : HOLE_BLOCK;
 					if(z1<(minHorizDim-1)/2){
 						int nextDiam=SPHERE_SHAPE[minHorizDim][z1+1];
 						int x2=x1-(diam-nextDiam)/2, y2=y1-(diam-nextDiam)/2;
@@ -539,7 +568,7 @@ public class BuildingTower extends Building
 				for(int y1=0; y1<diam;y1++){ for(int x1=0; x1<diam;x1++){
 					if(CIRCLE_SHAPE[diam][x1][y1]>=0)
 						buffer[x1+(bWidth-diam)/2+1][bHeight+z1+1+1][y1+(bLength-diam)/2+1] 
-						     = CIRCLE_SHAPE[diam][x1][y1]==1 ? roofRule.getBlockOrHole(random) : TemplateRule.HOLE_BLOCK;
+						     = CIRCLE_SHAPE[diam][x1][y1]==1 ? roofRule.getBlockOrHole(random) : HOLE_BLOCK;
 					if(z1>0 && CIRCLE_SHAPE[diam][x1][y1]!=0 && CIRCLE_SHAPE[prevDiam][x1+(prevDiam-diam)/2][y1+(prevDiam-diam)/2]==0)
 						buffer[x1+(bWidth-diam)/2+1][bHeight+z1+1][ y1+(bLength-diam)/2+1]=roofRule.getBlockOrHole(random);
 				}}
@@ -557,7 +586,7 @@ public class BuildingTower extends Building
 			for(int m=0;m<=minHorizDim/2;m++){
 				for(int p=0;p<maxAxLen;p++){
 					for(int r=m+1; r<minAxLen-m-1; r++) 
-						buildXYRotated(p+1,bHeight+m+1,r+1,TemplateRule.HOLE_BLOCK,rot);
+						buildXYRotated(p+1,bHeight+m+1,r+1,HOLE_BLOCK,rot);
 					buildXYRotated(p+1,bHeight+m+1,m-1+1,forwardsStairsRule,rot);
 					buildXYRotated(p+1,bHeight+m+1,minAxLen-m+1,backwardsStirRule,rot);
 					if(!(minHorizDim%2==0 && m==minHorizDim/2)){
@@ -582,7 +611,7 @@ public class BuildingTower extends Building
 					buffer[x1+1][bHeight+1][y1+1]=doubleStepRule.getBlockOrHole(random);
 				if(circle_shape[x1][y1]==1){
 					for(int z1=bHeight; z1<bHeight+minHorizDim; z1++){
-						if(buffer[x1+1][z1+1][y1+1]==TemplateRule.HOLE_BLOCK)
+						if(buffer[x1+1][z1+1][y1+1]==HOLE_BLOCK)
 							buffer[x1+1][z1+1][y1+1]=bRule.getBlockOrHole(random);
 						else break;
 				}}
@@ -592,7 +621,7 @@ public class BuildingTower extends Building
 			int xBuff=(bWidth-minHorizDim)/2, yBuff=(bLength-minHorizDim)/2;
 			for(int x1=0;x1<minHorizDim;x1++){ for(int y1=0;y1<minHorizDim;y1++){
 				if(circle_shape[x1][y1]>=0)
-					buffer[x1+xBuff+1][bHeight+1][y1+yBuff+1]=circle_shape[x1][y1]==0 ? TemplateRule.HOLE_BLOCK : bRule.getBlockOrHole(random);
+					buffer[x1+xBuff+1][bHeight+1][y1+yBuff+1]=circle_shape[x1][y1]==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
 				else if(!circular) buffer[x1+xBuff+1][bHeight+1][y1+yBuff+1]=bRule.getBlockOrHole(random);
 			}}
 			if(!circular){
@@ -654,7 +683,7 @@ public class BuildingTower extends Building
 
 			//remove blocks if no support
 			for(int x=0;x<xLim;x++){ for(int y=0;y<yLim;y++) {
-				if(support[x][z][y]==0 && buffer[x][z][y][0]!=Building.PRESERVE_ID) buffer[x][z][y]=TemplateRule.HOLE_BLOCK;
+				if(support[x][z][y]==0 && buffer[x][z][y][0]!=Building.PRESERVE_ID) buffer[x][z][y]=HOLE_BLOCK;
 				//else buffer[x][z][y]=new int[]{40+support[x][z][y],0};
 			}}
 		}

@@ -265,7 +265,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		
 
 		
-		int maxTries=Lmean*ows.StreetDensity/12;
+		int maxTries=Lmean*ows.StreetDensity/9;
 		//int maxAvenues=Lmean/8;
 		LinkedList<BuildingDoubleWall> plannedStreets=new LinkedList<BuildingDoubleWall>();
 
@@ -285,12 +285,12 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		
 		//build towers
 		for(BuildingWall avenue : interiorAvenues)
-			avenue.buildTowers(true,true,false,ows.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2, true);
+			avenue.buildTowers(true,true,false,ows.StreetDensity >= TemplateWall.MAX_STREET_DENSITY/2, true);
 		for(BuildingDoubleWall avenue : branchAvenues)
-			avenue.buildTowers(true,true,false,ows.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2, true);
+			avenue.buildTowers(true,true,false,ows.StreetDensity >= TemplateWall.MAX_STREET_DENSITY/2, true);
 		for(BuildingDoubleWall street : plannedStreets){
 			if(!master.isFlushingGenThreads) suspendGen();
-			street.buildTowers(true,true,sws.MakeGatehouseTowers,ows.StreetDensity > TemplateWall.MAX_STREET_DENSITY/2, false);
+			street.buildTowers(true,true,sws.MakeGatehouseTowers,ows.StreetDensity >= TemplateWall.MAX_STREET_DENSITY/2, false);
 		}
 		
 		

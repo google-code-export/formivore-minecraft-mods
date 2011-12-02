@@ -62,6 +62,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 		
 		//MP PORT - uncomment
 		//loadDataFiles();
+		//master=this;
 	}
 	
 	@Override

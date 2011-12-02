@@ -19,23 +19,11 @@ package net.minecraft.src;
 import java.util.Random;
 
 public class TemplateRule {
-    //public final static int HOLE_ID=-1;
-    public final static int[] AIR_BLOCK=new int[]{0,0};
-   // public final static int[] AIR_OR_LIQUID_BLOCK= new int[]{Building.HOLE_ID,0};
-    public final static int[] HOLE_BLOCK=new int[]{Building.HOLE_ID,0};
-    public final static int[] PRESERVE_BLOCK=new int[]{Building.PRESERVE_ID,0};
-    public final static int[] HARD_SPAWNER_BLOCK=new int[]{Building.HARD_SPAWNER_ID,0};
-    public final static int[] PIG_ZOMBIE_SPAWNER_BLOCK=new int[]{Building.PIG_ZOMBIE_SPAWNER_ID,0};
-    public final static int[] ENDERMAN_SPAWNER_BLOCK=new int[]{Building.ENDERMAN_SPAWNER_ID,0};
-    public final static int[] TOWER_CHEST_BLOCK=new int[]{Building.TOWER_CHEST_ID,0};
-    public final static int[] HARD_CHEST_BLOCK=new int[]{Building.HARD_CHEST_ID,0};
-    public final static int[] STONE_BLOCK=new int[]{Building.STONE_ID,0};
-    public final static int[] PORTAL_BLOCK=new int[]{Building.PORTAL_ID,0};
     public final static int FIXED_FOR_BUILDING=5;
     
     public final static String BLOCK_NOT_REIGSTERED_ERROR_PREFIX="Error reading rule: BlockID ";  //so we can treat this error differently
     
-    public final static TemplateRule AIR_RULE=new TemplateRule(AIR_BLOCK);
+    public final static TemplateRule AIR_RULE=new TemplateRule(Building.AIR_BLOCK);
     
     private int[] blockIDs, blockMDs;
     public int chance = 100, condition = 0;
@@ -108,7 +96,7 @@ public class TemplateRule {
     		int m=random.nextInt(blockIDs.length);
     		return new int[]{blockIDs[m],blockMDs[m]};
     	}
-    	return AIR_BLOCK;
+    	return Building.AIR_BLOCK;
     }
     
     public int[] getBlockOrHole(Random random){
@@ -118,7 +106,7 @@ public class TemplateRule {
     		int m=random.nextInt(blockIDs.length);
     		return new int[]{blockIDs[m],blockMDs[m]};
     	}
-    	return HOLE_BLOCK;
+    	return Building.HOLE_BLOCK;
     }
     
     public boolean isPreserveRule(){
