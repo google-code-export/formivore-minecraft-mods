@@ -52,6 +52,19 @@ These are block IDs that instead of creating the correspondingly numbered block 
   * 315 = Mob Spawner (Cave Spider);
   * 316 = Mob Spawner (Ghast);
   * 319 = Compact/Half Stair – For wall templates. This will build either nothing, a half step, or a compact step depending on how the z-level of the wall is changing. Takes the same meta values as half-step blocks and will choose a matching compact step.
+  * 320 = Painting (uses same directional metadata as ladders)
+  * 321 = Humans+ Assassin Flag
+  * 322 = Humans+ Rogue Flag
+  * 323 = Humans+ Bandit Flag
+  * 324 = Humans+ Peaceful Flag
+  * 325 = Humans+ Shadow Flag
+  * 326 = Humans+ Militia Flag
+  * 327 = Mob Spawner (Blaze)
+  * 328 = Mob Spawner (Slime);
+  * 329 = Mob Spawner (Lava Slime)
+  * 330 = Mob Spawner (Villager)
+  * 331 = Mob Spawner (Snow Golem)
+  * 332 = Mob Spawner (Mushroom Cow)
 
 ==Rule Examples==
 *Example 1*, this spawns either air, cobblestone, or a mossy cobblestone 100% of the time:
