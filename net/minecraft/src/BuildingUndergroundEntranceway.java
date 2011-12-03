@@ -33,14 +33,14 @@ public class BuildingUndergroundEntranceway extends Building{
 	
 	//****************************************  FUNCTION - build *************************************************************************************//
 	public boolean build() throws InterruptedException{
-		for(; bLength<WORLD_HEIGHT-j0; bLength++){
+		for(; bLength<world.field_35472_c-j0; bLength++){
 			if(!(queryExplorationHandler(-1,0,0) && queryExplorationHandler(PASSAGE_WIDTH,0,0))) return false;
 			
 			if(IS_LIQUID_BLOCK[getBlockIdLocal(0,bLength+PASSAGE_HEIGHT,bLength)]) return false;
 			
-			if(j0+bLength>WORLD_HEIGHT/2-10 && isArtificialWallBlock(0,bLength+PASSAGE_HEIGHT,bLength)) return false;
+			if(j0+bLength>world.field_35472_c/2-10 && isArtificialWallBlock(0,bLength+PASSAGE_HEIGHT,bLength)) return false;
 			
-			if(j0+bLength>WORLD_HEIGHT/2 && (IS_WALLABLE[getBlockIdLocal(0,bLength,bLength)] || IS_WALLABLE[getBlockIdLocal(PASSAGE_WIDTH-1,bLength,bLength)])){
+			if(j0+bLength>world.field_35472_c/2 && (IS_WALLABLE[getBlockIdLocal(0,bLength,bLength)] || IS_WALLABLE[getBlockIdLocal(PASSAGE_WIDTH-1,bLength,bLength)])){
 				bLength--;
 				break;
 			}

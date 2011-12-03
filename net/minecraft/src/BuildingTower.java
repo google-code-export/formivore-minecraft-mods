@@ -82,7 +82,7 @@ public class BuildingTower extends Building
 	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
 	public boolean queryCanBuild(int ybuffer, boolean overlapTowers) throws InterruptedException{
 		int rooftopJ=j0 + bHeight + (roofStyle==ROOF_CONE ? minHorizDim : minHorizDim/2)+2; 
-		if(rooftopJ >= WORLD_HEIGHT) bHeight-= WORLD_HEIGHT - rooftopJ;
+		if(rooftopJ >= world.field_35472_c) bHeight-= world.field_35472_c - rooftopJ;
 		if(bHeight < baseHeight + 4) 
 			return false;
 		
@@ -145,14 +145,15 @@ public class BuildingTower extends Building
 			}
 		}
 		*/
-		
-		boolean ghastTower=roofStyle==ROOF_CRENEL && SpawnerRule.getBlock(random)[0]==GHAST_SPAWNER_ID;
-		boolean undeadTower=false;
-		for(int blockID : SpawnerRule.getBlockIDs())
-			if(blockID==ZOMBIE_SPAWNER_ID || blockID==SKELETON_SPAWNER_ID || blockID==CREEPER_SPAWNER_ID|| 
-					blockID==UPRIGHT_SPAWNER_ID || blockID==EASY_SPAWNER_ID) 
-				undeadTower=true;
-		if(ghastTower ||  random.nextInt(100)>SpawnerRule.chance) undeadTower=false;
+		boolean undeadTower=false, ghastTower=false;
+		if(SpawnerRule!=RULE_NOT_PROVIDED){
+			for(int blockID : SpawnerRule.getBlockIDs())
+				if(blockID==ZOMBIE_SPAWNER_ID || blockID==SKELETON_SPAWNER_ID || blockID==CREEPER_SPAWNER_ID|| 
+						blockID==UPRIGHT_SPAWNER_ID || blockID==EASY_SPAWNER_ID) 
+					undeadTower=true;
+			ghastTower=roofStyle==ROOF_CRENEL && SpawnerRule.getBlock(random)[0]==GHAST_SPAWNER_ID;
+			if(ghastTower ||  random.nextInt(100)>SpawnerRule.chance) undeadTower=false;
+		}
 
 		
 		if(undeadTower && bHeight - baseHeight < 9) bHeight = baseHeight  + 9;

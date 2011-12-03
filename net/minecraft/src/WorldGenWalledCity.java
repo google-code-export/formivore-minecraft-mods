@@ -68,7 +68,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		if(ows.MakeEndTowers) ows.MakeEndTowers=false;
 		
 		int ID=(random.nextInt(9000)+1000)*100;
-		int minJ=ows.LevelInterior ? Building.WORLD_HEIGHT/2 - 2 : BuildingWall.NO_MIN_J;
+		int minJ=ows.LevelInterior ? world.field_35472_c/2 - 2 : BuildingWall.NO_MIN_J;
 		//boolean circular=random.nextFloat() < ows.CircularProb;
 		chooseDirection(i0 >> 4, k0 >>4);
 
@@ -177,7 +177,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		}
 		//We've passed all checks, register this city site
 		walls[0].setCursor(0);
-		int[] cityCenter=walls[0].getSurfaceIJKPt(-walls[1].bLength/2, walls[0].bLength/2,Building.WORLD_HEIGHT, false,false);
+		int[] cityCenter=walls[0].getSurfaceIJKPt(-walls[1].bLength/2, walls[0].bLength/2,world.field_35472_c, false,false);
 		for(int w=0;w<4;w++) wc.addCityLocation(walls[w].i1,walls[w].k1,mod_WalledCity.CITY_TYPE_WALLED);
 
 
@@ -216,7 +216,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			}else {
 				//no gateway on this city side, try just building an interior avenue from midpoint
 				w.setCursor(w.bLength/2);
-				BuildingWall midpointAvenue=new BuildingWall(0, this,sws,Building.rotDir(w.bDir,-axXHand),w.bDir>1 ? 1:-1, ows.MaxL,false,w.getSurfaceIJKPt(-1, 0,Building.WORLD_HEIGHT, false,false));
+				BuildingWall midpointAvenue=new BuildingWall(0, this,sws,Building.rotDir(w.bDir,-axXHand),w.bDir>1 ? 1:-1, ows.MaxL,false,w.getSurfaceIJKPt(-1, 0,world.field_35472_c, false,false));
 				midpointAvenue.setTarget(cityCenter);
 				midpointAvenue.plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,true);
 				if(midpointAvenue.bLength > 20){
@@ -380,7 +380,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		while(tries < 20){
 			pt[0]=mincorner[0] + random.nextInt( Math.abs(corner1[0]-corner2[0]));
 			pt[2]=mincorner[2] + random.nextInt(Math.abs(corner1[2]-corner2[2]));
-			pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],127,true,true);
+			pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.field_35472_c-1,true,true);
 			boolean enclosed=true;
 			for(BuildingWall w : walls) if(w.ptIsToXHand(pt,-sws.WWidth)) enclosed=false;
 			if(enclosed) return pt;
@@ -402,10 +402,10 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(BuildingWall w : walls) w.setCursor(0);
 		int incI=Building.signum(corner2[0]-corner1[0],0), incK=Building.signum(corner2[2]-corner1[2],0);
 		int[] pt=new int[3];
-		int jmin=Building.isNether(world) ? jmean : Math.max(jmean, Building.WORLD_HEIGHT/2);
+		int jmin=Building.isNether(world) ? jmean : Math.max(jmean, world.field_35472_c/2);
 		for(BuildingWall w : walls){
 			for(int n=0;n<w.bLength;n++)
-				if(w.zArray[n]+w.j1+w.WalkHeight-1 < jmin && (Building.isNether(world) || jmin >= Building.WORLD_HEIGHT/2))
+				if(w.zArray[n]+w.j1+w.WalkHeight-1 < jmin && (Building.isNether(world) || jmin >= world.field_35472_c/2))
 					jmin=w.zArray[n]+w.j1+w.WalkHeight-1;
 		}
 		int jmax=Math.max(jmean + Lmean/LEVELLING_DEVIATION_SLOPE, jmin);
@@ -416,7 +416,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 				boolean enclosed=true;
 				for(BuildingWall w : walls) if(w.ptIsToXHand(pt,1)) enclosed=false;
 				if(enclosed){
-					pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],127,false,true);
+					pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.field_35472_c-1,false,true);
 					int oldSurfaceBlockId=world.getBlockId(pt[0], pt[1], pt[2]);
 					if(pt[1]>jmax) {
 						while(world.getBlockId(pt[0],pt[1]+1,pt[2])!=Building.AIR_ID) pt[1]++; //go back up to grab any trees or whatnot

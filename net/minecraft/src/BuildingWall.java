@@ -481,18 +481,25 @@ public class BuildingWall extends Building
 
 	//****************************************  FUNCTION - mergeWallLayer *************************************************************************************//
 	private void mergeWallLayer(){
-		//wall-merging stairs
+		//if side is a floor one below, add a step down
 		if(isFloor(-1,WalkHeight-1,0))   setBlockLocal(-1, WalkHeight-1, 0, STEP_ID, halfStairValue);
 		if(isFloor(bWidth,WalkHeight-1,0))   setBlockLocal(bWidth, WalkHeight-1, 0, STEP_ID, halfStairValue);
+		
+		//      x
+		// if  xxo are floors one above, add a step up
+		//      x
 		if(isFloor(-1,WalkHeight+1,0)  && isFloor(-2,WalkHeight+2,0) && isFloor(-2,WalkHeight+2,1)  && isFloor(-2,WalkHeight+2,-1)) 
 			setBlockLocal(0, WalkHeight, 0, STEP_ID,halfStairValue);
 		if(isFloor(bWidth,WalkHeight+1,0)  && isFloor(bWidth+1,WalkHeight+2,0) && isFloor(bWidth+1,WalkHeight+2,1)  && isFloor(bWidth+1,WalkHeight+2,-1)) 
 			setBlockLocal(bWidth-1, WalkHeight, 0, STEP_ID, halfStairValue);
 
-		if(getBlockIdLocal(-1,WalkHeight-1,0)==COBBLESTONE_STAIRS_ID || getBlockIdLocal(-1,WalkHeight-1,0)==WOOD_STAIRS_ID )
-			setBlockLocal(-1, WalkHeight-1, 0, bRule.primaryBlock[0],bRule.primaryBlock[1]);
-		if(getBlockIdLocal(bWidth,WalkHeight-1,0)==COBBLESTONE_STAIRS_ID || getBlockIdLocal(bWidth,WalkHeight-1,0)==WOOD_STAIRS_ID)
-			setBlockLocal(bWidth, WalkHeight-1, 0, bRule.primaryBlock[0],bRule.primaryBlock[1]);
+		//clean up stairs descending into this wall
+		int[] pt=getIJKPt(-1,WalkHeight-1,0);
+		if(IS_STAIRS_BLOCK[world.getBlockId(pt[0],pt[1],pt[2])] && STAIRS_META_TO_DIR[world.getBlockMetadata(pt[0],pt[1],pt[2])]==rotDir(bDir,-bHand))
+			world.setBlock(pt[0],pt[1],pt[2], stairToSolidBlock(world.getBlockId(pt[0],pt[1],pt[2])));
+		pt=getIJKPt(bWidth,WalkHeight-1,0);
+		if(IS_STAIRS_BLOCK[world.getBlockId(pt[0],pt[1],pt[2])] && STAIRS_META_TO_DIR[world.getBlockMetadata(pt[0],pt[1],pt[2])]==rotDir(bDir,bHand))
+			world.setBlock(pt[0],pt[1],pt[2], stairToSolidBlock(world.getBlockId(pt[0],pt[1],pt[2])));
 	}
 
 
