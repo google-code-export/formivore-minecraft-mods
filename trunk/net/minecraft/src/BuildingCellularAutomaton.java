@@ -147,10 +147,10 @@ public class BuildingCellularAutomaton extends Building {
 	
 	public boolean shiftBuidlingJDown(int maxShift){
 		//try 4 corners and center
-		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),128,false,false),
-							    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),128,false,false),
-							    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),128,false,false),
-							    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),128,false,false)
+		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),world.field_35472_c,false,false),
+							    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),world.field_35472_c,false,false),
+							    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),world.field_35472_c,false,false),
+							    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),world.field_35472_c,false,false)
 							    };
 		int minHeight=j0;
 		int maxHeight=j0;

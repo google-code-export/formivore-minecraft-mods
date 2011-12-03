@@ -55,6 +55,7 @@ public abstract class WorldGeneratorThread extends Thread {
 		TriesPerChunk=TriesPerChunk_;
 		ChunkTryProb=ChunkTryProb_;
 		master=master_;
+		max_spawn_height=world.field_35472_c-1;
 	}
 	
 	//****************************  FUNCTION - abstract and stub functions  *************************************************************************************//
@@ -77,7 +78,7 @@ public abstract class WorldGeneratorThread extends Thread {
 					i0=chunkI+random.nextInt(16) + 8;
 					k0=chunkK  + random.nextInt(16) + 8;
 					if(spawn_surface){
-						j0=Building.findSurfaceJ(world,i0,k0,127,true,true)+1;
+						j0=Building.findSurfaceJ(world,i0,k0,world.field_35472_c-1,true,true)+1;
 					}else{
 						j0=min_spawn_height+random.nextInt(max_spawn_height - min_spawn_height +1);
 					}

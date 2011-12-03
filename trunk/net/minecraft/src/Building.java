@@ -62,7 +62,7 @@ public class Building
 		public final static int DIR_WEST_EAST=1, DIR_SOUTH_NORTH=0;
 		public final static int ROT_R=1,ROT_L=-1,ROT_180=2;
 		public final static int R_HAND=1,L_HAND=-1;
-		public final static int WORLD_HEIGHT=128;
+		//public final static int WORLD_HEIGHT=128;
 	
 		//**** WORKING VARIABLES **** 
 		protected World world;
@@ -72,6 +72,7 @@ public class Building
 		public int bID; //Building ID number
 		private LinkedList<int[]> delayedBuildQueue;
 		protected WorldGeneratorThread wgt; 
+		//public int worldHeight=128;
 
 		protected int i0, j0, k0; //origin coordinates. The child class may want to move the origin as it progress to use as a "cursor" position.
 		private int xI,yI,xK,yK; //
@@ -96,6 +97,7 @@ public class Building
 			setOrigin(sourcePt[0],sourcePt[1],sourcePt[2]);
 		}
 		delayedBuildQueue=new LinkedList<int[]>();
+		//worldHeight=world.field_35472_c;
 	}
     
     //******************** ORIENTATION FUNCTIONS *************************************************************************************************************//
@@ -201,6 +203,10 @@ public class Building
     	return world.getBlockId(i0+yI*y+xI*x,j0+z,k0+yK*y+xK*x);
     }
     
+    protected final int getBlockMetadataLocal(int x, int z, int y){
+    	return world.getBlockMetadata(i0+yI*y+xI*x,j0+z,k0+yK*y+xK*x);
+    }
+    
   //******************** LOCAL COORDINATE FUNCTIONS - SET BLOCK FUNCTIONS *************************************************************************************************************//
     protected final void setBlockLocal(int x, int z, int y, int blockID){
     	if(blockID>=SPECIAL_BLOCKID_START) { setSpecialBlockLocal(x,z,y,blockID,0); return; }
@@ -274,12 +280,32 @@ public class Building
     protected final void flushDelayed(){
     	while(delayedBuildQueue.size()>0){
     		int[] block=(delayedBuildQueue.poll());
+    		
+    		//if stairs are running into ground. replace them with a solid block
+    		if(IS_STAIRS_BLOCK[block[3]]){
+    			int adjId=world.getBlockId(block[0]-DIR_TO_I[STAIRS_META_TO_DIR[block[4]]],block[1],block[2]-DIR_TO_K[STAIRS_META_TO_DIR[block[4]]]);
+    			int aboveID=world.getBlockId(block[0],block[1]+1,block[2]);
+    			if(IS_WALL_BLOCK[adjId] || IS_WALL_BLOCK[aboveID]){
+    				block[3]=stairToSolidBlock(block[3]);
+    				block[4]=0;
+    			}
+    			else if(!IS_WALLABLE[adjId] || IS_LIQUID_BLOCK[adjId] || !IS_WALLABLE[aboveID] || IS_LIQUID_BLOCK[aboveID] ){
+    				continue;  //solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
+    			}
+    		}
+    		
     		if(block[3]==PAINTING_SPECIAL_ID) setPainting(block, block[4]);
     		else if(IS_HUMANS_PLUS_FLAG[block[3]]) setHumansPlusFactionFlag(block, block[3],block[4]);
-    		else if(block[3]!=TORCH_ID || Block.torchWood.canPlaceBlockAt(world,block[0],block[1],block[2]))
-    			world.setBlockAndMetadata(block[0],block[1],block[2],block[3],block[4]);
-    		//if(block[3]==TORCH_ID)
-    		//	wgt.explorationHandler.queueLighting(new int[]{block[0],block[1],block[2],block[0],block[1],block[2]});
+    		else if(block[3]==TORCH_ID){
+    			if(Block.torchWood.canPlaceBlockAt(world,block[0],block[1],block[2]))
+    				world.setBlockAndMetadata(block[0],block[1],block[2],block[3],block[4]); //force lighting update
+    		}else if(block[3]==GLOWSTONE_ID)
+    			world.setBlockAndMetadata(block[0],block[1],block[2],block[3],block[4]); //force lighting update
+    		else{
+    			if(randLightingHash[(block[0] & 0x7) | (block[1] & 0x38) | (block[2] & 0x1c0)])
+        			world.setBlockAndMetadata(block[0],block[1],block[2],block[3],block[4]);
+        		else setBlockAndMetaNoLighting(world,block[0],block[1],block[2],block[3],block[4]);
+    		}
     	}
     }
   
@@ -419,6 +445,8 @@ public class Building
  		//painting uses same orientation meta as ladders.
  		//Have to adjust ijk since unlike ladders the entity exists at the block it is hung on.
  		int dir=orientDirToBDir(LADDER_META_TO_DIR[metadata]);
+ 		pt[0]-=DIR_TO_I[dir];
+ 		pt[2]-=DIR_TO_K[dir];
  		if(dir==DIR_NORTH) pt[2]++; else if(dir==DIR_SOUTH) pt[2]--; else if(dir==DIR_WEST) pt[0]++; else pt[0]--;
  		
  			
@@ -435,7 +463,8 @@ public class Building
     	if(!wgt.master.humansPlusLoaded) return;
     	
     	int dir=orientDirToBDir(LADDER_META_TO_DIR[metadata]);
-    	if(dir==DIR_NORTH) pt[2]++; else if(dir==DIR_SOUTH) pt[2]--; else if(dir==DIR_WEST) pt[0]++; else pt[0]--;
+    	pt[0]-=DIR_TO_I[dir];
+ 		pt[2]-=DIR_TO_K[dir];
     	Integer faceDir=PAINTING_DIR_TO_FACEDIR[dir]; 
     	
     	try {
@@ -555,7 +584,7 @@ public class Building
 
 	   int oldSurfaceBlockId=world.getBlockId(lowPt[0], lowPt[1], lowPt[2]);
 	   if(IS_ORE_BLOCK[oldSurfaceBlockId]) oldSurfaceBlockId=STONE_ID;
-	   if(oldSurfaceBlockId==DIRT_ID || (lowPt[1] < WORLD_HEIGHT/2 && oldSurfaceBlockId==SAND_ID))
+	   if(oldSurfaceBlockId==DIRT_ID || (lowPt[1] < world.field_35472_c/2 && oldSurfaceBlockId==SAND_ID))
 		   oldSurfaceBlockId=GRASS_ID;
 	   if(oldSurfaceBlockId==0) oldSurfaceBlockId= Building.isNether(world) ? NETHERRACK_ID : GRASS_ID;
 	   int fillBlockId=oldSurfaceBlockId==GRASS_ID ? DIRT_ID : oldSurfaceBlockId;
@@ -611,14 +640,14 @@ public class Building
    //******************** STATIC FUNCTIONS ******************************************************************************************************************************************//
    
    public static void setBlockNoLighting(World world, int i, int j, int k, int blockId){
-       if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= 128)
+       if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= world.field_35472_c)
            return;
        
        world.getChunkFromChunkCoords(i >> 4, k >> 4).setBlockID(i & 0xf, j, k & 0xf, blockId);
    }
    
    public static void setBlockAndMetaNoLighting(World world, int i, int j, int k, int blockId, int meta){
-	   if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= 128)
+	   if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= world.field_35472_c)
            return;
 
        world.getChunkFromChunkCoords(i >> 4, k >> 4).setBlockIDWithMetadata(i & 0xf, j, k & 0xf, blockId, meta);
@@ -661,26 +690,26 @@ public class Building
     	int blockId;
 		if( isNether(world) ) {
 			if( (i%2==1) ^ (k%2==1) ) {
-				for( int j = 127; j > -1; j-- ) {
-					if( world.getBlockId(i,j,k) == 0 ) 
-						for( ; j > -1; j-- ) 
-							if( !IS_WALLABLE[world.getBlockId(i,j,k)] )
+				for(int j=world.field_35472_c-1; j>-1; j--) {
+					if(world.getBlockId(i,j,k)==0) 
+						for(; j>-1; j--) 
+							if(!IS_WALLABLE[world.getBlockId(i,j,k)])
 								return j;
 				}
 			}else {
-				for( int j=0; j<128; j++) 
-					if( world.getBlockId(i,j,k )==0 )
+				for(int j=0; j<world.field_35472_c; j++) 
+					if(world.getBlockId(i,j,k)==0 )
 								return j;
 			}
 			return -1;
 		} 
 		else{
-			for( int j = jinit; j > -1; j-- ){
+			for(int j=jinit; j>-1; j--){
 				blockId=world.getBlockId(i,j,k);
 				if(!IS_WALLABLE[blockId] && (wallIsSurface || !IS_WALL_BLOCK[blockId])) 
 					return j;
 				if(waterIsSurface && IS_LIQUID_BLOCK[blockId])
-					return IS_LIQUID_BLOCK[world.getBlockId(i, j-1, k)] ? HIT_WATER : HIT_SWAMP;  //so we can still build in swamps...
+					return IS_LIQUID_BLOCK[world.getBlockId(i, j-2, k)] ? HIT_WATER : HIT_SWAMP;  //so we can still build in swamps...
 			}
 		}
 		return -1;
@@ -1391,7 +1420,7 @@ public class Building
     
     
 	//maps block metadata to a dir
-	private final static int[] 	BED_META_TO_DIR=new int[]	{	DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
+	public final static int[] 	BED_META_TO_DIR=new int[]	{	DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
 							TORCH_META_TO_DIR=new int[]	{0,		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
 							STAIRS_META_TO_DIR=new int[]{		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
 							LADDER_META_TO_DIR=new int[]{0,0,	DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
@@ -1409,6 +1438,9 @@ public class Building
 							VINES_DIR_TO_META		=new int[]{4,8,1,2},
 							DOOR_DIR_TO_META		=new int[]{3,0,1,2},
 							PAINTING_DIR_TO_FACEDIR =new int[]{0,3,2,1};
+	
+	public final static int[] DIR_TO_I=new int[]{0,1,0,-1},
+							  DIR_TO_K=new int[]{-1,0,1,0};
 	
 	 //some prebuilt directional blocks
     public final static int[] WEST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,TORCH_DIR_TO_META[DIR_WEST]},
@@ -1437,15 +1469,20 @@ public class Building
     public final static boolean[] IS_ORE_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     //public final static boolean[] IS_SPAWNER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_HUMANS_PLUS_FLAG=new boolean[SPECIAL_BLOCKID_END+1];
+    public final static boolean[] IS_STAIRS_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     
 
     static{
     	for(int blockID=0;blockID<IS_WALL_BLOCK.length;blockID++){
+    		if(blockID==COBBLESTONE_STAIRS_ID || blockID==WOOD_STAIRS_ID || blockID==BRICK_STAIRS_ID || blockID==NETHER_BRICK_STAIRS_ID){
+    			IS_STAIRS_BLOCK[blockID]=true;
+    		} else IS_STAIRS_BLOCK[blockID]=false;
+    		
     		if( blockID==COBBLESTONE_ID || blockID==WOOD_ID || blockID==LAPIS_BLOCK_ID || blockID==SANDSTONE_ID || blockID==GOLD_BLOCK_ID ||
-    			blockID==STEP_ID || blockID==DOUBLE_STEP_ID || blockID==MOSSY_COBBLESTONE_ID || blockID==TORCH_ID || blockID==WOOD_STAIRS_ID ||
+    			blockID==STEP_ID || blockID==DOUBLE_STEP_ID || blockID==MOSSY_COBBLESTONE_ID || blockID==TORCH_ID || blockID==GLASS_PANE_ID ||
     		    blockID==LADDER_ID || blockID==FENCE_ID || blockID==FENCE_GATE_ID || blockID==OBSIDIAN_ID || blockID==GLOWSTONE_ID || blockID==IRON_BARS_ID || 
-    		    blockID==GLASS_PANE_ID || blockID==STONE_BRICK_ID || blockID==BRICK_STAIRS_ID || blockID==STONE_BRICK_STAIRS_ID ||blockID==COBBLESTONE_STAIRS_ID ||
-    		    blockID==NETHER_BRICK_ID || blockID==NETHER_BRICK_FENCE_ID || blockID==NETHER_BRICK_STAIRS_ID){
+    		    blockID==STONE_BRICK_ID || blockID==NETHER_BRICK_ID || blockID==NETHER_BRICK_FENCE_ID || blockID==NETHER_BRICK_STAIRS_ID ||
+    		    IS_STAIRS_BLOCK[blockID]){
     			IS_WALL_BLOCK[blockID]=true;
     		} else IS_WALL_BLOCK[blockID]=false;
     		
@@ -1455,9 +1492,9 @@ public class Building
     		   blockID==SUGAR_CANE_BLOCK_ID || blockID==MELON_ID || blockID==PUMPKIN_STEM_ID || blockID==MELON_STEM_ID || blockID==VINES_ID) {
     			IS_WALLABLE[blockID]=true;
     		} else IS_WALLABLE[blockID]=false;
-    		
     
-    		if(blockID==TORCH_ID || blockID==LEVER_ID || blockID==SIGN_POST_ID || blockID==SIGN_ID || blockID==REDSTONE_TORCH_ON_ID || blockID==REDSTONE_TORCH_OFF_ID || blockID==STONE_BUTTON_ID || blockID==GLOWSTONE_ID){
+    		if(blockID==TORCH_ID || blockID==LEVER_ID || blockID==SIGN_POST_ID || blockID==SIGN_ID || blockID==REDSTONE_TORCH_ON_ID || blockID==REDSTONE_TORCH_OFF_ID 
+    			|| blockID==STONE_BUTTON_ID || blockID==GLOWSTONE_ID || IS_STAIRS_BLOCK[blockID]){
     			IS_DELAY_BLOCK[blockID]=true;
     		} else IS_DELAY_BLOCK[blockID]=false;
     		
@@ -1502,6 +1539,17 @@ public class Building
 			case STONE_BRICK_ID:				return 5;
 			case STEP_ID: case DOUBLE_STEP_ID: 	return idAndMeta[1];
 			default: 							return 2;
+    	}
+    }
+    
+    public final static int stairToSolidBlock(int blockID){
+    	switch(blockID){
+    		case COBBLESTONE_STAIRS_ID: return COBBLESTONE_ID;
+    		case WOOD_STAIRS_ID: 		return WOOD_ID;
+    		case BRICK_STAIRS_ID: 		return BRICK_ID;
+    		case STONE_BRICK_STAIRS_ID: return STONE_BRICK_ID;
+    		case NETHER_BRICK_STAIRS_ID:return NETHER_BRICK_ID;
+    		default: 					return blockID;
     	}
     }
     
