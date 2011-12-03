@@ -4,4 +4,4 @@
   * denkbert for his roof designs.
   * croweshand8 and any others for some of the templates used.
   * Rytho for the suggestion for underground cities.
-  * Doozer, who first developed a automata generator in Mathematica and helped me transfer it to Minecraft.
+  * Doozer, who first developed an automata generator in Mathematica and helped me transfer it to Minecraft.
