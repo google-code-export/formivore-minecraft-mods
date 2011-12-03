@@ -24,7 +24,7 @@ rule3=0,100,60 #farmland
 rule4=5,70,104-6,105-6 #pumpkin/melon stems, the -6 is metadata specifying growth stage. 
 #The 5 tells the rule to choose gourd type once for the entire template, the 70 means there is a chance of no stem.
 rule5=0,100,85 #fence
-rule6=0,100,107-1 #fence gate, rotated to face south
+rule6=0,100,107-2 #fence gate, rotated to face south
 
 #the below ground layer
 layer
