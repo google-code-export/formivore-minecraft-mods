@@ -30,6 +30,9 @@ I’m very interested in receiving crash reports so I can fix bugs. Post crash r
   * When the crash occurred (e.g. before the menu screen, while generating a world, while doing something in-game).
   * Minecraft’s crash report. Minecraft may quit or blackscreen before you can view the error report. In this case the Minecraft <a href=http://dl.dropbox.com/u/23286303/minecrafterrortest.bat>error test</a> batch file should allow you to retrieve the log file. Use the error test script by double clicking on it in Windows to start minecraft.
 
+<font color=#632423>*_Q: Generation bugs*</font><br>
+If you see the mod generate something that look really ugly/buggy and want to report it, please include a screenshot. A picture is worth a thousand words. A lot of strange things can happen, particularly when interacting with other mods.
+
 <font color=#632423>*_Q: LAGGGG_*</font><br>
 The Walled City Generator in particular can cause bad slowdowns because of the large number of chunks that have to be generated in order to plan a city. This slowdown will only occur while Minecraft is generating new terrain; it will cease after a while if you are not exploring. It seems that this affects some machines more than others. Decreasing `GlobalFrequency` or increasing `MinCitySeparation` will reduce slowdown, see above on how to do this. It may be helpful to increase java’s memory allocation. There are tutorials online about how to do this. This problem is something I am trying to improve but to a certain extent it is inherent in the design of the mod.
 
