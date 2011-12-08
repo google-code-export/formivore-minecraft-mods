@@ -21,11 +21,46 @@ public class BuildingTML extends Building
 	TemplateTML tmlt;
 
 	//****************************************  CONSTRUCTOR - BuildingTML  *************************************************************************************//
-	public BuildingTML (int ID_,WorldGeneratorThread wgt,int bDir_,int axXHand_,TemplateTML tmlt_, int[] sourcePt) {
-		super(ID_,wgt, null, bDir_,axXHand_,new int[]{tmlt_.width,tmlt_.height,tmlt_.length},sourcePt);
+	public BuildingTML (int ID_,WorldGeneratorThread wgt,int bDir_,int axXHand_,boolean centerAligned_,TemplateTML tmlt_, int[] sourcePt) {
+		super(ID_,wgt, null, bDir_,axXHand_,centerAligned_,new int[]{tmlt_.width,tmlt_.height,tmlt_.length},sourcePt);
 		tmlt=tmlt_;
 		j0-=tmlt.embed;
 	}
+	
+	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
+	   public boolean queryCanBuild(int ybuffer) throws InterruptedException{
+		   if(j0<=0) return false;
+		   
+	    	if(!( queryExplorationHandler(0,0,bLength-1) && queryExplorationHandler(bWidth-1,0,0) && queryExplorationHandler(bWidth-1,0,bLength-1) )){
+				return false;
+			}
+	    	
+	    	//Don't build if it would require leveling greater than tmlt.leveling
+	    	for(int y=0 ;y<bLength;y++) for(int x=0 ;x<bWidth;x++)
+	    		if(j0 - getSurfaceIJKPt(x,y,j0-1,false,true)[1] > tmlt.leveling + 1) return false;
+	    	
+	    	//check to see if we are underwater
+	    	if(tmlt.waterHeight!=TemplateTML.NO_WATER_CHECK){
+	    		int waterCheckHeight=tmlt.waterHeight+tmlt.embed+1; //have to unshift by embed
+	    		if(IS_WATER_BLOCK[getBlockIdLocal(0,waterCheckHeight,0)] || IS_WATER_BLOCK[getBlockIdLocal(0,waterCheckHeight,bLength-1)]
+	    		 ||IS_WATER_BLOCK[getBlockIdLocal(bWidth-1,waterCheckHeight,0)] || IS_WATER_BLOCK[getBlockIdLocal(bWidth-1,waterCheckHeight,bLength-1)])
+	    			return false;
+	    	}
+	    	
+	    	if(wgt.isLayoutGenerator()){
+	    		
+	    		//allow large templates to be built over streets by using the tower code to check
+	    		//However, if we do build, always put down the template code
+	    		int layoutCode= tmlt.buildOverStreets ? WorldGeneratorThread.LAYOUT_CODE_TOWER : WorldGeneratorThread.LAYOUT_CODE_TEMPLATE;
+	    		
+		    	if(wgt.layoutIsClear(this, tmlt.templateLayout,layoutCode)){
+		    		wgt.setLayoutCode(this,tmlt.templateLayout,WorldGeneratorThread.LAYOUT_CODE_TEMPLATE);
+		    	} else return false;
+	    	}else{
+	    		if(isObstructedFrame(0,ybuffer)) return false;
+	    	}
+			return true;
+	    }
 
 	//****************************************  FUNCTION - build *************************************************************************************//
 	public void build() {
@@ -70,37 +105,6 @@ public class BuildingTML extends Building
     	return false;
     }
     */
-	
-	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
-   public boolean queryCanBuild(int ybuffer) throws InterruptedException{
-	   if(j0<=0) return false;
-	   
-    	if(!( queryExplorationHandler(0,0,bLength-1) && queryExplorationHandler(bWidth-1,0,0) && queryExplorationHandler(bWidth-1,0,bLength-1) )){
-			return false;
-		}
-    	
-    	//Don't build if it would require leveling greater than tmlt.leveling
-    	for(int y=0 ;y<bLength;y++) for(int x=0 ;x<bWidth;x++)
-    		if(j0 - getSurfaceIJKPt(x,y,j0-1,false,true)[1] > tmlt.leveling + 1) return false;
-    	
-    	//check to see if we are underwater
-    	if(tmlt.waterHeight!=TemplateTML.NO_WATER_CHECK){
-    		int waterCheckHeight=tmlt.waterHeight+tmlt.embed+1; //have to unshift by embed
-    		if(IS_LIQUID_BLOCK[getBlockIdLocal(0,waterCheckHeight,0)] || IS_LIQUID_BLOCK[getBlockIdLocal(0,waterCheckHeight,bLength-1)]
-    		 ||IS_LIQUID_BLOCK[getBlockIdLocal(bWidth-1,waterCheckHeight,0)] || IS_LIQUID_BLOCK[getBlockIdLocal(bWidth-1,waterCheckHeight,bLength-1)])
-    			return false;
-    	}
-
-    	
-    	if(wgt.isLayoutGenerator()){
-	    	if(wgt.layoutIsClear(this, tmlt.templateLayout,WorldGeneratorThread.LAYOUT_CODE_TEMPLATE)){
-	    		wgt.setLayoutCode(this,tmlt.templateLayout,WorldGeneratorThread.LAYOUT_CODE_TEMPLATE);
-	    	} else return false;
-    	}else{
-    		if(isObstructedFrame(0,ybuffer)) return false;
-    	}
-		return true;
-    }
 
 
 }

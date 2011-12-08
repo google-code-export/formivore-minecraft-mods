@@ -33,7 +33,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	public final static int MIN_CITY_LENGTH=40;
 	private final static int MAX_EXPLORATION_DISTANCE=30;
 	private final static int MAX_FOG_HEIGHT=27;
-	public final static int CITY_TYPE_WALLED=0, CITY_TYPE_UNDERGROUND=1;
+	public final static int CITY_TYPE_SURFACE=0, CITY_TYPE_NETHER=2, CITY_TYPE_UNDERGROUND=3;
 	private final static String SETTINGS_FILE_NAME="WalledCitySettings.txt",
 								LOG_FILE_NAME="walled_city_log.txt",
 								CITY_TEMPLATES_FOLDER_NAME="walledcity",
@@ -49,10 +49,15 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	//DATA VARIABLES
 	public ArrayList<TemplateWall> cityStyles=null, undergroundCityStyles=new ArrayList<TemplateWall>();
 	//private long explrWorldCode;
-	private ArrayList<int[]> cityLocations, undergroundCityLocations;
-	private HashMap<Long,ArrayList<int[]> > worldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >(),
-											undergroundWorldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >();
+	public ArrayList<int[]> cityLocations;
+	//, undergroundCityLocations;
+	
+	//private HashMap<Long,ArrayList<int[]> > worldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >(),
+	//										undergroundWorldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >();
+	
 	public LinkedList<int[]> citiesBuiltMessages=new LinkedList<int[]>();
+	
+	private File cityLocationsSaveFile;
 
 	//****************************  CONSTRUCTOR - mod_WalledCity  *************************************************************************************//
 	public mod_WalledCity() {
@@ -79,7 +84,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			logOrPrint("Loading options and templates for the Walled City Generator.");
 			getGlobalOptions();
 			
-			File stylesDirectory=new File(new File(BASE_DIRECTORY,RESOURCES_FOLDER_NAME),CITY_TEMPLATES_FOLDER_NAME);
+			File stylesDirectory=new File(RESOURCES_DIRECTORY,CITY_TEMPLATES_FOLDER_NAME);
 			cityStyles=TemplateWall.loadWallStylesFromDir(stylesDirectory,this);
 			TemplateWall.loadStreets(cityStyles,new File(stylesDirectory,STREET_TEMPLATES_FOLDER_NAME),this);
 			for(int m=0; m<cityStyles.size(); m++){
@@ -105,21 +110,30 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	
 	//****************************  FUNCTION - cityIsSeparated *************************************************************************************//
 	public boolean cityIsSeparated(int i, int k, int cityType){
-		ArrayList<int[]> locations = cityType==CITY_TYPE_WALLED ? cityLocations : undergroundCityLocations;
-		if(locations ==null) 
+		//ArrayList<int[]> locations = cityType==CITY_TYPE_WALLED ? cityLocations : undergroundCityLocations;
+		if(cityLocations ==null) 
 			return true;
-		for(int [] cityPt : locations ){
-			if( Math.abs(cityPt[0]-i) + Math.abs(cityPt[1]-k) < (cityType==CITY_TYPE_WALLED ?  MinCitySeparation : UndergroundMinCitySeparation)){
+		for(int [] location : cityLocations){
+			if( location[2]==cityType && Math.abs(location[0]-i) + Math.abs(location[1]-k) 
+					                     < (cityType==CITY_TYPE_SURFACE ?  MinCitySeparation : UndergroundMinCitySeparation)){
 				return false;
 			}
 		}
 		return true;
 	}
 	
-	//****************************  FUNCTION - addCityLocation *************************************************************************************//
-	public void addCityLocation(int i, int k, int cityType){
-		if(cityType==CITY_TYPE_UNDERGROUND) undergroundCityLocations.add(new int[]{i,k});
-		else cityLocations.add(new int[]{i,k});
+	//****************************  FUNCTION - saveCityLocations *************************************************************************************//
+	public void saveCityLocations(){
+		PrintWriter pw=null;
+		try{
+			pw=new PrintWriter( new BufferedWriter( new FileWriter(cityLocationsSaveFile) ) );
+			for(int[] location : cityLocations){
+				pw.println(new StringBuilder(Integer.toString(location[0]))
+								.append(",").append(Integer.toString(location[1]))
+								.append(",").append(Integer.toString(location[2])));
+			}
+		}catch(IOException e) {System.out.println(e.getMessage()); }
+		finally{ if(pw!=null) pw.close(); }
 	}
 
 	//****************************  FUNCTION - updateWorldExplored *************************************************************************************//
@@ -131,18 +145,29 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
 			exploreThreads=new LinkedList<WorldGeneratorThread>();
 			
-			if(!worldCityLocationsMap.containsKey(explrWorldCode)){
-				worldCityLocationsMap.put(explrWorldCode,new ArrayList<int[]>());
-				undergroundWorldCityLocationsMap.put(explrWorldCode,new ArrayList<int[]>());
+			//clear city locations, read in saved locations if they exist
+			cityLocations=new ArrayList<int[]>();
+			cityLocationsSaveFile=new File(((SaveHandler)world.func_40479_y()).getSaveDirectory(),"citylocations.txt"); //classy
+			if(cityLocationsSaveFile.exists()){
+				cityLocations=new ArrayList<int[]>();
+				BufferedReader br = null;
+				try{
+					br=new BufferedReader( new FileReader(cityLocationsSaveFile) );
+					for(String read=br.readLine(); read!=null; read=br.readLine()){
+						String[] split=read.split(",");
+						if(split.length==3){
+							cityLocations.add(new int[]{Integer.parseInt(split[0]),Integer.parseInt(split[1]),Integer.parseInt(split[2])});
+						}
+					}
+				}catch(IOException e) {System.out.println(e.getMessage()); }
+				finally{ try{ if(br!=null) br.close();} catch(IOException e) {} }
 			}
-			cityLocations=worldCityLocationsMap.get(explrWorldCode);
-			undergroundCityLocations=undergroundWorldCityLocationsMap.get(explrWorldCode);
 		}
 	}
 	
 	//****************************  FUNCTION - isGeneratorStillValid *************************************************************************************//
 	public boolean isGeneratorStillValid(WorldGeneratorThread wgt){
-		return cityIsSeparated(wgt.chunkI,wgt.chunkK,wgt.spawn_surface ? CITY_TYPE_WALLED : CITY_TYPE_UNDERGROUND);
+		return cityIsSeparated(wgt.chunkI,wgt.chunkK,wgt.spawn_surface ? CITY_TYPE_SURFACE : CITY_TYPE_UNDERGROUND);
 	}
 	
 	
@@ -191,7 +216,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			while(citiesBuiltMessages.size()>0) 
 				chatCityBuilt(citiesBuiltMessages.remove());
 		
-		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_WALLED) && random.nextFloat() < GlobalFrequency){
+		if(cityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_SURFACE) && random.nextFloat() < GlobalFrequency){
 			exploreThreads.add(new WorldGenWalledCity(this, world, random, i, k,TriesPerChunk, GlobalFrequency));
 		}
 		if(undergroundCityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundGlobalFrequency){
@@ -210,11 +235,10 @@ public class mod_WalledCity extends BuildingExplorationHandler
 		if(settingsFile.exists()){
 			BufferedReader br = null;
 			try{
-				br=new BufferedReader( new FileReader(settingsFile) );
-				String read = br.readLine();  
+				br=new BufferedReader( new FileReader(settingsFile) );  
 				lw.println("Getting global options...");    
 		
-				while( read != null ) {
+				for(String read=br.readLine(); read!=null; read=br.readLine()){
 		
 					//outer wall parameters
 					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
@@ -230,7 +254,6 @@ public class mod_WalledCity extends BuildingExplorationHandler
 					
 					readChestItemsList(lw,read,br);
 		
-					read = br.readLine();
 				}
 				if(TriesPerChunk > MAX_TRIES_PER_CHUNK) TriesPerChunk = MAX_TRIES_PER_CHUNK;
 			}catch(IOException e) { lw.println(e.getMessage()); }
@@ -268,8 +291,23 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			finally{ if(pw!=null) pw.close(); }
 		}
 	}
-
-
+	
+	private void writeCityLocations(ArrayList<int[]> locations, int worldTypeCode){
+		File cityLocationsFile=new File(cityLocationsSaveFile,"citylocations.txt");
+		PrintWriter pw=null;
+		try{
+			pw=new PrintWriter( new BufferedWriter( new FileWriter(cityLocationsFile) ) );
+			for(int[] location : locations){
+				pw.println(new StringBuilder(Integer.toString(worldTypeCode)).append(",")
+								.append(Integer.toString(location[0])).append(",")
+								.append(Integer.toString(location[1])).append(","));
+			}
+		}catch(IOException e) {System.out.println(e.getMessage()); }
+		finally{ if(pw!=null) pw.close(); }
+	}
+	
+	
+	
 }
 
 

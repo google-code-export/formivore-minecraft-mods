@@ -26,7 +26,6 @@ public class BuildingTower extends Building
 	public final static int FORCE_BUILDDOWN=3;
 	public final static String[] ROOFSTYLE_NAMES={"Crenel","Steep","Steep Trim","Shallow","Dome","Cone","Two Sided"};
 	public final static int[] ROOF_STYLE_IDS=new int[ROOFSTYLE_NAMES.length];
-	public final static TemplateRule RULE_NOT_PROVIDED=null;
 	public final static int SURFACE_PORTAL_ODDS=20, NETHER_PORTAL_ODDS=10; 
 	public final static int BOOKSHELF_ODDS=3, BED_ODDS=5, CAULDRON_ODDS=8,BREWING_STAND_ODDS=8,ENCHANTMENT_TABLE_ODDS=12; 
 	public final static int ROOF_CRENEL=0, ROOF_STEEP=1, ROOF_TRIM=2, ROOF_SHALLOW=3, ROOF_DOME=4,ROOF_CONE=5,ROOF_TWO_SIDED=6;
@@ -64,8 +63,8 @@ public class BuildingTower extends Building
 	// -            -  baseHeight==ws.WalkHeight
 	// --------------  baseHeight-1 (floor)
 	//
-	public BuildingTower(int ID_,BuildingWall wall,int dir_,int axXHand_, int TWidth_, int THeight_,int TLength_, int[] sourcePt){
-		super(ID_,wall.wgt, wall.towerRule,dir_,axXHand_,new int[]{TWidth_,THeight_,TLength_},sourcePt);
+	public BuildingTower(int ID_,BuildingWall wall,int dir_,int axXHand_, boolean centerAligned_,int TWidth_, int THeight_,int TLength_, int[] sourcePt){
+		super(ID_,wall.wgt, wall.towerRule,dir_,axXHand_,centerAligned_,new int[]{TWidth_,THeight_,TLength_},sourcePt);
 		baseHeight=wall.WalkHeight;
 		roofStyle=wall.roofStyle;
 		minHorizDim=Math.min(bWidth, bLength);
@@ -146,7 +145,7 @@ public class BuildingTower extends Building
 		}
 		*/
 		boolean undeadTower=false, ghastTower=false;
-		if(SpawnerRule!=RULE_NOT_PROVIDED){
+		if(SpawnerRule!=TemplateRule.RULE_NOT_PROVIDED){
 			for(int blockID : SpawnerRule.getBlockIDs())
 				if(blockID==ZOMBIE_SPAWNER_ID || blockID==SKELETON_SPAWNER_ID || blockID==CREEPER_SPAWNER_ID|| 
 						blockID==UPRIGHT_SPAWNER_ID || blockID==EASY_SPAWNER_ID) 
@@ -237,7 +236,7 @@ public class BuildingTower extends Building
 							buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK;
 				}
 			}
-			else if(SpawnerRule!=RULE_NOT_PROVIDED && random.nextInt(100)<SpawnerRule.chance && !ghastTower){
+			else if(SpawnerRule!=TemplateRule.RULE_NOT_PROVIDED && random.nextInt(100)<SpawnerRule.chance && !ghastTower){
 				int[] spawnerBlock=SpawnerRule.getNonAirBlock(random);
 				if(IS_HUMANS_PLUS_FLAG[spawnerBlock[0]]){
 					buffer[bWidth-2+1][z1+2+1][sideWindowY+1+1]=new int[]{spawnerBlock[0],LADDER_DIR_TO_META[DIR_WEST]};
@@ -248,7 +247,7 @@ public class BuildingTower extends Building
 			
 			
 			//chests
-			if(ChestRule!=RULE_NOT_PROVIDED && random.nextInt(100)<ChestRule.chance)
+			if(ChestRule!=TemplateRule.RULE_NOT_PROVIDED && random.nextInt(100)<ChestRule.chance)
 				buffer[bWidth-2+1][z1+1+1][sideWindowY-1+1]=ChestRule.getNonAirBlock(random);
 			else if(floorHasUndeadSpawner && random.nextInt(100) < HAUNTED_CHEST_CHANCE) //even if no chest rule, can have chests if floorIsHaunted
 				buffer[bWidth-2+1][z1+1+1][sideWindowY-1+1]=z1 < 15 ? TOWER_CHEST_BLOCK : HARD_CHEST_BLOCK;
@@ -375,7 +374,7 @@ public class BuildingTower extends Building
 		//find a wall
 		while(true){
 			if(x1<1 || x1>=bWidth-1 || y1<1 || y1>=bLength-1 || !isFloor(x1,z,y1)) return;
-			if(IS_WALL_BLOCK[getBlockIdLocal(x1+xinc,z,y1+yinc)] && IS_WALL_BLOCK[getBlockIdLocal(x1+xinc,z-1,y1+yinc)] 
+			if(IS_ARTIFICAL_BLOCK[getBlockIdLocal(x1+xinc,z,y1+yinc)] && IS_ARTIFICAL_BLOCK[getBlockIdLocal(x1+xinc,z-1,y1+yinc)] 
 			   && getBlockIdLocal(x1+xinc,z-1,y1+yinc)!=LADDER_ID ){
 				break;
 			}
@@ -439,7 +438,7 @@ public class BuildingTower extends Building
 		//If roofRule=cobblestone, do cobblestone for all roofstyles
 		//If roofRule=sandstone/step, do wooden for steep roofstyle and sandstone/step otherwise
 		//Otherwise do wooden for sloped roofstyles, and roofRule otherwise
-		if(roofRule==RULE_NOT_PROVIDED){
+		if(roofRule==TemplateRule.RULE_NOT_PROVIDED){
 			roofRule= (roofStyle==ROOF_STEEP || roofStyle==ROOF_SHALLOW || roofStyle==ROOF_TRIM || roofStyle==ROOF_TWO_SIDED)
 					? new TemplateRule(new int[]{WOOD_ID,0}) : bRule;
 		}
@@ -692,16 +691,7 @@ public class BuildingTower extends Building
 	}
 	
 	
- 	
-
+ 
 }
-
-
-
-
-
-
-
-
 
 

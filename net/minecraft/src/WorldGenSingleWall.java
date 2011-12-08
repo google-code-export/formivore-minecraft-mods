@@ -40,7 +40,7 @@ public class WorldGenSingleWall extends WorldGeneratorThread{
   		if(wall.bLength>=wall.y_targ){
   			wall.smooth(gw.ConcaveSmoothingScale,gw.ConvexSmoothingScale,true);
   			wall.buildFromTML();
-  			wall.buildTowers(true,true,true,false,false);		
+  			wall.makeBuildings(true,true,true,false,false);		
 			gw.placedCoords=null;
   		}
 		

@@ -25,7 +25,7 @@ public class BuildingDoubleWall extends Building
 	
 	//****************************  CONSTRUCTOR - BuildingDoubleWall *************************************************************************************//
 	public BuildingDoubleWall(int ID_, WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int axXHand_,int[] sourcePt){
-		super(ID_,wgt_,ws_.TowerRule,dir_,axXHand_,new int[]{ws_.WWidth,ws_.WHeight,0},sourcePt);
+		super(ID_,wgt_,ws_.TowerRule,dir_,axXHand_,false,new int[]{ws_.WWidth,ws_.WHeight,0},sourcePt);
 		ws=ws_;
 	}
 
@@ -75,8 +75,8 @@ public class BuildingDoubleWall extends Building
 	
 	public void buildTowers(boolean lSideTowers,boolean rSideTowers, boolean gatehouseTowers,
 			boolean overlapTowers,boolean isAvenue) throws InterruptedException{
-		wall1.buildTowers(lSideTowers,rSideTowers,gatehouseTowers,overlapTowers, isAvenue);
-		wall2.buildTowers(lSideTowers,rSideTowers,gatehouseTowers,overlapTowers, isAvenue);
+		wall1.makeBuildings(lSideTowers,rSideTowers,gatehouseTowers,overlapTowers, isAvenue);
+		wall2.makeBuildings(lSideTowers,rSideTowers,gatehouseTowers,overlapTowers, isAvenue);
 	}
 
 }

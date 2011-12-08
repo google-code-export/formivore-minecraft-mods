@@ -56,7 +56,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		//make hollows recursively
 		hollow(i0,j0,k0,MAX_DIAM);
 		if(hollows.size()==0) return false;
-		wc.addCityLocation(i0,k0,mod_WalledCity.CITY_TYPE_UNDERGROUND);
+		wc.cityLocations.add(new int[]{i0,k0,mod_WalledCity.CITY_TYPE_UNDERGROUND});
+		wc.saveCityLocations();
 		wc.logOrPrint("\n***** Building "+pws.name+" city with "+hollows.size()+" hollows at ("+i0+","+j0+","+k0+"). ******\n");
 		
 		ArrayList<BuildingUndergroundEntranceway> entranceways= buildEntranceways();
@@ -68,7 +69,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		for(BuildingUndergroundEntranceway entranceway : entranceways){
 			if(entranceway.street.bLength>1) {
 				entranceway.street.buildFromTML();
-				entranceway.street.buildTowers(true,true,false,false,false);
+				entranceway.street.makeBuildings(true,true,false,false,false);
 		}}
 		for(BuildingDoubleWall street : streets) {
 			if(!master.isFlushingGenThreads) suspendGen();
@@ -100,7 +101,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 				if(Building.CIRCLE_SHAPE[top_diam][x1][y1]>=0){
 					//keep gravel and water from pouring in
 					for(int z2=z1+1; z2<=z1+3; z2++)
-						if( Building.IS_NONSOLID_BLOCK[world.getBlockId(i+offset+x1, j+z2, k+offset+y1)])
+						if( Building.IS_LOAD_TRASMITER_BLOCK[world.getBlockId(i+offset+x1, j+z2, k+offset+y1)])
 							world.setBlock(i+offset+x1, j+z1+1, k+offset+y1,Building.STONE_ID);
 			}}}
 			

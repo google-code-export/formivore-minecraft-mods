@@ -20,13 +20,15 @@ package net.minecraft.src;
 import java.util.Random;
 
 public abstract class WorldGeneratorThread extends Thread {
-	public final static int LAYOUT_CODE_NOCODE=-1,LAYOUT_CODE_EMPTY=0,LAYOUT_CODE_WALL=1, LAYOUT_CODE_AVENUE=2, LAYOUT_CODE_STREET=3, LAYOUT_CODE_TOWER=4, LAYOUT_CODE_TEMPLATE=5;
-	protected final static int[][] LAYOUT_CODE_OVERRIDE_MATRIX=new int[][]{{0,1,1,1,1,1},
-															    		   {0,0,0,0,0,0},
-															    		   {0,0,1,1,0,0},
-															    		   {0,0,1,1,1,0},
-															    		   {0,0,0,0,0,0},
-															    		   {0,0,0,0,0,0}};
+	public final static int LAYOUT_CODE_NOCODE=-1;
+	public final static int LAYOUT_CODE_EMPTY=0,LAYOUT_CODE_WALL=1, LAYOUT_CODE_AVENUE=2, LAYOUT_CODE_STREET=3, LAYOUT_CODE_TOWER=4, LAYOUT_CODE_TEMPLATE=5;
+	protected final static int[][] LAYOUT_CODE_OVERRIDE_MATRIX=new int[][]{ //present code=rows, attempted overriding code=columns
+																	   		{0,1,1,1,1,1},  //present empty	
+																	   		{0,0,0,0,0,0},  //present wall
+																	   		{0,0,1,1,0,0},  //present avenue
+																	   		{0,0,1,1,1,0},  //present street
+																	   		{0,0,0,0,0,0},  //present tower	
+																	   		{0,0,0,0,0,0}}; //present template
 	public final static char[] LAYOUT_CODE_TO_CHAR=new char[]{' ','#','=','-','@','&'};
 	public volatile boolean threadSuspended=false;
 	public boolean hasStarted=false;

@@ -20,10 +20,12 @@ import java.util.Random;
 
 public class TemplateRule {
     public final static int FIXED_FOR_BUILDING=5;
+    public final static TemplateRule RULE_NOT_PROVIDED=null;
     
-    public final static String BLOCK_NOT_REIGSTERED_ERROR_PREFIX="Error reading rule: BlockID ";  //so we can treat this error differently
+    public final static String BLOCK_NOT_REGISTERED_ERROR_PREFIX="Error reading rule: BlockID ";  //so we can treat this error differently
     
     public final static TemplateRule AIR_RULE=new TemplateRule(Building.AIR_BLOCK);
+    public final static TemplateRule STONE_RULE=new TemplateRule(Building.STONE_BLOCK);
     
     private int[] blockIDs, blockMDs;
     public int chance = 100, condition = 0;
@@ -44,11 +46,13 @@ public class TemplateRule {
         	data = items[i + 2].trim().split( "-" );
         	blockIDs[i]=Integer.parseInt( data[0] );
         	if(!Building.isValidRuleBlock(blockIDs[i],explorationHandler)){
-        		throw new Exception(BLOCK_NOT_REIGSTERED_ERROR_PREFIX+blockIDs[i]+" not registered!");
+        		throw new Exception(BLOCK_NOT_REGISTERED_ERROR_PREFIX+blockIDs[i]+" not registered!");
         	}
         	blockMDs[i]= data.length>1 ? Integer.parseInt( data[1]) : 0;
-        	if(checkMetaValue && !Building.metaValueIsValid(blockIDs[i], blockMDs[i])) {
-        		throw new Exception("Error reading rule: Bad meta value for block-meta "+items[i+2]);
+        	if(checkMetaValue){
+        		String checkStr=Building.metaValueCheck(blockIDs[i], blockMDs[i]);
+        		if(checkStr!=Building.META_VALUE_OK)
+        			throw new Exception("Error reading rule: "+rule+"\nBad meta value "+blockMDs[i]+". "+checkStr);
         	}
         }
         

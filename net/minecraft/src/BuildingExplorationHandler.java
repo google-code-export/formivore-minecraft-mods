@@ -19,6 +19,7 @@ package net.minecraft.src;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
@@ -36,7 +37,7 @@ import java.util.Random;
 import net.minecraft.client.Minecraft;
 
 
-//Guide for MP PORT
+//Guide for Multiplayer Port
 /*
 1)use Eclipse's Refactor->Rename to rename mod_GreatWall to PopulatorGreatWall and mod_WalledCity to PopulatorWalledCity
 2)Do a search for the string 'MP PORT' and make replacements
@@ -49,9 +50,9 @@ import net.minecraft.client.Minecraft;
 
 	b)Add the following lines to the end of the tick() function in World.java:
 	if(populatorWalledCity!=null) 
-        populatorWalledCity.OnTickInGame();
+        populatorWalledCity.doOnTick();
     if(populatorGreatWall!=null) {
-        populatorGreatWall.OnTickInGame();
+        populatorGreatWall.doOnTick();
         populatorGreatWall.master=populatorWalledCity;
     }
     
@@ -87,9 +88,14 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	public final static String WALLED_CITY_MOD_STRING="mod_WalledCity "+VERSION_STRING;
 	
 	protected final static String RESOURCES_FOLDER_NAME="resources";
+	
+	protected final static String SAVES_FOLDER_NAME="saves";
+					
 	//MP PORT
 	//protected final static File BASE_DIRECTORY=new File(".");
 	protected final static File BASE_DIRECTORY=Minecraft.getMinecraftDir();
+	protected final static File SAVES_DIRECTORY=new File(BASE_DIRECTORY,"saves");
+	protected final static File RESOURCES_DIRECTORY=new File(BASE_DIRECTORY,"resources");
 	
 	public BuildingExplorationHandler master=null;
 	protected long explrWorldCode;
@@ -112,17 +118,23 @@ public abstract class BuildingExplorationHandler extends BaseMod {
  	Object enumAssassinObj=null, enumRogueObj=null, enumBanditObj=null, enumPeacefulObj=null, enumMilitiaObj=null, enumShadowObj=null;
  	boolean humansPlusLoaded=false;
 	
+ 	int[] chestTries=new int[]{4,6,6,6};
+	int[][][] chestItems=new int[][][]{null,null,null,null};
+ 	
 	//BUKKIT PORT / MP PORT - uncomment
 	//public static Logger logger=MinecraftServer.logger;
 	public Minecraft mc=ModLoader.getMinecraftInstance();
+	
+	
+	
+	
 	public String getVersion(){ return VERSION_STRING;}
 	public void load(){} //should things be done here instead of in constructors? eh.
 	abstract public void updateWorldExplored(World world);
 	abstract public void loadDataFiles();
 	abstract public void generate(World world, Random random, int i, int k);
 	
-	int[] chestTries=new int[]{4,6,6,6};
-	int[][][] chestItems=new int[][][]{null,null,null,null};
+	
 	
 	//****************************  FUNCTION - isGeneratorStillValid *************************************************************************************//
 	//override this with e.g. the walled city generator
@@ -134,12 +146,14 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//MP PORT - comment out this function
 	@Override
 	public boolean OnTickInGame(float tick, net.minecraft.client.Minecraft game) {
-		OnTickInGame();
+		doOnTick(game.theWorld);
 		return true;
 	}
 	
-	public void OnTickInGame(){
+	//****************************  FUNCTION - doOnTick *************************************************************************************//
+	public void doOnTick(World tickWorld){
 		if(this==master){
+			updateWorldExplored(tickWorld);
 			flushGenThreads(NO_CALL_CHUNK);
 			runWorldGenThreads();
 		}
@@ -304,7 +318,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 			isFlushingGenThreads=true;
 			flushCallChunk=callChunk;
 			while(exploreThreads.size() > 0) 
-				OnTickInGame();
+				doOnTick(world);
 			
 			isFlushingGenThreads=false;
 			isCreatingDefaultChunks=false;
@@ -317,7 +331,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	protected void runWorldGenThreads(){
 		ListIterator<WorldGeneratorThread> itr=(ListIterator<WorldGeneratorThread>)((LinkedList<WorldGeneratorThread>)exploreThreads.clone()).listIterator();
 		
-		while(itr.hasNext() && chunksExploredThisTick < (isFlushingGenThreads ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK)){
+		while(itr.hasNext() && (isFlushingGenThreads  || chunksExploredThisTick < MAX_CHUNKS_PER_TICK)){
 			WorldGeneratorThread wgt=itr.next();
 			synchronized(this){
 				if(!wgt.hasStarted) 
@@ -480,6 +494,21 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		return defaultVal;
 	}
 	
+	//if an integer ruleId: try reading from rules and return.
+	//If a rule: parse the rule, add it to rules, and return.
+	public TemplateRule readRuleIdOrRule(String splitString, String read, TemplateRule[] rules) throws Exception{
+		String postSplit=read.split(splitString)[1].trim();
+		try{
+			int ruleId=Integer.parseInt(postSplit);
+			return rules[ruleId];
+		} catch(NumberFormatException e) { 
+			TemplateRule r=new TemplateRule(postSplit,this,false);
+			return r;
+		}catch(Exception e) { 
+			throw new Exception("Error reading block rule for variable: "+e.toString()+". Line:"+read);
+		}
+	}
+	
 	public static int[] readNamedCheckList(PrintWriter lw,int[] defaultVals,String splitString, String read, String[] names, String allStr){
 		if(defaultVals==null || names.length!=defaultVals.length) defaultVals=new int[names.length];
 		try{
@@ -526,19 +555,16 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		}
 		return defaultVals;
 	}
+
 	
-	//if an integer ruleId: try reading from rules and return.
-	//If a rule: parse the rule, add it to rules, and return.
-	public TemplateRule readRuleIdOrRule(String splitString, String read, TemplateRule[] rules) throws Exception{
-		String postSplit=read.split(splitString)[1].trim();
-		try{
-			int ruleId=Integer.parseInt(postSplit);
-			return rules[ruleId];
-		} catch(NumberFormatException e) { 
-			TemplateRule r=new TemplateRule(postSplit,this,false);
-			return r;
-		}catch(Exception e) { 
-			throw new Exception("Error reading block rule for variable: "+e.toString()+". Line:"+read);
+	public static ArrayList<byte[][]> readAutomataList(PrintWriter lw, String splitString,String read){
+		ArrayList<byte[][]> rules=new ArrayList<byte[][]>();
+		String[] ruleStrs =(read.split(splitString)[1]).split(",");
+		for(String ruleStr : ruleStrs){
+			rules.add(BuildingCellularAutomaton.parseCARule(ruleStr.trim(),lw));
 		}
+		if(rules.size()==0) return null;
+		return rules;
 	}
+	
 }
