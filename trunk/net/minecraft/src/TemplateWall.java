@@ -37,11 +37,10 @@ public class TemplateWall extends TemplateTML{
 							BIOME_RIVER=7, BIOME_HELL=8, BIOME_SKY=9, BIOME_FROZEN_OCEAN=10, BIOME_FROZEN_RIVER=11, BIOME_ICE_PLAINS=12,
 							BIOME_ICE_MOUNTAINS=13,BIOME_MUSHROOM_ISLAND=14, BIOME_MUSHROOM_ISLAND_SHORE=15, BIOME_UNDERGROUND=16;
 	
-	
-	public final static TemplateTML DEFAULT_TOWER=null;
 	public final static int NO_RULE=-1;
 	public final static int MAX_STREET_DENSITY=20;
 
+	public TemplateTML makeDefaultTower,makeCARuin;
 
 	//USER MODIFIABLE PARAMETERS, values below are defaults
 	public int[] Biomes=ALL_BIOMES;
@@ -55,16 +54,25 @@ public class TemplateWall extends TemplateTML{
 	public int MinL=150, MaxL=1000;
 
 	//default tower parameters
-	public TemplateRule TowerRule=BuildingTower.RULE_NOT_PROVIDED, SpawnerRule=BuildingTower.RULE_NOT_PROVIDED, ChestRule=BuildingTower.RULE_NOT_PROVIDED;
-	//public boolean RandomizeBuildingIntervals=false;
-	public boolean MakeBuildings=true,MergeWalls=false, MakeEndTowers=true, MakeGatehouseTowers=true,MakeUndergroundEntranceways=true,PopulateFurniture=false, MakeDoors=false;
+	public TemplateRule TowerRule=TemplateRule.RULE_NOT_PROVIDED, SpawnerRule=TemplateRule.RULE_NOT_PROVIDED,
+						ChestRule=TemplateRule.RULE_NOT_PROVIDED, CARuinRule=TemplateRule.RULE_NOT_PROVIDED;
+	public boolean MakeBuildings=true,MergeWalls=false, MakeEndTowers=true, MakeGatehouseTowers=true,
+					MakeUndergroundEntranceways=true,PopulateFurniture=false, MakeDoors=false;
 	public int BuildingInterval=75;
-	public int DefaultTowerWeight=1;
+	private int DefaultTowerWeight=1; 
 	public int TowerXOffset=0;
 	public float CircularProb=0.3F;
 	private int SqrMinHeight=11, SqrMaxHeight=15, SqrMinWidth=7, SqrMaxWidth=7, CircMinHeight=11, CircMaxHeight=15, CircMinWidth=7, CircMaxWidth=7;
 	private int[] SqrRoofStyles={4,1,1,1,1,0,0}, CircRoofStyles={3,0,0,0,1,1,0};
 	private TemplateRule SqrRoofRule=null, CircRoofRule=null;
+	
+	//CARuin parameters
+	public int CARuinWeight=0;
+	public int CARuinContainerWidth=15;
+	public int CARuinMinHeight=20;
+	public int CARuinMaxHeight=35;
+	ArrayList<byte[][]> CARuinAutomataRules=null;
+	
 	
 	//****************************************  CONSTRUCTOR - WallStyle*************************************************************************************//
 	public TemplateWall(File wallFile,HashMap<String,TemplateTML> buildingTemplateMap, BuildingExplorationHandler beh)  throws Exception{
@@ -72,8 +80,21 @@ public class TemplateWall extends TemplateTML{
 
 		readTowerParameters();
 		buildings=loadChildTemplates("building_templates",buildingTemplateMap);
-		buildings.add(DEFAULT_TOWER);
-		buildingWeights=TemplateTML.buildWeightsAndIndex(buildings,DefaultTowerWeight);
+		
+		//build the weights index, first making dummy templates for default towers and CARuins
+		makeCARuin=new TemplateTML(TemplateTML.CA_RUIN_CODE,CARuinWeight);
+		buildings.add(makeCARuin);
+		makeDefaultTower=new TemplateTML(TemplateTML.DEFAULT_TOWER_CODE,DefaultTowerWeight);
+		buildings.add(makeDefaultTower);
+		try{
+			buildingWeights=TemplateTML.buildWeightsAndIndex(buildings);
+		}catch(Exception e){
+			if(e==ZERO_WEIGHT_EXCEPTION){ //all the templates had zero weight!
+				//change default tower weight to 1 and rebuild index
+				buildings.get(buildings.size()-1).weight=1;
+				buildingWeights=TemplateTML.buildWeightsAndIndex(buildings);
+			}else throw e;
+		}
 	}
 
 	//****************************************  FUNCTION - loadTowerParameters *************************************************************************************//
@@ -94,6 +115,12 @@ public class TemplateWall extends TemplateTML{
 		if(extraOptions.containsKey("make_underground_entranceways")) MakeUndergroundEntranceways=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("make_underground_entranceways")) == 1;
 		if(extraOptions.containsKey("merge_walls")) MergeWalls=BuildingExplorationHandler.readIntParam(lw,0,"=",(String)extraOptions.get("merge_walls")) == 1;
 		if(extraOptions.containsKey("default_tower_weight")) DefaultTowerWeight=BuildingExplorationHandler.readIntParam(lw,DefaultTowerWeight,"=",(String)extraOptions.get("default_tower_weight"));
+		if(extraOptions.containsKey("ca_ruin_rule")) CARuinRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("ca_ruin_rule"),rules);
+		if(extraOptions.containsKey("ca_ruin_weight")) CARuinWeight=BuildingExplorationHandler.readIntParam(lw,CARuinWeight,"=",(String)extraOptions.get("ca_ruin_weight"));
+		if(extraOptions.containsKey("ca_ruin_min_height")) CARuinMinHeight=BuildingExplorationHandler.readIntParam(lw,CARuinMinHeight,"=",(String)extraOptions.get("ca_ruin_min_height"));
+		if(extraOptions.containsKey("ca_ruin_max_height")) CARuinMaxHeight=BuildingExplorationHandler.readIntParam(lw,CARuinMaxHeight,"=",(String)extraOptions.get("ca_ruin_max_height"));
+		if(extraOptions.containsKey("ca_ruin_max_width")) CARuinContainerWidth=BuildingExplorationHandler.readIntParam(lw,CARuinContainerWidth,"=",(String)extraOptions.get("ca_ruin_max_width"));
+		if(extraOptions.containsKey("ca_ruin_automata_rules")) CARuinAutomataRules=BuildingExplorationHandler.readAutomataList(lw,"=",(String)extraOptions.get("ca_ruin_automata_rules"));
 		if(extraOptions.containsKey("tower_offset")) TowerXOffset=BuildingExplorationHandler.readIntParam(lw,TowerXOffset,"=",(String)extraOptions.get("tower_offset"));
 		if(extraOptions.containsKey("spawner_rule")) SpawnerRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("spawner_rule"),rules);
 		if(extraOptions.containsKey("mob_probability")) mobProb=BuildingExplorationHandler.readFloatParam(lw,mobProb,"=",(String)extraOptions.get("mob_probability"));
@@ -132,20 +159,23 @@ public class TemplateWall extends TemplateTML{
 		if(SqrMinHeight < WalkHeight +4) SqrMinHeight=WalkHeight +4;
 		if(SqrMaxHeight < SqrMinHeight) SqrMaxHeight=SqrMinHeight;
 
-
+		if(BuildingInterval < SqrMinWidth ) BuildingInterval = SqrMinWidth + 1;
+		
 		if(CircMinWidth < BuildingTower.TOWER_UNIV_MIN_WIDTH) CircMinWidth=BuildingTower.TOWER_UNIV_MIN_WIDTH;
 		if(CircMaxWidth < CircMinWidth ) CircMaxWidth=CircMinWidth;
 		if(CircMaxWidth >= Building.CIRCLE_CRENEL.length) CircMaxWidth=Building.CIRCLE_CRENEL.length - 1;
 		if(CircMinWidth >= Building.CIRCLE_CRENEL.length) CircMinWidth=Building.CIRCLE_CRENEL.length - 1;
 		if(CircMinHeight < WalkHeight +4) CircMinHeight=WalkHeight +4;
 		if(CircMaxHeight < CircMinHeight ) CircMaxHeight=CircMinHeight;
-
-		if(BuildingInterval < SqrMinWidth ) BuildingInterval = SqrMinWidth + 1;
+		
+		if(CARuinAutomataRules==null) CARuinWeight=0;
+		if(CARuinWeight > 0 && CARuinRule==TemplateRule.RULE_NOT_PROVIDED) CARuinRule=TowerRule;
+		if(CARuinMaxHeight < CARuinMinHeight) CARuinMaxHeight=CARuinMinHeight;
 		
 		if(TowerRule==null) throw new Exception("No valid rule provided for tower block!");
 		
 		//spawner rule logic
-		if(SpawnerRule==BuildingTower.RULE_NOT_PROVIDED){
+		if(SpawnerRule==TemplateRule.RULE_NOT_PROVIDED){
 			//try the deprecated mob probabilities
 			if(mobProb>0.0F) SpawnerRule=new TemplateRule(new int[]{Building.UPRIGHT_SPAWNER_ID,0}, (int)(mobProb*100));
 			else if(pigZombieProb>0.0F) SpawnerRule=new TemplateRule(new int[]{Building.PIG_ZOMBIE_SPAWNER_ID,0}, (int)(pigZombieProb*100));
@@ -244,11 +274,11 @@ public class TemplateWall extends TemplateTML{
 					if(e==TemplateTML.ZERO_WEIGHT_EXCEPTION){
 						explorationHandler.lw.println("Did not load "+f.getName()+", weight was zero.");
 					}else{
-						explorationHandler.lw.println( "There was a problem loading the .tml file: " + f.getName()+": "+e.getMessage() );
-						if(!e.getMessage().startsWith(TemplateRule.BLOCK_NOT_REIGSTERED_ERROR_PREFIX)){
+						explorationHandler.lw.println("\nThere was a problem loading the .tml file " + f.getName());
+						if(!e.getMessage().startsWith(TemplateRule.BLOCK_NOT_REGISTERED_ERROR_PREFIX)){
 							e.printStackTrace(explorationHandler.lw);
 							explorationHandler.lw.println();
-						}
+						}else explorationHandler.lw.println(e.getMessage());
 					}
 				}
 		}}
@@ -288,11 +318,11 @@ public class TemplateWall extends TemplateTML{
 					if(e==TemplateTML.ZERO_WEIGHT_EXCEPTION){
 						explorationHandler.lw.println("Did not load "+f.getName()+", weight was zero.");
 					}else{
-						explorationHandler.lw.println( "Error loading wall style: " + f.getName()+": "+e.getMessage() );
-						if(!e.getMessage().startsWith(TemplateRule.BLOCK_NOT_REIGSTERED_ERROR_PREFIX)){
+						explorationHandler.lw.println("\nError loading wall style " + f.getName());
+						if(!e.getMessage().startsWith(TemplateRule.BLOCK_NOT_REGISTERED_ERROR_PREFIX)){
 							e.printStackTrace(explorationHandler.lw);
 							explorationHandler.lw.println();
-						}
+						}else explorationHandler.lw.println(e.getMessage());
 					}
 				}
 			}

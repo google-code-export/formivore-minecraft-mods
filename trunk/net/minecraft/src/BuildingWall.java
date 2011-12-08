@@ -49,7 +49,8 @@ public class BuildingWall extends Building
 	public int minJ=NO_MIN_J;
 	private boolean hitMaxDepth=false;
 	public int failCode=NO_FAIL;
-	public int endTLength=0; //length of end tower
+	public TemplateTML endBTemplate=null; //either a template or DEFAULT_TOWER
+	public int endBLength=0; //length of end tower
 	private int halfStairValue=2; //metavalue of half step based on bRule
 	public int roofStyle;
 	public TemplateRule towerRule,roofRule;
@@ -57,7 +58,7 @@ public class BuildingWall extends Building
 
 	//****************************************  CONSTRUCTORS - BuildingWall  *************************************************************************************//
 	public BuildingWall(int ID_, WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int axXHand_, int maxLength_,boolean endTowers,int i1_,int j1_, int k1_){
-		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, new int[]{ws_.WWidth,ws_.WHeight,0}, new int[]{i1_,j1_,k1_});
+		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, false, new int[]{ws_.WWidth,ws_.WHeight,0}, new int[]{i1_,j1_,k1_});
 		constructorHelper(ws_,maxLength_,i1_,j1_,k1_);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
 		Backtrack=wgt.BacktrackLength;
@@ -68,7 +69,7 @@ public class BuildingWall extends Building
 	}
 	
 	public BuildingWall(int ID_, WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int axXHand_, int maxLength_,boolean endTowers,int[] sourcePt){
-		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, new int[]{ws_.WWidth,ws_.WHeight,0}, sourcePt);
+		super(ID_,wgt_,ws_.rules[ws_.template[0][0][ws_.WWidth/2]],dir_,axXHand_, false, new int[]{ws_.WWidth,ws_.WHeight,0}, sourcePt);
 		constructorHelper(ws_,maxLength_,sourcePt[0],sourcePt[1],sourcePt[2]);
 		pickTowers(random.nextFloat() < ws.CircularProb,endTowers);
 		Backtrack=wgt.BacktrackLength;
@@ -80,7 +81,7 @@ public class BuildingWall extends Building
 
 
 	public BuildingWall(BuildingWall bw, int maxLength_,int i1_,int j1_, int k1_){
-		super(bw.bID,bw.wgt, bw.bRule,bw.bDir,bw.bHand, new int[]{bw.bWidth,bw.bHeight,0}, new int[]{i1_,j1_,k1_});
+		super(bw.bID,bw.wgt, bw.bRule,bw.bDir,bw.bHand, false,new int[]{bw.bWidth,bw.bHeight,0}, new int[]{i1_,j1_,k1_});
 		constructorHelper(bw.ws,maxLength_,i1_,j1_,k1_);
 		Backtrack=bw.Backtrack;
 		target=bw.target;
@@ -108,8 +109,13 @@ public class BuildingWall extends Building
 			roofStyle=ws.pickRoofStyle(circular,random);
 			towerRule=ws.TowerRule.getFixedRule(random);
 			roofRule=ws.getRoofRule(circular);
-			if(roofRule!=BuildingTower.RULE_NOT_PROVIDED) roofRule=roofRule.getFixedRule(random);
-			endTLength=(endTowers && ws.MakeEndTowers) ? ws.pickTWidth(circular,random) : 0;
+			if(roofRule!=TemplateRule.RULE_NOT_PROVIDED) roofRule=roofRule.getFixedRule(random);
+			if(endTowers && ws.MakeEndTowers){
+				endBTemplate=ws.buildings.get(Building.selectWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
+				endBLength = endBTemplate== ws.makeDefaultTower ? ws.pickTWidth(circular,random)
+							:(endBTemplate== ws.makeCARuin      ? ws.CARuinContainerWidth
+							:									  endBTemplate.length);
+			}
 		}
 	}
 
@@ -121,7 +127,7 @@ public class BuildingWall extends Building
 		roofStyle=bw.roofStyle;
 		towerRule=bw.towerRule;
 		roofRule=bw.roofRule;
-		endTLength=bw.endTLength;
+		endBLength=bw.endBLength;
 		return this;
 	}
 	
@@ -190,15 +196,8 @@ public class BuildingWall extends Building
 	public int plan(int startN, int depth, int lookahead, boolean stopAtWall) throws InterruptedException {
 		if(startN<1 || startN >=maxLength) {System.err.println("Error, bad start length at BuildingWall.plan:"+startN+"."); return 0; }
 		int fails=0;
-		
-		
-		
-		//i1=i0+EW*xArray[bLength-1]*axX+NS*bLength*axY;
-		//j1=j0+zArray[startN-1];
-		//k1=k0+NS*xArray[bLength-1]*axX+EW*bLength*axY;
 		setOriginLocal(i1,j1,k1,xArray[startN-1],zArray[startN-1],startN);
 		bLength=startN;
-		
 		
 		if(DEBUG>1 && depth > 0) System.out.println("planWall "+IDString()+", depth="+depth+" n="+startN+" maxlLen="+maxLength+" at ("+i0+","+j0+","+k0+")");
 		//int searchUp=Math.min(Math.max(MIN_SEARCHUP,WalkHeight+1),MAX_SEARCHUP);
@@ -215,21 +214,21 @@ public class BuildingWall extends Building
 				break; 
 			}
 
-			for(int x1=-1; x1<bWidth+1;x1++){
+			for(int x1=-1; x1<=bWidth;x1++){
 				for(int z1=-SEARCHDOWN; z1<=searchUp; z1++){
 					int blockId=getBlockIdLocal(x1, z1, 0);
 					if(!IS_WALLABLE[blockId]){
 						gradz++;
 						gradx+=signum(2*x1-bWidth+1); 
 					}
-					else if(IS_LIQUID_BLOCK[blockId])
+					else if(IS_WATER_BLOCK[blockId])
 						gradx-=signum(2*x1-bWidth+1);
 
 					//hit another wall, want to ignore sandstone that appears naturally in deserts
 					if((stopAtWall || z1 < -2) && isArtificialWallBlock(x1,z1,0))
 						failCode=FAIL_HIT_WALL;
 				}
-				if(IS_LIQUID_BLOCK[getBlockIdLocal(x1,ws.waterHeight+1,0)])
+				if(IS_WATER_BLOCK[getBlockIdLocal(x1,ws.waterHeight+1,0)])
 					failCode=FAIL_UNDERWATER;
 				if(!isWallable(x1,obstructionHeight,0) && failCode==NO_FAIL)
 					failCode=FAIL_OBSTRUCTED;
@@ -334,12 +333,11 @@ public class BuildingWall extends Building
 		}//end main loop
 		
 		if(depth==0){
-			bLength-=endTLength;
+			bLength-=endBLength;
 			if(bLength<startN) bLength=startN;
 		}
 
 		setCursor(0);
-		//wgt.explorationHandler.releaseChunks(chunksExplored);
 		return bLength-startN;
 	}
 	
@@ -421,7 +419,7 @@ public class BuildingWall extends Building
 					} else keepWallFromAbove=false;
 										
 					if(idAndMeta[0]==WALL_STAIR_ID){
-						if(!wallBlockPresent && !IS_LIQUID_BLOCK[getBlockIdLocal(x1,z1,0)]){
+						if(!wallBlockPresent && !IS_WATER_BLOCK[getBlockIdLocal(x1,z1,0)]){
 							if(n0>0 && zArray[n0-1]>zArray[n0]){  //stairs, going down
 								if((n0==1 || zArray[n0-2]==zArray[n0-1]) && (n0==bLength-1 || zArray[n0]==zArray[n0+1]))
 									setBlockLocal(x1, z1, 0, STEP_ID, idAndMeta[1]);
@@ -503,110 +501,111 @@ public class BuildingWall extends Building
 	}
 
 
-	//****************************************  FUNCTION - buildTowers *************************************************************************************//
-
-	public void buildTowers(boolean lSideTowers,boolean rSideTowers, boolean gatehouseTowers, boolean overlapTowers, boolean isAvenue) throws InterruptedException{
+	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
+	public void makeBuildings(boolean buildOnL,boolean buildOnR, boolean makeGatehouseTowers, boolean overlapTowers, boolean isAvenue) throws InterruptedException{
 		if(ws==null){
 			System.out.println("Tried to build towers but wall style was null!");
 			return;
 		}
 		if(!ws.MakeBuildings) return;
 
+		makeGatehouseTowers=makeGatehouseTowers && ws.makeDefaultTower.weight>0 && !circular;
 		int cursorStart=Math.max(ws.getTMaxWidth(circular)+3,2*ws.BuildingInterval/3);
+		
+		//main loop
 		for(setCursor(cursorStart); n0<bLength; setCursor(n0+1)){
 			
+			//don't built if there's a gateway
 			if(gatewayStart!=NO_GATEWAY && n0>=gatewayStart && n0<=gatewayEnd+ws.getTMaxWidth(circular)+2){ 
-				//don't built if there's a gateway
 				setCursor(gatewayEnd+ws.getTMaxWidth(circular)+2);
 				if(n0>=bLength) break;
 			}
 			
-			//towers are built from n1-2 to n1-tw-1
+			//tw is used to see if curvature permits building a tower here. Non default tower buildings will also
+			//use this tw for curvature even though it is incorrect since they will determine their own width.
+			//This may cause so building-over but that's OK.
+			//tw is also passed to  as the actual width for default towers inside makeBuilding().
 			int tw=ws.pickTWidth(circular,random);
-			int tl=circular ? tw : ws.pickTWidth(circular,random);
-			int twrNMid=n0-tw/2-2;
-			int clearSide=-bHand*signum(curvature(xArray[n0-tw-3], xArray[twrNMid], xArray[n0], 0),0);
+			
+			//towers are built from n0-2 to n0-tw-1
+			//n0 and nBack used to calculat curvature are 2 further from nMid
+			int nMid=n0-tw/2-2, nBack=n0-tw-3;
+			
+			int clearSide=-bHand*signum(curvature(xArray[nBack], xArray[nMid], xArray[n0], 0),0);
 			if(clearSide==0){
-				if(lSideTowers && rSideTowers) clearSide=2*random.nextInt(2)-1;
-				else clearSide= lSideTowers ? L_HAND : R_HAND;
+				if(buildOnL && buildOnR) clearSide=2*random.nextInt(2)-1;
+				else clearSide= buildOnL ? L_HAND : R_HAND;
 			}
 			
 			//try tower types
-			if(gatehouseTowers && ws.DefaultTowerWeight>0 && !circular && curvature(zArray[n0-tw-3], zArray[twrNMid], zArray[n0], 0)==0 
-															   && curvature(xArray[n0-tw-3], xArray[twrNMid], xArray[n0], 2)==0){
+			if(makeGatehouseTowers && curvature(zArray[nBack], zArray[nMid], zArray[n0], 0)==0 
+								   && curvature(xArray[nBack], xArray[nMid], xArray[n0], 2)==0){
+				//if(DEBUG>1) System.out.println("Building gatehouse for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" width "+tw);
 				
-				if(DEBUG>1) System.out.println("Building gatehouse for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" width "+tw);
-				BuildingTower tower = new BuildingTower(bID+n0, this, flipDir(bDir), -bHand, tw, ws.pickTHeight(circular,random), tl, 
-						                                getIJKPtAtN(twrNMid,bWidth/2-tw/2,0,tw/2));
+				BuildingTower tower = new BuildingTower(bID+n0, this, flipDir(bDir), -bHand, true, tw, ws.pickTHeight(circular,random),
+													circular ? tw:ws.pickTWidth(circular,random), getIJKPtAtN(nMid,bWidth/2,0,tw/2));
 				if(!tower.isObstructedRoof(-1)){
 					wgt.setLayoutCode(tower.getIJKPt(0,0,0),tower.getIJKPt(tw-1,0,tw-1), WorldGeneratorThread.LAYOUT_CODE_TOWER);
-					tower.build(xArray[n0-1]-xArray[twrNMid], xArray[n0-tw-2]-xArray[twrNMid], false);
+					tower.build(xArray[n0-1]-xArray[nMid], xArray[nBack+1]-xArray[nMid], false);
 					
 					setCursor(n0+ws.BuildingInterval-1);
 				}
 			}
-			else if((lSideTowers && clearSide==L_HAND) || (rSideTowers && clearSide==R_HAND)) {   //side towers
-				if(DEBUG>1) System.out.println("Building side tower for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" with clearSide="+clearSide+" width "+tw);
-				TemplateTML building=ws.buildings.get(Building.selectWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
-			
-				/*
-				tw=15;
-				byte[][] caRule=BuildingCellularAutomaton.parseCARule("B36/S013468",null);
-				TemplateRule ghastTowerRule=new TemplateRule(new int[]{NETHER_BRICK_ID}, new int[]{0},100);
-				for(int tries=0; tries < 10; tries++){
-					byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(8,8,0.5F,random);
-					BuildingCellularAutomaton bca=new BuildingCellularAutomaton(wgt,ghastTowerRule,DIR_NORTH,1,tw, 25+random.nextInt(10),tw, 12,seed,caRule,
-																				getIJKPtAtN(twrNMid, clearSide==bHand ? bWidth:-1, 0, tw/2));
-					if(bca.plan() && bca.queryCanBuild(0)){
-						bca.build();
-						break;
-					}
-				}
-				*/
+			else if((buildOnL && clearSide==L_HAND) || (buildOnR && clearSide==R_HAND)){   //side towers
+				//if(DEBUG>1) System.out.println("Building side tower for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" with clearSide="+clearSide+" width "+tw);
 				
-				
-				if(building==TemplateWall.DEFAULT_TOWER){
-					int ybuffer=(isAvenue ? 0:1) - ws.TowerXOffset;
-					BuildingTower tower=new BuildingTower(bID+n0,this, rotDir(bDir,clearSide), clearSide, tw, ws.pickTWidth(circular,random), tl, 
-														  getIJKPtAtN(twrNMid, clearSide==bHand ? (bWidth - ybuffer):ybuffer-1, 0, tw/2));
-					if(tower.queryCanBuild(ybuffer,overlapTowers)){
-						tower.build(0,0,true);
-						setCursor(n0+ws.BuildingInterval-1);
-					}
-				}
-				else{
-					BuildingTML buildingTML=new BuildingTML(bID+n0,wgt,rotDir(bDir,clearSide),clearSide,building,
-															getIJKPtAtN(twrNMid, clearSide==bHand ? bWidth:-1, 0, building.length/2));
-					if(buildingTML.queryCanBuild(0)){
-						buildingTML.build();
-						setCursor(n0+ws.BuildingInterval-1);
-					}
-				}
-				
+       			TemplateTML template=ws.buildings.get(Building.selectWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
+       			int ybuffer= - ws.TowerXOffset + (isAvenue ? 0:1);
+				int[] pt=getIJKPtAtN(nMid, clearSide==bHand ? (bWidth - ybuffer):ybuffer-1, 0, 0);
+				if(makeBuilding(template,tw,ybuffer,overlapTowers,rotDir(bDir,clearSide),pt))
+					setCursor(n0+ws.BuildingInterval-1);
 			}
 		}
 		setCursor(0);
 
 		//build towers at endpoints
-		if(endTLength >= BuildingTower.TOWER_UNIV_MIN_WIDTH){
-			//so circular towers fit better, they will be placed at y=bLength-1. Square towers are at y=bLength.
+		if(endBLength >= BuildingTower.TOWER_UNIV_MIN_WIDTH){
 			int endTN = circular ? bLength-2:bLength-1;
 			if(endTN<0) endTN=0;
-			
-			for(int tl=endTLength; tl>=ws.getTMinWidth(circular); tl--){
-				int tw=circular ? tl : ws.pickTWidth(false,random);
-				int[] pt=getIJKPtAtN(endTN, bWidth/2-tw/2, 0, 1);
-				
-				BuildingTower tower=new BuildingTower(bID+bLength,this,bDir,bHand,tw,ws.pickTHeight(circular,random),tl,pt);
-				if(tower.queryCanBuild(1,overlapTowers)){
+			int[] pt=getIJKPtAtN(endTN, bWidth/2, 0, 1);
+			makeBuilding(endBTemplate,ws.pickTWidth(circular,random),1,overlapTowers,bDir,pt);
+		}
+	}
+	
+	//****************************************  FUNCTION - makeBuildings *************************************************************************************//
+	private boolean makeBuilding(TemplateTML template,int tw, int ybuffer, boolean overlapTowers, int dir, int[] pt) throws InterruptedException{
+		if(template==ws.makeDefaultTower){
+			int maxBL = bDir==dir ? endBLength 
+							      : circular ? tw: ws.pickTWidth(circular,random);
+			for(int tl=maxBL; tl>=ws.getTMinWidth(circular); tl--){
+				BuildingTower tower=new BuildingTower(bID+n0,this,dir,1,true,circular ? tl:tw,ws.pickTHeight(circular,random),tl,pt);
+				if(tower.queryCanBuild(ybuffer,overlapTowers)){
 					tower.build(0,0,true);
-					break;
+					return true;
 				}
 			}
 		}
-		
+		else if(template==ws.makeCARuin){
+			byte[][] caRule=ws.CARuinAutomataRules.get(random.nextInt(ws.CARuinAutomataRules.size()));
+			for(int tries=0; tries < 10; tries++){
+				byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(8,8,0.5F,random);
+				BuildingCellularAutomaton bca=new BuildingCellularAutomaton(wgt,ws.CARuinRule,dir,1,true,ws.CARuinContainerWidth,
+									ws.CARuinMinHeight+random.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight+1),ws.CARuinContainerWidth, 12,seed,caRule,pt);
+				if(bca.plan() && bca.queryCanBuild(ybuffer)){
+					bca.build();
+					return true;
+				}
+			}
+		}
+		else{
+			BuildingTML buildingTML=new BuildingTML(bID+n0,wgt,dir,1,true,template,pt);
+			if(buildingTML.queryCanBuild(ybuffer)){
+				buildingTML.build();
+				return true;
+			}
+		}
+		return false;
 	}
-
 
 
 
@@ -683,15 +682,15 @@ public class BuildingWall extends Building
 					if(n0+gateWidth+tw > bLength) flankTHand=0;
 					if(flankTHand!=0){
 						int tnMid1=n0-gateWidth-tw/2;
-						int tnMid2=n0+tw/2;
+						int tnMid2=n0+tw/2+1;
 						int x1=flankTHand==bHand ? bWidth-1+ws.TowerXOffset : -ws.TowerXOffset;
 						
 						//preceding tower
-						new BuildingTower(0,this, rotDir(bDir,flankTHand), bHand, tw, th, tw, 
-											getIJKPtAtN(tnMid1, x1, 0, tw/2)).build(0,0,false);
+						new BuildingTower(0,this, rotDir(bDir,flankTHand), bHand, true, tw, th, tw, 
+											getIJKPtAtN(tnMid1,x1,0,0)).build(0,0,false);
 						//following tower
-						new BuildingTower(0,this, rotDir(bDir,flankTHand),-bHand, tw, th+zArray[tnMid1]-zArray[tnMid2], tw,
-											getIJKPtAtN(tnMid2, x1, 0, 1-tw/2)).build(0,0,false);
+						new BuildingTower(0,this, rotDir(bDir,flankTHand),-bHand, true, tw, th+zArray[tnMid1]-zArray[tnMid2], tw,
+											getIJKPtAtN(tnMid2,x1,0,0)).build(0,0,false);
 					}
 					flushDelayed();
 					

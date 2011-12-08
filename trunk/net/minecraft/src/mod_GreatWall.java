@@ -78,7 +78,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 			logOrPrint("Loading options and templates for the Great Wall Mod.");
 			getGlobalOptions();
 			
-			File stylesDirectory=new File(new File(BASE_DIRECTORY,RESOURCES_FOLDER_NAME),CITY_TEMPLATES_FOLDER_NAME);
+			File stylesDirectory=new File(RESOURCES_DIRECTORY,CITY_TEMPLATES_FOLDER_NAME);
 			wallStyles=TemplateWall.loadWallStylesFromDir(stylesDirectory,this);
 
 			lw.println("\nTemplate loading complete.");
@@ -123,10 +123,9 @@ public class mod_GreatWall extends BuildingExplorationHandler
 			BufferedReader br = null;
 			try{
 				br=new BufferedReader( new FileReader(settingsFile) );
-				String read = br.readLine();
 				lw.println("Getting global options...");    
 	
-				while( read != null ) {
+				for(String read=br.readLine(); read!=null; read=br.readLine()){
 					if(read.startsWith( "GlobalFrequency" )) GlobalFrequency = readFloatParam(lw,GlobalFrequency,":",read);
 					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
 					if(read.startsWith( "CurveBias" )) CurveBias = readFloatParam(lw,CurveBias,":",read);
@@ -137,7 +136,6 @@ public class mod_GreatWall extends BuildingExplorationHandler
 					
 					readChestItemsList(lw,read,br);
 					
-					read = br.readLine();
 				}
 				
 				if(TriesPerChunk > MAX_TRIES_PER_CHUNK) TriesPerChunk = MAX_TRIES_PER_CHUNK;

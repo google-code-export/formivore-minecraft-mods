@@ -25,7 +25,7 @@ public class BuildingUndergroundEntranceway extends Building{
 
 	//****************************************  CONSTRUCTOR - BuildingUndergroundEntraceway  *************************************************************************************//
 	public BuildingUndergroundEntranceway (int ID_,WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int[] sourcePt){
-		super(ID_,wgt_, ws_.TowerRule,dir_,1,new int[]{PASSAGE_WIDTH,PASSAGE_HEIGHT,0},sourcePt);
+		super(ID_,wgt_, ws_.TowerRule,dir_,1,false,new int[]{PASSAGE_WIDTH,PASSAGE_HEIGHT,0},sourcePt);
 		ws=ws_;
 		stairsID=STEP_TO_STAIRS[blockToStepMeta(ws.rules[ws.template[0][0][ws.WWidth/2]].primaryBlock)];
 		//wallBlockRule=new TemplateRule(new int[]{ws_.TowerBlock,0});
@@ -36,7 +36,7 @@ public class BuildingUndergroundEntranceway extends Building{
 		for(; bLength<world.field_35472_c-j0; bLength++){
 			if(!(queryExplorationHandler(-1,0,0) && queryExplorationHandler(PASSAGE_WIDTH,0,0))) return false;
 			
-			if(IS_LIQUID_BLOCK[getBlockIdLocal(0,bLength+PASSAGE_HEIGHT,bLength)]) return false;
+			if(IS_WATER_BLOCK[getBlockIdLocal(0,bLength+PASSAGE_HEIGHT,bLength)]) return false;
 			
 			if(j0+bLength>world.field_35472_c/2-10 && isArtificialWallBlock(0,bLength+PASSAGE_HEIGHT,bLength)) return false;
 			
@@ -50,7 +50,7 @@ public class BuildingUndergroundEntranceway extends Building{
 			for(int x=-1; x<=PASSAGE_WIDTH; x++){
 				for(int z1=1; z1<=PASSAGE_HEIGHT; z1++) {
 					if(x==-1 || x==PASSAGE_WIDTH || z1==PASSAGE_HEIGHT){
-						if(IS_NONSOLID_BLOCK[getBlockIdLocal(x,z+z1,z)])
+						if(IS_LOAD_TRASMITER_BLOCK[getBlockIdLocal(x,z+z1,z)])
 							setBlockLocal(x,z+z1,z,STONE_ID);
 					}
 					else setBlockLocal(x,z+z1,z,AIR_ID);

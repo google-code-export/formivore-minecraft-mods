@@ -27,8 +27,8 @@ public class BuildingCellularAutomaton extends Building {
 	private int MaxOscillatorCullStep;
 	public int minFilledX, maxFilledX, minFilledY,maxFilledY;
 	
-	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, int width, int height, int length, int MaxOscillatorCullStep_, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
-		super(0,wgt_, bRule_, bDir_,axXHand_,new int[]{width,height,length},sourcePt);
+	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, boolean centerAligned_,int width, int height, int length, int MaxOscillatorCullStep_, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
+		super(0,wgt_, bRule_, bDir_,axXHand_,centerAligned_,new int[]{width,height,length},sourcePt);
 		seed=seed_;
 		MaxOscillatorCullStep=MaxOscillatorCullStep_;
 		if((bWidth - seed.length)%2 !=0 ) bWidth++; //so seed can be perfectly centered
@@ -41,10 +41,11 @@ public class BuildingCellularAutomaton extends Building {
 		if(!( queryExplorationHandler(0,0,bLength-1) && queryExplorationHandler(bWidth-1,0,0) && queryExplorationHandler(bWidth-1,0,bLength-1) )){
 			return false;
 		}
-    	
+		
+		int layoutCode= bWidth*bLength > 120 ? WorldGeneratorThread.LAYOUT_CODE_TOWER : WorldGeneratorThread.LAYOUT_CODE_TEMPLATE;
     	if(wgt.isLayoutGenerator()){
-	    	if(wgt.layoutIsClear(getIJKPt(0,0,0),getIJKPt(bWidth-1,0,bLength-1),WorldGeneratorThread.LAYOUT_CODE_TEMPLATE)){
-	    		wgt.setLayoutCode(getIJKPt(0,0,0),getIJKPt(bWidth-1,0,bLength-1),WorldGeneratorThread.LAYOUT_CODE_TEMPLATE);
+	    	if(wgt.layoutIsClear(getIJKPt(0,0,ybuffer),getIJKPt(bWidth-1,0,bLength-1),layoutCode)){
+	    		wgt.setLayoutCode(getIJKPt(0,0,ybuffer),getIJKPt(bWidth-1,0,bLength-1),layoutCode);
 	    	} else return false;
     	}else{
     		if(isObstructedFrame(0,ybuffer)) return false;
@@ -143,6 +144,7 @@ public class BuildingCellularAutomaton extends Building {
 					setBlockLocal(x,bHeight-z-1,y,bRule);
 			}}
 		}
+		flushDelayed();
 	}
 	
 	public boolean shiftBuidlingJDown(int maxShift){
