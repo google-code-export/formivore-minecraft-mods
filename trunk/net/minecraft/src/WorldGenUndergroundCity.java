@@ -83,7 +83,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	//hollows out a nearly spherical void as part of the cavern structure
 	private boolean hollow(int i,int j,int k,int diam) throws InterruptedException{
 		if(diam < MIN_DIAM) return false;
-		if(j-diam/2<10 || j+diam/2 > Building.findSurfaceJ(world, i+diam/2, k+diam/2, world.field_35472_c-1, false,false) - 3) return false;
+		if(j-diam/2<10 || j+diam/2 > Building.findSurfaceJ(world, i+diam/2, k+diam/2, world.field_35472_c-1, false,Building.IGNORE_WATER) - 3) return false;
 		if(!exploreArea(new int[]{i,0,k}, new int[]{i+diam,0,k+diam}, false)) return false;
 		hollows.add(new int[]{i,j,k,diam,0});
 		
@@ -199,7 +199,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 			if(Building.CIRCLE_SHAPE[hollow[3]][pt[0]][pt[2]]==0){		
 				pt[0]+=hollow[0];
 				pt[2]+=hollow[2];
-				pt[1]=Building.findSurfaceJ(world, pt[0], pt[2], hollow[1]-(hollow[3]+1)/2, false,false);
+				pt[1]=Building.findSurfaceJ(world, pt[0], pt[2], hollow[1]-(hollow[3]+1)/2,false,Building.IGNORE_WATER);
 				TemplateWall sws=TemplateWall.pickBiomeWeightedWallStyle(pws.streets,world,pt[0],pt[2],random,true);
 				sws.MergeWalls=true;
 				BuildingDoubleWall street=new BuildingDoubleWall(tries,this,sws,random.nextInt(4),Building.R_HAND,pt);

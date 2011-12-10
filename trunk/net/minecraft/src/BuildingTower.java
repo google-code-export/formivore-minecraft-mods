@@ -349,8 +349,9 @@ public class BuildingTower extends Building
 		int dir=random.nextInt(4);
 		int x1=random.nextInt(bWidth-2)+1;
 		int y1=random.nextInt(bLength-2)+1;
-		int x2 = x1+(dir%2==1 ? 2-dir:0), y2 = y1+(dir%2==0 ? 1-dir:0);
-		if(isFloor(x1,z,y1) && !isNextToDoorway(x1,z,y1) && isFloor(x2,z,y2) && !isNextToDoorway(x2,z,y2)){
+		int x2 = x1+DIR_TO_X[dir], y2 = y1+DIR_TO_Y[dir];
+		if(	isFloor(x1,z,y1) && !isNextToDoorway(x1,z,y1) 
+		 && isFloor(x2,z,y2) && !isNextToDoorway(x2,z,y2)){
 			setBlockLocal(x1,z,y1,BED_BLOCK_ID,dir+8);
 			setBlockLocal(x2,z,y2,BED_BLOCK_ID,dir);
 		}
@@ -368,8 +369,8 @@ public class BuildingTower extends Building
 		int x1=random.nextInt(bWidth-2)+1;
 		int y1=random.nextInt(bLength-2)+1;
 		int dir=random.nextInt(4);
-		int xinc=dir%2==0 ? 1-dir : 0;
-		int yinc=dir%2==1 ? dir-2 : 0;
+		int xinc=DIR_TO_X[dir];
+		int yinc=DIR_TO_Y[dir];
 		
 		//find a wall
 		while(true){
@@ -387,8 +388,8 @@ public class BuildingTower extends Building
 				if(getBlockIdLocal(x1,z1,y1)!=0 || !isWallBlock(x1+xinc,z1,y1+yinc)) break;
 				setBlockLocal(x1,z1,y1,BOOKSHELF_ID);
 			}
-			x1+=dir%2==1 ? dir-2 : 0;
-			y1+=dir%2==0 ? 1-dir : 0;
+			x1+=DIR_TO_X[(dir+1)%4];
+			y1+=DIR_TO_Y[(dir+1)%4];
 			if(!isFloor(x1,z,y1)) break;
 		}
 	
@@ -443,7 +444,7 @@ public class BuildingTower extends Building
 					? new TemplateRule(new int[]{WOOD_ID,0}) : bRule;
 		}
 		
-		int stepMeta=blockToStepMeta(roofRule.getNonAirBlock(random));
+		int stepMeta=blockToStepMeta(roofRule.primaryBlock);
 
 		TemplateRule stepRule=new TemplateRule(new int[]{STEP_ID,stepMeta},roofRule.chance);
 		TemplateRule doubleStepRule=(stepMeta==2) ? new TemplateRule(new int[]{WOOD_ID,0},roofRule.chance) : 
@@ -452,10 +453,10 @@ public class BuildingTower extends Building
 		TemplateRule trimRule = roofStyle==ROOF_TRIM ?
 				new TemplateRule(new int[]{bRule.primaryBlock[0]==COBBLESTONE_ID ? LOG_ID:COBBLESTONE_ID,0},roofRule.chance)
 		     :  stepRule;
-		TemplateRule northStairsRule=new TemplateRule(new int[]{STEP_TO_STAIRS[stepMeta],STAIRS_DIR_TO_META[DIR_NORTH]},roofRule.chance);
-		TemplateRule southStairsRule=new TemplateRule(new int[]{STEP_TO_STAIRS[stepMeta],STAIRS_DIR_TO_META[DIR_SOUTH]},roofRule.chance);
-		TemplateRule eastStairsRule=new TemplateRule(new int[]{STEP_TO_STAIRS[stepMeta],STAIRS_DIR_TO_META[DIR_EAST]},roofRule.chance);
-		TemplateRule westStairsRule=new TemplateRule(new int[]{STEP_TO_STAIRS[stepMeta],STAIRS_DIR_TO_META[DIR_WEST]},roofRule.chance);
+		TemplateRule northStairsRule=new TemplateRule(new int[]{blockToStairs(roofRule.primaryBlock),STAIRS_DIR_TO_META[DIR_NORTH]},roofRule.chance);
+		TemplateRule southStairsRule=new TemplateRule(new int[]{blockToStairs(roofRule.primaryBlock),STAIRS_DIR_TO_META[DIR_SOUTH]},roofRule.chance);
+		TemplateRule eastStairsRule=new TemplateRule(new int[]{blockToStairs(roofRule.primaryBlock),STAIRS_DIR_TO_META[DIR_EAST]},roofRule.chance);
+		TemplateRule westStairsRule=new TemplateRule(new int[]{blockToStairs(roofRule.primaryBlock),STAIRS_DIR_TO_META[DIR_WEST]},roofRule.chance);
 	
 		
 		//======================================== build it! ================================================

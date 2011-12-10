@@ -189,9 +189,9 @@ public class Building
     	return pt;
     }
     
-    public final int[] getSurfaceIJKPt(int x, int y, int j, boolean waterIsSurface, boolean wallIsSurface){
+    public final int[] getSurfaceIJKPt(int x, int y, int j, boolean wallIsSurface, int waterSurfaceBuffer){
     	int[] pt=getIJKPt(x,0,y);
-    	pt[1]=findSurfaceJ(world, pt[0], pt[2],j, waterIsSurface, wallIsSurface);
+    	pt[1]=findSurfaceJ(world, pt[0], pt[2],j, wallIsSurface, waterSurfaceBuffer);
     	return pt;
     }
     
@@ -301,29 +301,30 @@ public class Building
     				block[3]=stairToSolidBlock(block[3]);
     				block[4]=0;
     			}
-    			else if(!IS_WALLABLE[adjId] || IS_WATER_BLOCK[adjId] || !IS_WALLABLE[aboveID] || IS_WATER_BLOCK[aboveID] ){
+    			else if(!IS_WALLABLE[adjId] || !IS_WALLABLE[aboveID] || IS_WATER_BLOCK[adjId] || IS_WATER_BLOCK[aboveID] ){
     				continue;  //solid or liquid non-wall block. In this case, just don't build the stair (aka preserve block).
     			}
     		}
     		else if(block[3]==VINES_ID){
-    			if(block[4]==0){
-    				int neighborID=world.getBlockId(block[0],block[1]+1,block[2]);
-    				if(neighborID==0 || !Block.blocksList[neighborID].blockMaterial.getIsSolid() ){
-    					block[4]=1;
-    				}
-    			}
+    			if(block[4]==0 && !isSolidBlock(world.getBlockId(block[0],block[1]+1,block[2])))
+    				block[4]=1;
+    			
     			if(block[4]!=0){
 	    			int dir=VINES_META_TO_DIR[block[4]];
-	    		
 	    			while(true){
-	    				int neighborID=world.getBlockId(block[0]+DIR_TO_I[dir],block[1],block[2]+DIR_TO_K[dir]);
-	    				if(neighborID!=0 && Block.blocksList[neighborID].blockMaterial.getIsSolid() ){
+	    				if(isSolidBlock(world.getBlockId(block[0]+DIR_TO_I[dir],block[1],block[2]+DIR_TO_K[dir])))
 	    					break;
-	    				}
+	    				
 	    				dir=(dir+1)%4;
-	    				if(dir==VINES_META_TO_DIR[block[4]]) return; //did not find a surface we can attach to
+	    				if(dir==VINES_META_TO_DIR[block[4]]){ //we've looped through everything
+	    					if(isSolidBlock(world.getBlockId(block[0],block[1]+1,block[2]))){
+	    						dir=-1;
+	    						break;
+	    					}
+	    					return; //did not find a surface we can attach to
+	    				}
 	    			}
-	    			block[4]=VINES_DIR_TO_META[dir];
+	    			block[4]=dir==-1 ? 0 : VINES_DIR_TO_META[dir];
     			}
     		}
     		
@@ -358,7 +359,10 @@ public class Building
     	if(blockID==HOLE_ID){
     		int presentBlock=world.getBlockId(pt[0], pt[1], pt[2]);
     		if(presentBlock!=AIR_ID && !IS_WATER_BLOCK[presentBlock])
-    			world.setBlock(pt[0], pt[1], pt[2], AIR_ID);
+    			if( !(IS_WATER_BLOCK[world.getBlockId(pt[0]-1,pt[1],pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1],pt[2]-1)]
+    			   || IS_WATER_BLOCK[world.getBlockId(pt[0]+1,pt[1],pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1],pt[2]+1)]) 
+    			   || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1]+1,pt[2])]) //don't adjacent to a water block
+    				world.setBlock(pt[0], pt[1], pt[2], AIR_ID);
     	}
     	
     	switch(blockID) {
@@ -701,6 +705,28 @@ public class Building
     	return n==0 ? 0 : (n < 0 ? -1 : 1);
     }
     
+    protected final static int maxIdx(int[] a){
+    	int maxIdx=0, max=a[0];
+    	for(int m=1; m<a.length; m++){
+    		if(a[m]>max){
+    			maxIdx=m;
+    			max=a[m];
+    		}
+    	}
+    	return maxIdx;
+    }
+    
+    protected final static int minIdx(int[] a){
+    	int minIdx=0, min=a[0];
+    	for(int m=1; m<a.length; m++){
+    		if(a[m]<min){
+    			minIdx=m;
+    			min=a[m];
+    		}
+    	}
+    	return minIdx;
+    }
+    
     public static int distance(int[] pt1, int[] pt2){
     	return (int)Math.sqrt((double)((pt1[0]-pt2[0])*(pt1[0]-pt2[0]) + (pt1[1]-pt2[1])*(pt1[1]-pt2[1]) + (pt1[2]-pt2[2])*(pt1[2]-pt2[2])));
     }
@@ -724,7 +750,9 @@ public class Building
 	//****************************************  CONSTRUCTOR - findSurfaceJ *************************************************************************************//
 	//Finds a surface block.
 	//Depending on the value of waterIsSurface and wallIsSurface will treat liquid and wall blocks as either solid or air.
-    public static int findSurfaceJ(World world, int i, int k, int jinit, boolean waterIsSurface, boolean wallIsSurface ){
+	public final static int IGNORE_WATER=-1;
+	
+    public static int findSurfaceJ(World world, int i, int k, int jinit, boolean wallIsSurface, int waterSurfaceBuffer){
     	int blockId;
 		if(isNether(world)) {
 			if( (i%2==1) ^ (k%2==1) ) {
@@ -748,8 +776,8 @@ public class Building
 				blockId=world.getBlockId(i,j,k);
 				if(!IS_WALLABLE[blockId] && (wallIsSurface || !IS_ARTIFICAL_BLOCK[blockId])) 
 					return j;
-				if(waterIsSurface && IS_WATER_BLOCK[blockId])
-					return IS_WATER_BLOCK[world.getBlockId(i, j-2, k)] ? HIT_WATER : j;  //so we can still build in swamps...
+				if(waterSurfaceBuffer!=IGNORE_WATER && IS_WATER_BLOCK[blockId])
+					return IS_WATER_BLOCK[world.getBlockId(i, j-waterSurfaceBuffer, k)] ? HIT_WATER : j;  //so we can still build in swamps...
 			}
 		}
 		return -1;
@@ -1398,8 +1426,12 @@ public class Building
 							DOOR_DIR_TO_META		=new int[]{3,0,1,2},
 							PAINTING_DIR_TO_FACEDIR =new int[]{0,3,2,1};
 	
-	public final static int[] DIR_TO_I=new int[]{0,1,0,-1},
-							  DIR_TO_K=new int[]{-1,0,1,0};
+	public final static int[] DIR_TO_I=new int[]{ 0,1,0,-1},
+							  DIR_TO_K=new int[]{-1,0,1, 0};
+	
+	//for use in local orientation
+	public final static int[] DIR_TO_X=new int[]{0,1,0,-1},
+							  DIR_TO_Y=new int[]{1,0,-1,0};
 	
 	 //some prebuilt directional blocks
     public final static int[] WEST_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_WEST]},
@@ -1468,6 +1500,10 @@ public class Building
     	}
     }
     
+    public final static boolean isSolidBlock(int blockID){
+    	return blockID!=0 && Block.blocksList[blockID].blockMaterial.getIsSolid();
+    }
+    
     public final static int[] STEP_TO_STAIRS={WOOD_STAIRS_ID,WOOD_STAIRS_ID,WOOD_STAIRS_ID,COBBLESTONE_STAIRS_ID,BRICK_STAIRS_ID,STONE_BRICK_STAIRS_ID,WOOD_STAIRS_ID };
     
     public final static int blockToStepMeta(int[] idAndMeta){
@@ -1490,6 +1526,17 @@ public class Building
     		case STONE_BRICK_STAIRS_ID: return STONE_BRICK_ID;
     		case NETHER_BRICK_STAIRS_ID:return NETHER_BRICK_ID;
     		default: 					return blockID;
+    	}
+    }
+    
+    public final static int blockToStairs(int[] idAndMeta){
+    	if(IS_STAIRS_BLOCK[idAndMeta[0]]) return idAndMeta[0];
+    	switch(idAndMeta[0]){
+    		case COBBLESTONE_ID: case MOSSY_COBBLESTONE_ID:	return COBBLESTONE_STAIRS_ID;
+    		case NETHER_BRICK_ID: 							return NETHER_BRICK_STAIRS_ID;
+    		case STONE_BRICK_ID: case STONE_ID:				return STONE_BRICK_STAIRS_ID;			
+    		case BRICK_ID:									return BRICK_STAIRS_ID;
+    		default: 										return WOOD_STAIRS_ID;
     	}
     }
     
@@ -1575,6 +1622,49 @@ public class Building
  		for(int m=0; m<randLightingHash.length; m++)
  			randLightingHash[m]=rand.nextInt(LIGHTING_INVERSE_DENSITY)==0;
  	}
+ 	
+	public final static String[] BIOME_NAMES={"Ocean",
+		"Plains",
+		"Desert",
+		"Hills",
+		"Forest",
+		"Taiga",
+		"Swampland",
+		"River",
+		"Hell",
+		"Sky",
+		"Frozen Ocean",
+		"Frozen River",
+		"Ice Plains",
+		"Ice Mountains",
+		"Mushroom Island",
+		"Mushroom Island Shore",
+		"Underground"};
+	
+	public final static int BIOME_OCEAN=0, BIOME_PLAINS=1, BIOME_DESERT=2, BIOME_HILLS=3, BIOME_FOREST=4,BIOME_TAIGA=5, BIOME_SWAMPLAND=6, 
+							BIOME_RIVER=7, BIOME_HELL=8, BIOME_SKY=9, BIOME_FROZEN_OCEAN=10, BIOME_FROZEN_RIVER=11, BIOME_ICE_PLAINS=12,
+							BIOME_ICE_MOUNTAINS=13,BIOME_MUSHROOM_ISLAND=14, BIOME_MUSHROOM_ISLAND_SHORE=15, BIOME_UNDERGROUND=16;
+ 	
+ 	public static int getBiomeNum( BiomeGenBase biomeCheck ) {
+        if( biomeCheck == BiomeGenBase.ocean) 						return BIOME_OCEAN;
+        else if( biomeCheck == BiomeGenBase.plains)	 				return BIOME_PLAINS;
+        else if( biomeCheck == BiomeGenBase.desert ) 				return BIOME_DESERT;
+        else if( biomeCheck == BiomeGenBase.hills ) 				return BIOME_HILLS;   //MP PORT change to BiomeGenBase.extremeHills
+        else if( biomeCheck == BiomeGenBase.forest ) 				return BIOME_FOREST;
+        else if( biomeCheck == BiomeGenBase.taiga ) 				return BIOME_TAIGA;
+        else if( biomeCheck == BiomeGenBase.swampland) 				return BIOME_SWAMPLAND;
+        else if( biomeCheck == BiomeGenBase.river) 					return BIOME_RIVER;
+        else if( biomeCheck == BiomeGenBase.hell ) 					return BIOME_HELL;
+        else if( biomeCheck == BiomeGenBase.sky ) 					return BIOME_SKY;
+        else if( biomeCheck == BiomeGenBase.frozenOcean) 			return BIOME_FROZEN_OCEAN;
+        else if( biomeCheck == BiomeGenBase.frozenRiver) 			return BIOME_FROZEN_RIVER;
+        else if( biomeCheck == BiomeGenBase.icePlains) 				return BIOME_ICE_PLAINS;
+        else if( biomeCheck == BiomeGenBase.iceMountains) 			return BIOME_ICE_MOUNTAINS;
+        else if( biomeCheck == BiomeGenBase.mushroomIsland) 		return BIOME_MUSHROOM_ISLAND;
+        else if( biomeCheck == BiomeGenBase.mushroomIslandShore ) 	return BIOME_MUSHROOM_ISLAND_SHORE;
+		
+		return BIOME_FOREST;
+	}
  	
  	public static String[] CHEST_TYPE_LABELS=new String[]{"EASY_CHEST_ITEMS","MEDIUM_CHEST_ITEMS","HARD_CHEST_ITEMS","TOWER_CHEST_ITEMS"};
  	public static int[] DEFAULT_CHEST_TRIES=new int[]{4,6,6,6};
