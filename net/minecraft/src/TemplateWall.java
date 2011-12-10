@@ -30,12 +30,6 @@ public class TemplateWall extends TemplateTML{
 	public final static String ALL_TEMPLATES="ALL", NO_TEMPLATES="NONE";
 	private final static int DEFAULT_WATER_HEIGHT=666;
 	public final static int[] ALL_BIOMES=null;
-	public final static String[] BIOME_NAMES={"Ocean","Plains","Desert","Hills","Forest","Taiga","Swampland",
-											  "River","Hell","Sky","Frozen Ocean","Frozen River","Ice Plains",
-											  "Ice Mountains","Mushroom Island","Mushroom Island Shore","Underground"};
-	public final static int BIOME_OCEAN=0, BIOME_PLAINS=1, BIOME_DESERT=2, BIOME_HILLS=3, BIOME_FOREST=4,BIOME_TAIGA=5, BIOME_SWAMPLAND=6, 
-							BIOME_RIVER=7, BIOME_HELL=8, BIOME_SKY=9, BIOME_FROZEN_OCEAN=10, BIOME_FROZEN_RIVER=11, BIOME_ICE_PLAINS=12,
-							BIOME_ICE_MOUNTAINS=13,BIOME_MUSHROOM_ISLAND=14, BIOME_MUSHROOM_ISLAND_SHORE=15, BIOME_UNDERGROUND=16;
 	
 	public final static int NO_RULE=-1;
 	public final static int MAX_STREET_DENSITY=20;
@@ -101,7 +95,7 @@ public class TemplateWall extends TemplateTML{
 	public void readTowerParameters() throws Exception{
 		float mobProb=0.0F, pigZombieProb=0.0F, endermanProb=0.0F, caveSpiderProb=0.0F; //deprecated, for backawards compatability
 		
-		if(extraOptions.containsKey("biomes")) Biomes=BuildingExplorationHandler.readNamedCheckList(lw,Biomes,"=",(String)extraOptions.get("biomes"),BIOME_NAMES,"ALL");
+		if(extraOptions.containsKey("biomes")) Biomes=BuildingExplorationHandler.readNamedCheckList(lw,Biomes,"=",(String)extraOptions.get("biomes"),Building.BIOME_NAMES,"ALL");
 		if(extraOptions.containsKey("street_density")) StreetDensity=BuildingExplorationHandler.readIntParam(lw,StreetDensity,"=",(String)extraOptions.get("street_density"));
 		if(extraOptions.containsKey("level_interior")) LevelInterior=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("level_interior")) == 1;
 		if(extraOptions.containsKey("walk_height")) WalkHeight=BuildingExplorationHandler.readIntParam(lw,WalkHeight,"=",(String)extraOptions.get("walk_height"));
@@ -183,7 +177,7 @@ public class TemplateWall extends TemplateTML{
 			else if(caveSpiderProb>0.0F) SpawnerRule=new TemplateRule(new int[]{Building.CAVE_SPIDER_SPAWNER_ID,0}, (int)(caveSpiderProb*100));
 		}
 		
-		if(Biomes!=ALL_BIOMES && Biomes[BIOME_UNDERGROUND]>0){
+		if(Biomes!=ALL_BIOMES && Biomes[Building.BIOME_UNDERGROUND]>0){
 			underground=true;
 			Biomes=ALL_BIOMES;
 		}
@@ -336,8 +330,8 @@ public class TemplateWall extends TemplateTML{
 	public static TemplateWall pickBiomeWeightedWallStyle(ArrayList<TemplateWall> styles,World world, int i, int k, Random random, boolean ignoreBiomes){
 		//BUKKIT PORT
 		//int biome=getBiomeNum(world.getBiome(i,k));
-		int biome=getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(i>>4,k>>4));
-		if((biome < 0 || biome >= BIOME_NAMES.length) && !ignoreBiomes) return null;
+		int biome=Building.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(i,k));
+		if((biome < 0 || biome >= Building.BIOME_NAMES.length) && !ignoreBiomes) return null;
 	  	int sum=0;
 	  	for(TemplateWall ws : styles){
 	  		if(ignoreBiomes || ws.Biomes == ALL_BIOMES || ws.Biomes[biome]>0) sum+=ws.weight;
@@ -375,26 +369,7 @@ public class TemplateWall extends TemplateTML{
 	}
 	*/
 	
-	public static int getBiomeNum( BiomeGenBase biomeCheck ) {
-        if( biomeCheck == BiomeGenBase.ocean) 						return BIOME_OCEAN;
-        else if( biomeCheck == BiomeGenBase.plains)	 				return BIOME_PLAINS;
-        else if( biomeCheck == BiomeGenBase.desert ) 				return BIOME_DESERT;
-        else if( biomeCheck == BiomeGenBase.hills ) 				return BIOME_HILLS;   //MP PORT change to BiomeGenBase.extremeHills
-        else if( biomeCheck == BiomeGenBase.forest ) 				return BIOME_FOREST;
-        else if( biomeCheck == BiomeGenBase.taiga ) 				return BIOME_TAIGA;
-        else if( biomeCheck == BiomeGenBase.swampland) 				return BIOME_SWAMPLAND;
-        else if( biomeCheck == BiomeGenBase.river) 					return BIOME_RIVER;
-        else if( biomeCheck == BiomeGenBase.hell ) 					return BIOME_HELL;
-        else if( biomeCheck == BiomeGenBase.sky ) 					return BIOME_SKY;
-        else if( biomeCheck == BiomeGenBase.frozenOcean) 			return BIOME_FROZEN_OCEAN;
-        else if( biomeCheck == BiomeGenBase.frozenRiver) 			return BIOME_FROZEN_RIVER;
-        else if( biomeCheck == BiomeGenBase.icePlains) 				return BIOME_ICE_PLAINS;
-        else if( biomeCheck == BiomeGenBase.iceMountains) 			return BIOME_ICE_MOUNTAINS;
-        else if( biomeCheck == BiomeGenBase.mushroomIsland) 		return BIOME_MUSHROOM_ISLAND;
-        else if( biomeCheck == BiomeGenBase.mushroomIslandShore ) 	return BIOME_MUSHROOM_ISLAND_SHORE;
-		
-		return BIOME_FOREST;
-	}
+	
 	
 
 	//****************************************  FUNCTION - loadStreets *************************************************************************************//

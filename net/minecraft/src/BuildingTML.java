@@ -37,7 +37,7 @@ public class BuildingTML extends Building
 	    	
 	    	//Don't build if it would require leveling greater than tmlt.leveling
 	    	for(int y=0 ;y<bLength;y++) for(int x=0 ;x<bWidth;x++)
-	    		if(j0 - getSurfaceIJKPt(x,y,j0-1,false,true)[1] > tmlt.leveling + 1) return false;
+	    		if(j0 - getSurfaceIJKPt(x,y,j0-1,true,3)[1] > tmlt.leveling + 1) return false;
 	    	
 	    	//check to see if we are underwater
 	    	if(tmlt.waterHeight!=TemplateTML.NO_WATER_CHECK){
@@ -71,7 +71,7 @@ public class BuildingTML extends Building
 		for(int y=0;y<bLength;y++){ for(int x=0;x<bWidth;x++){
 			if(base!=null) 
 				buildDown(x,-1,y,tmlt.rules[base[y][x]],tmlt.leveling,0,0);
-			else fillDown(getSurfaceIJKPt(x,y,j0-1,false,true),j0-1,world);
+			else fillDown(getSurfaceIJKPt(x,y,j0-1,true,IGNORE_WATER),j0-1,world);
 		}}
 
 		

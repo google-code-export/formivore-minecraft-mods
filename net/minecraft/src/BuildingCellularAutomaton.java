@@ -1,6 +1,7 @@
 package net.minecraft.src;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Random;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
@@ -19,21 +20,30 @@ import java.util.Random;
  * BuildingCellularAutomaton creates double-ended walls
  */
 public class BuildingCellularAutomaton extends Building {
+	private final static byte DEAD=0,ALIVE=1;
+	public final static byte DIE=-1,NOCHANGE=0,LIVE=1;
+	private final float MEAN_SIDE_LENGTH_PER_POPULATE=15.0f;
+	
 	private byte[][][] layers = null;
 	public byte[][] seed=null;
 	private byte[][] caRule=null;
-	private final static byte DEAD=0,ALIVE=1;
-	public final static byte DIE=-1,NOCHANGE=0,LIVE=1;
 	private int MaxOscillatorCullStep;
-	public int minFilledX, maxFilledX, minFilledY,maxFilledY;
+	private int stairsBlock;
+	public boolean makeFloors;
+	int[][] fBB;
+	int zGround;
 	
-	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, boolean centerAligned_,int width, int height, int length, int MaxOscillatorCullStep_, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
+	
+	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,boolean SmoothWithStairs,boolean makeFloors_,int bDir_,int axXHand_, boolean centerAligned_,int width, int height, int length, int MaxOscillatorCullStep_, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
 		super(0,wgt_, bRule_, bDir_,axXHand_,centerAligned_,new int[]{width,height,length},sourcePt);
 		seed=seed_;
 		MaxOscillatorCullStep=MaxOscillatorCullStep_;
 		if((bWidth - seed.length)%2 !=0 ) bWidth++; //so seed can be perfectly centered
 		if((bLength - seed[0].length)%2 !=0 ) bLength++;
 		caRule=caRule_;
+		makeFloors=makeFloors_;
+		stairsBlock=SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : AIR_ID;
+		if(stairsBlock==WOOD_STAIRS_ID) stairsBlock=AIR_ID;
 	}
 	
 	//unlike other Buildings, this should be called after plan()
@@ -54,31 +64,33 @@ public class BuildingCellularAutomaton extends Building {
 	}
 	
 	public boolean plan(){
-		if(!shiftBuidlingJDown(15))
-			return false;
-		
 		//layers is z-flipped from usual orientation so z=0 is the top
 		layers=new byte[bHeight][bWidth][bLength];
 		for(int z=0; z<bHeight; z++) for(int x=0; x<bWidth; x++) for(int y=0; y<bLength; y++)
 			layers[z][x][y]=DEAD;
 		
+		int[][] BB=new int[4][bHeight];
+		BB[0][0]=(bWidth-seed.length)/2;
+		BB[1][0]=(bWidth-seed.length)/2+seed.length-1;
+		BB[2][0]=(bLength-seed[0].length)/2;
+		BB[3][0]=(bLength-seed[0].length)/2+seed[0].length-1;
 		
-		minFilledX=(bWidth-seed.length)/2;
-		maxFilledX=(bWidth-seed.length)/2+seed.length-1;
-		minFilledY=(bLength-seed[0].length)/2;
-		maxFilledY=(bLength-seed[0].length)/2+seed[0].length-1;
 		for(int x=0; x<seed.length; x++) for(int y=0; y<seed[0].length; y++)
-			layers[0][minFilledX+x][minFilledY+y]=seed[x][y];
+			layers[0][BB[0][0]+x][BB[2][0]+y]=seed[x][y];
 		
 		
-		int structureDeathHeight=-1;
 		for(int z=1; z<bHeight; z++){
 			boolean layerIsAlive=false;
-			boolean layerIsFixed=true;
+			boolean layerIsFixed=z>=1;
 			boolean layerIsPeriod2=z>=2;
 			boolean layerIsPeriod3=z>=3;
-			for(int x=Math.max(0,minFilledX-1); x<=Math.min(bWidth-1,maxFilledX+1); x++){
-				for(int y=Math.max(0,minFilledY-1); y<=Math.min(bLength-1,maxFilledY+1); y++){
+			BB[0][z]=bWidth/2;
+			BB[1][z]=bWidth/2;
+			BB[2][z]=bLength/2;
+			BB[3][z]=bLength/2;
+			
+			for(int x=Math.max(0,BB[0][z-1]-1); x<=Math.min(bWidth-1,BB[1][z-1]+1); x++){
+				for(int y=Math.max(0,BB[2][z-1]-1); y<=Math.min(bLength-1,BB[3][z-1]+1); y++){
 					//try the 8 neighboring points in previous layer
 					int neighbors=0;
 					for(int x1=Math.max(x-1,0); x1<=Math.min(x+1,bWidth-1); x1++)
@@ -91,10 +103,10 @@ public class BuildingCellularAutomaton extends Building {
 				
 					//culling checks and update bounding box
 					if(layers[z][x][y]==ALIVE){
-						if(x<minFilledX) minFilledX=x;
-						if(x>maxFilledX) maxFilledX=x;
-						if(y<minFilledY) minFilledY=y;
-						if(y>maxFilledY) maxFilledY=y;
+						if(x<BB[0][z]) BB[0][z]=x;
+						if(x>BB[1][z]) BB[1][z]=x;
+						if(y<BB[2][z]) BB[2][z]=y;
+						if(y>BB[3][z]) BB[3][z]=y;
 						layerIsAlive=true;
 					}
 					if(layers[z][x][y]!=layers[z-1][x][y]) layerIsFixed=false;
@@ -103,17 +115,22 @@ public class BuildingCellularAutomaton extends Building {
 				
 			}}
 			if(!layerIsAlive){
-				if(z<MaxOscillatorCullStep-1) return false;
-				structureDeathHeight=z+1;
+				if(z<=MaxOscillatorCullStep) return false;
+				bHeight=z;
 				break;
 			}
-			if(layerIsFixed && z<MaxOscillatorCullStep) 
-				return false;
-			if(layerIsPeriod2 && z-1<MaxOscillatorCullStep) 
-				return false;
-			if(layerIsPeriod3 && z-2<MaxOscillatorCullStep) 
-				return false;
-			
+			if(layerIsFixed){
+				//crystalizationHeight=z-1;
+				if(z-1<=MaxOscillatorCullStep) return false;
+			}
+			if(layerIsPeriod2){
+				//crystalizationHeight=z-2;
+				if(z-2<=MaxOscillatorCullStep) return false;
+			}
+			if(layerIsPeriod3){
+				//crystalizationHeight=z-3;
+				if(z-3<=MaxOscillatorCullStep) return false;
+			}
 		}
 		
 		//prune top layer
@@ -128,39 +145,248 @@ public class BuildingCellularAutomaton extends Building {
 					layers[0][x][y]=DEAD;
 			}}
 		}
-		if(structureDeathHeight!=-1) bHeight=structureDeathHeight;
 		
-		//now resize building dimensions, we will only build from to filled part of layers[]
-		bWidth=maxFilledX-minFilledX+1;
-		bLength=maxFilledY-minFilledY+1;
+		//now resize building dimensions and shift down
+		int minX=BB[0][minIdx(BB[0])], maxX=BB[1][maxIdx(BB[1])],
+			minY=BB[2][minIdx(BB[2])], maxY=BB[3][maxIdx(BB[3])];
+		bWidth=maxX-minX+1;
+		bLength=maxY-minY+1;
+		if(!shiftBuidlingJDown(15)) //do a height check to see we are not at the edge of a cliff etc.
+			return false;
+		boolean hitWater=false;
+		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),world.field_35472_c,false,0),
+			    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),world.field_35472_c,false,0),
+			    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),world.field_35472_c,false,0),
+			    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),world.field_35472_c,false,0)};
+		for(int height : heights) hitWater |= height==HIT_WATER;
+		if(!hitWater){
+			zGround=random.nextInt(3*bHeight/4);
+			j0-=zGround; //make ruin partially buried
+		}
+		
+		//shift level and floor arrays
+		byte[][][] layers2=new byte[bHeight][bWidth][bLength]; //shrunk in all 3 dimensions
+		fBB=new int[4][bHeight];
+		for(int z=0; z<bHeight; z++){
+			int lZ=bHeight-z-1;
+			for(int x=0; x<bWidth; x++){ for(int y=0; y<bLength; y++){
+				layers2[z][x][y]=layers[lZ][x+minX][y+minY];
+			}}
+			//floor bounding box
+			fBB[0][z]=BB[0][lZ] - minX + (BB[1][z] - BB[0][z])/4;
+			fBB[1][z]=BB[1][lZ] - minX - (BB[1][z] - BB[0][z])/4;
+			fBB[2][z]=BB[2][lZ] - minY + (BB[3][z] - BB[2][z])/4;
+			fBB[3][z]=BB[3][lZ] - minY - (BB[3][z] - BB[2][z])/4;
+		}
+		layers=layers2;		
 		
 		return true;
 	}
 		
 	public void build(){
-		for(int z=0; z<bHeight; z++){
-			for(int x=0; x<bWidth; x++){ for(int y=0; y<bLength; y++){
-				if(layers[z][x+minFilledX][y+minFilledY]==ALIVE)
-					setBlockLocal(x,bHeight-z-1,y,bRule);
-			}}
+		TemplateRule[] stairs=new TemplateRule[]{ new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_NORTH]},bRule.chance),
+												  new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_EAST]},bRule.chance),
+												  new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_SOUTH]}, bRule.chance),
+												  new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_WEST]}, bRule.chance)};
+		int[] floorBlockCounts = new int[bHeight];
+		ArrayList<ArrayList<int[]>> floorBlocks=new ArrayList<ArrayList<int[]>>();
+		for(int m=0; m<bHeight; m++){
+			floorBlockCounts[m]=0;
+			floorBlocks.add(new ArrayList<int[]>());
 		}
+		int[][]holeLimits=new int[bLength][2];
+		for(int y=0; y<bLength; y++){ holeLimits[y][0]=bWidth/2; holeLimits[y][1]=bWidth/2; }
+		
+		for(int z=0; z<bHeight; z++){
+			
+			for(int x=0; x<bWidth; x++){ for(int y=0; y<bLength; y++){
+				if(layers[z][x][y]==ALIVE)
+					setBlockLocal(x,z,y,bRule);
+				
+				else if(z>0 && layers[z-1][x][y]==ALIVE){ //if a floor block
+					//if in central core
+					if(fBB[0][z]<=x && x<fBB[1][z] && fBB[2][z]<=y && y<fBB[3][z]){ 
+						if(makeFloors){
+							floorBlocks.get(z).add(new int[]{x,y});
+							if(x<holeLimits[y][0]) holeLimits[y][0]=x;
+							if(x>holeLimits[y][1]) holeLimits[y][1]=x;
+							floorBlockCounts[z]++;
+						}
+					}
+					
+					//try smoothing with stairs here
+					else if(stairsBlock!=AIR_ID && (z==bHeight-1 || layers[z+1][x][y]!=ALIVE)){
+						if(y+1<bLength && layers[z][x][y+1]==ALIVE && (	y-1<0 || //y+1 present and (we are at the edge or...	
+							(			  layers[z][x][y-1]!=ALIVE //y-1 empty and..
+								&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y-1]==ALIVE)) //not obstructing gaps to the sides
+								&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
+							))
+						)setBlockLocal(x,z,y,stairs[DIR_NORTH]);
+						else
+						if(y-1>=0      && layers[z][x][y-1]==ALIVE && (	y+1==bLength ||
+							(		      layers[z][x][y+1]!=ALIVE 
+									&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y+1]==ALIVE)) 
+									&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y+1]==ALIVE))				 
+							))
+						)setBlockLocal(x,z,y,stairs[DIR_SOUTH]);
+						
+						else
+						if(x+1<bWidth && layers[z][x+1][y]==ALIVE && (	x-1<0 || 	
+							(			 layers[z][x-1][y]!=ALIVE 
+									&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x-1][y+1]==ALIVE))
+									&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
+							))
+						)setBlockLocal(x,z,y,stairs[DIR_EAST]);
+						else
+						if(x-1>=0     && layers[z][x-1][y]==ALIVE && (	x+1==bWidth ||
+							(		     layers[z][x+1][y]!=ALIVE 
+									&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x+1][y+1]==ALIVE))
+									&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x+1][y-1]==ALIVE))				 
+							))
+						)setBlockLocal(x,z,y,stairs[DIR_WEST]);
+					}
+				}
+			}}
+			
+			//now clear a hole surrounding the central floor volume
+			for(int y=0; y<bLength; y++)
+				for(int x=holeLimits[y][0]; x<holeLimits[y][1]; x++)
+					if(layers[z][x][y]!=ALIVE && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
+						setBlockLocal(x,z,y,HOLE_ID);
+			
+			//then gradually taper hole limits...
+			for(int y=0; y<bLength; y++){ 
+				holeLimits[y][0] = holeLimits[y][0] < bWidth/2 ? holeLimits[y][0]+1 : bWidth/2; 
+				holeLimits[y][1] = holeLimits[y][1] > bWidth/2 ? holeLimits[y][1]-1 : bWidth/2; 
+			}
+		}
+		
+		if(makeFloors)
+			buildFloors(floorBlockCounts, floorBlocks);
+		
 		flushDelayed();
 	}
 	
+	public void buildFloors(int[] floorBlockCounts, ArrayList<ArrayList<int[]>> floorBlocks){
+		while(true){
+			int maxFloorBlocks=floorBlockCounts[1], maxFloor=1;
+			for(int floor=2; floor<bHeight-1; floor++){
+				if(floorBlockCounts[floor-1]+floorBlockCounts[floor]+floorBlockCounts[floor+1] >maxFloorBlocks){ //add the two floors since we can raise one to the other
+					maxFloorBlocks=floorBlockCounts[floor-1]+floorBlockCounts[floor]+floorBlockCounts[floor+1];
+					maxFloor=floor;
+				}
+			}
+			if(maxFloorBlocks > 20){
+				boolean[][] layout=new boolean[bWidth][bLength];
+				for(int x=0; x<bWidth; x++) for(int y=0; y<bLength; y++) layout[x][y]=false;
+				for(int[] pt : floorBlocks.get(maxFloor-1)) makeFloorCrossAt(pt[0],maxFloor,pt[1],layout);
+				for(int[] pt : floorBlocks.get(maxFloor))   makeFloorCrossAt(pt[0],maxFloor,pt[1],layout);
+				for(int[] pt : floorBlocks.get(maxFloor+1)) makeFloorCrossAt(pt[0],maxFloor,pt[1],layout);
+				
+				
+				do{
+					populateFloor(maxFloor,maxFloorBlocks,layout);
+				}while(random.nextFloat() < 1.0f - MEAN_SIDE_LENGTH_PER_POPULATE/MathHelper.sqrt_float((float)maxFloorBlocks));
+				
+				if(maxFloor-3>=0) floorBlockCounts[maxFloor-3]=0;
+				if(maxFloor-2>=0) floorBlockCounts[maxFloor-2]=0;
+				floorBlockCounts[maxFloor-1]=0;
+				floorBlockCounts[maxFloor]=0;
+				floorBlockCounts[maxFloor+1]=0;
+				if(maxFloor+2<bHeight) floorBlockCounts[maxFloor+2]=0;
+				if(maxFloor+3<bHeight) floorBlockCounts[maxFloor+3]=0;
+			}
+			else break;
+		}
+		
+	}
+	
+	private void makeFloorCrossAt(int x, int z, int y, boolean[][] layout){
+		makeFloorAt(x,z,y,layout);
+		if(x-1 >= fBB[0][z]) makeFloorAt(x-1,z,y,layout);
+		if(x+1  < fBB[1][z]) makeFloorAt(x+1,z,y,layout);
+		if(y-1 >= fBB[2][z]) makeFloorAt(x,z,y-1,layout);
+		if(y+1  < fBB[2][z]) makeFloorAt(x,z,y+1,layout);
+	}
+	
+	private void makeFloorAt(int x, int z, int y, boolean[][] layout){
+		if(layout[x][y]) return;
+		if(IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)] && IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z+1,y)]) return;
+		if(!IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z-1,y)]){
+			int[] idAndMeta=bRule.getNonAirBlock(random);
+			setBlockWithLightingLocal(x,z-1,y,idAndMeta[0],idAndMeta[1],true);
+		}
+		setBlockWithLightingLocal(x,z,y,HOLE_ID,0,true);
+		setBlockWithLightingLocal(x,z+1,y,HOLE_ID,0,true);
+		layout[x][y]=true;
+	}
+	
+	private void populateFloor(int z,int floorBlocks,boolean[][] layout){
+		boolean builtSpawner=false;
+		int fWidth=fBB[1][z] - fBB[0][z], fLength=fBB[3][z] - fBB[2][z];
+		if(fWidth <=0 || fLength <= 0) return;
+		
+		for(int tries=0; tries < 8 && !builtSpawner; tries++){
+			int x=random.nextInt(fWidth)+fBB[0][z],
+			    y=random.nextInt(fLength)+fBB[2][z];
+			if(layout[x][y]){
+				int[] pt=getIJKPt(x,z,y);
+				int lightVal=world.getSavedLightValue(EnumSkyBlock.Sky, pt[0], pt[1], pt[2]); 
+				if(lightVal!=0 && lightVal<5){ //there is some kind of where where lightVal coming up as zero, even though it is not
+					setBlockLocal(x,z,y,UPRIGHT_SPAWNER_ID);
+					builtSpawner=true;
+				}else if(lightVal<10){
+					setBlockLocal(x,z,y,floorBlocks > 70 ? CAVE_SPIDER_SPAWNER_ID : BLAZE_SPAWNER_ID);
+					builtSpawner=true;
+				}
+				break;
+			}
+		}
+		
+		if(builtSpawner && random.nextInt(2)==0){
+			for(int tries=0; tries < 8; tries++){
+				int x=random.nextInt(fWidth)+fBB[0][z],
+				    y=random.nextInt(fLength)+fBB[2][z];
+				if(layout[x][y]){
+					setBlockLocal(x,z-1,y,pickCAChestType(z));
+					setBlockLocal(x,z-2,y,bRule);
+					layout[x][y]=false;
+					if(random.nextBoolean()){
+						break; //chance of > 1 chest. Expected # of chests is one.
+					}
+				}
+			}
+		}
+		
+		int s=random.nextInt(1+random.nextInt(5))-2;
+		for(int tries=0; tries<s; tries++){
+			int x=random.nextInt(fWidth)+fBB[0][z],
+		        y=random.nextInt(fLength)+fBB[2][z];
+			if(layout[x][y]){
+				setBlockLocal(x,z,y,STONE_PLATE_ID);
+				setBlockLocal(x,z-1,y,TNT_ID);
+				setBlockLocal(x,z-2,y,bRule);
+			}
+		}
+	}
+	
+	
+	private int pickCAChestType(int z){
+		if(  Math.abs(zGround-z) < random.nextInt(1 + z>zGround ? (bHeight-zGround):zGround) )
+			 return random.nextBoolean() ? EASY_CHEST_ID : MEDIUM_CHEST_ID;
+		else return random.nextBoolean() ? MEDIUM_CHEST_ID : HARD_CHEST_ID;
+	}
+	
+	
 	public boolean shiftBuidlingJDown(int maxShift){
 		//try 4 corners and center
-		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),world.field_35472_c,false,false),
-							    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),world.field_35472_c,false,false),
-							    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),world.field_35472_c,false,false),
-							    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),world.field_35472_c,false,false)
-							    };
-		int minHeight=j0;
-		int maxHeight=j0;
-		for(int height : heights){
-			if(height < minHeight) minHeight=height;
-			if(height > maxHeight) maxHeight=height;
-		}
-		if(maxHeight - minHeight > maxShift) return false;
+		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),world.field_35472_c,false,IGNORE_WATER),
+							    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),world.field_35472_c,false,IGNORE_WATER),
+							    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),world.field_35472_c,false,IGNORE_WATER),
+							    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),world.field_35472_c,false,IGNORE_WATER)};
+		
+		int minHeight=heights[minIdx(heights)];
+		if(heights[maxIdx(heights)] - minHeight > maxShift) return false;
 		else j0=minHeight;
 		return true;
 	}
@@ -182,7 +408,7 @@ public class BuildingCellularAutomaton extends Building {
 	public static byte[][] makeLinearSeed(int maxWidth, Random random){
 		if(maxWidth<=1) return new byte[][]{{ALIVE}}; //degenerate case
 		
-		int width=random.nextInt(random.nextInt(maxWidth-1)+1)+2; //random number in (2,maxWidth) inclusive, biased towards low end
+		int width=random.nextInt(random.nextInt(maxWidth-1)+1)+2; //random number in (2,maxWidth) inclusive, concentrated towards low end
 		byte[][] seed=new byte[width][1];
 		for(int x=0; x<width; x++)seed[x][0]=ALIVE;
 		return seed;
@@ -227,68 +453,22 @@ public class BuildingCellularAutomaton extends Building {
 		{"B38/S023468",""},
 		{"B368/S245","Morley"},
 		{"B368/S245",""},
-		{"B3/S23","Life"},
+		{"B3/S23","Life - good for weird temples"},
 		{"B3/S23",""},
 		{"B3/S23",""},
-		{"B36/S125","2x2"},
+		{"B36/S125","2x2 - pillar & arch temple/tower/statue"},
 		{"B36/S125",""},
-		{"B36/S23","High Life"},
+		{"B36/S23","High Life - space invaders"},
 		{"B36/S23",""},
-		{"B3/S012345678","Inkspots"},
+		{"B3/S012345678","Inkspots - nice towers"},
 		{"B3/S012345678",""},
-		{"B45/S2345","45-rule"},
+		{"B45/S2345","45-rule - square towers"},
 		{"B45/S2345",""},
-		{"B2/S01","temple"},
+		{"B2/S01","\"temple\""},
 		{"B35678/S015678","legged amoeba"},
 		{"B35678/S015678",""},
 		{"B35678/S015678",""}
 	};
-
-	/*
-	public final static int[][] DEFAULT_BIN_CA_RULES= new int[][]{
-		{130,138},
-		{170,77},
-		{110,74},
-		{170,165},
-		{170,170},
-		{169,138},
-		{170,134},
-		{184,180}, 
-		{164,160}
-	};
-	
-	public static void intCodeToStr(int[] code){
-		System.out.print("("+code[0]+","+code[1]+")=");
-		boolean[][] arry=new boolean[2][9];
-		arry[0][0]=false;
-		arry[1][0]=false;
-		for(int i=7; i>=0; i--){
-			arry[0][8-i]=((code[0]>>i) & 0x1)>0;
-			arry[1][8-i]=((code[1]>>i) & 0x1)>0;
-		}
-		System.out.print("L");
-		for(int i=0; i<9; i++) System.out.print((arry[0][i]?1:0)+"");
-		System.out.print("/D");
-		for(int i=0; i<9; i++)System.out.print((arry[1][i]?1:0)+"");
-		System.out.print("  ");
-		
-		String str="B";
-		for(int i=0; i<9; i++){
-			if(!arry[0][i] && !arry[1][i]){} //"not covered" unchanged
-			if(arry[0][i] && !arry[1][i]){ str+=i; } //live
-			if(!arry[0][i] && arry[1][i]){} //die
-			if(arry[0][i] && arry[1][i]){} //die
-		}
-		str+="/S";
-		for(int i=0; i<9; i++){
-			if(!arry[0][i] && !arry[1][i]){ str+=i; } //unchanged
-			if(arry[0][i] && !arry[1][i]){ str+=i; } //live
-			if(!arry[0][i] && arry[1][i]){} //die
-			if(arry[0][i] && arry[1][i]){} //die
-		}
-		System.out.println(str);
-	}
-	*/
 	
 }
 

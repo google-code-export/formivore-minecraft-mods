@@ -162,7 +162,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 				boolean enclosed=true;
 				for(BuildingWall w : walls) if(w.ptIsToXHand(new int[]{i2,0,k2},1)) enclosed=false;
 				if(enclosed){
-					int j2=Building.findSurfaceJ(world,i2,k2,world.field_35472_c-1,true,true);
+					int j2=Building.findSurfaceJ(world,i2,k2,world.field_35472_c-1,true,3);
 					cityArea++;
 					if(j2==Building.HIT_WATER) waterArea++;
 					if(Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2,j2,k2)]){
@@ -187,7 +187,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		}
 		//We've passed all checks, register this city site
 		walls[0].setCursor(0);
-		int[] cityCenter=walls[0].getSurfaceIJKPt(-walls[1].bLength/2, walls[0].bLength/2,world.field_35472_c, false,false);
+		int[] cityCenter=walls[0].getSurfaceIJKPt(-walls[1].bLength/2, walls[0].bLength/2,world.field_35472_c,false,Building.IGNORE_WATER);
 		for(int w=0;w<4;w++) 
 			wc.cityLocations.add(new int[]{walls[w].i1,walls[w].k1,cityType});
 		wc.saveCityLocations();
@@ -198,7 +198,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		willBuild=true;
 		if(!master.isFlushingGenThreads) suspendGen();
 		
-		wc.chatBuildingCity("\n***** Building "+ows.name+" city"+", ID="+ID+" in "+TemplateWall.BIOME_NAMES[TemplateWall.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(walls[0].i1>>4,walls[0].k1>>4))]+" biome between "+walls[0].globalCoordString(0,0,0)+" and "+walls[2].globalCoordString(0,0,0) + " ******\n");
+		wc.chatBuildingCity("\n***** Building "+ows.name+" city"+", ID="+ID+" in "+Building.BIOME_NAMES[Building.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(walls[0].i1,walls[0].k1))]+" biome between "+walls[0].globalCoordString(0,0,0)+" and "+walls[2].globalCoordString(0,0,0) + " ******\n");
 		if(ows.LevelInterior) levelCity();
 		
 		TemplateWall avenueWS=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
@@ -228,7 +228,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			}else {
 				//no gateway on this city side, try just building an interior avenue from midpoint
 				w.setCursor(w.bLength/2);
-				BuildingWall midpointAvenue=new BuildingWall(0, this,sws,Building.rotDir(w.bDir,-axXHand),w.bDir>1 ? 1:-1, ows.MaxL,false,w.getSurfaceIJKPt(-1, 0,world.field_35472_c, false,false));
+				BuildingWall midpointAvenue=new BuildingWall(0, this,sws,Building.rotDir(w.bDir,-axXHand),w.bDir>1 ? 1:-1, ows.MaxL,false,w.getSurfaceIJKPt(-1, 0,world.field_35472_c,false,Building.IGNORE_WATER));
 				midpointAvenue.setTarget(cityCenter);
 				midpointAvenue.plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,true);
 				if(midpointAvenue.bLength > 20){
@@ -399,7 +399,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		while(tries < 20){
 			pt[0]=mincorner[0] + random.nextInt( Math.abs(corner1[0]-corner2[0]));
 			pt[2]=mincorner[2] + random.nextInt(Math.abs(corner1[2]-corner2[2]));
-			pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.field_35472_c-1,true,true);
+			pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.field_35472_c-1,true,3);
 			boolean enclosed=true;
 			for(BuildingWall w : walls) if(w.ptIsToXHand(pt,-sws.WWidth)) enclosed=false;
 			if(enclosed) return pt;
@@ -435,7 +435,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 				boolean enclosed=true;
 				for(BuildingWall w : walls) if(w.ptIsToXHand(pt,1)) enclosed=false;
 				if(enclosed){
-					pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.field_35472_c-1,false,false);
+					pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.field_35472_c-1,false,Building.IGNORE_WATER);
 					int oldSurfaceBlockId=world.getBlockId(pt[0], pt[1], pt[2]);
 					if(pt[1]>jmax) {
 						while(world.getBlockId(pt[0],pt[1]+1,pt[2])!=Building.AIR_ID) pt[1]++; //go back up to grab any trees or whatnot
