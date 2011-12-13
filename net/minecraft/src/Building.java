@@ -1483,8 +1483,7 @@ public class Building
     		//Define by what it is not. Not IS_WALLABLE and not a naturally occurring solid block (obsidian/bedrock are exceptions)
     		IS_ARTIFICAL_BLOCK[blockID]= !( IS_WALLABLE[blockID] || IS_ORE_BLOCK[blockID] 
     		   || blockID==STONE_ID || blockID==DIRT_ID || blockID==GRASS_ID || blockID==GRAVEL_ID || blockID==SAND_ID || blockID==CLAY_ID
-    		   || blockID==SANDSTONE_ID || blockID==NETHERRACK_ID || blockID==SOUL_SAND_ID || blockID==MYCELIUM_ID || blockID==LAVA_ID
-    		   || blockID==STATIONARY_LAVA_ID);
+    		   || blockID==NETHERRACK_ID || blockID==SOUL_SAND_ID || blockID==MYCELIUM_ID || blockID==LAVA_ID || blockID==STATIONARY_LAVA_ID);
     
     		IS_DELAY_BLOCK[blockID]=IS_STAIRS_BLOCK[blockID]
     		   || blockID==TORCH_ID || blockID==LEVER_ID || blockID==SIGN_POST_ID || blockID==SIGN_ID || blockID==REDSTONE_TORCH_ON_ID

@@ -803,10 +803,13 @@ public class BuildingWall extends Building
 
 		}
 		
-		//flatten ends if they end on slopes
-		if(flattenEnds){
-			if(b>a && arry[a]!=arry[a+1]) arry[a]=arry[a+1];
-			if(b>a && arry[b]!=arry[b-1]) arry[b]=arry[b-1];
+		//flatten the last two positions on each end if they end on slopes
+		if(flattenEnds && b-a>=2){
+			if(arry[a]!=arry[a+2])   arry[a]=arry[a+2];
+			if(arry[b]!=arry[b-2])   arry[b]=arry[b-2];
+			if(arry[a+1]!=arry[a+2]) arry[a+1]=arry[a+2];
+			if(arry[b-1]!=arry[b-2]) arry[b-1]=arry[b-2];
+			
 		}
 	}
 

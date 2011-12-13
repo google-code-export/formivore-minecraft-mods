@@ -278,15 +278,16 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(BuildingDoubleWall avenue : branchAvenues) avenue.build(LAYOUT_CODE_AVENUE);
 		
 
+		//number of streets scales as Lmean^(3/2). Filling a 2-D space with 1-D objects, but these objects don't go on forever.
+		int maxTries=Lmean*((int)Math.sqrt((double)Lmean))*ows.StreetDensity*ows.StreetDensity/90;
 		
-		int maxTries=Lmean*ows.StreetDensity/9;
-		//int maxAvenues=Lmean/8;
 		LinkedList<BuildingDoubleWall> plannedStreets=new LinkedList<BuildingDoubleWall>();
 
 		for(int tries=0;tries<maxTries; tries++){
 			
 			if(tries % 5==0 && !master.isFlushingGenThreads) suspendGen();
 			int[] pt=randInteriorPoint();
+			pt[1]++;//want block above surface block
 			sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,true);
 			if(pt!=null && pt[1]!=-1){
 

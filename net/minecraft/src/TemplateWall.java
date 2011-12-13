@@ -162,7 +162,7 @@ public class TemplateWall extends TemplateTML{
 		if(CircMinHeight < WalkHeight +4) CircMinHeight=WalkHeight +4;
 		if(CircMaxHeight < CircMinHeight ) CircMaxHeight=CircMinHeight;
 		
-		if(CARuinAutomataRules==null) CARuinWeight=0;
+		if(CARuinAutomataRules==null || CARuinAutomataRules.size()==0) CARuinWeight=0;
 		if(CARuinWeight > 0 && CARuinRule==TemplateRule.RULE_NOT_PROVIDED) CARuinRule=TowerRule;
 		if(CARuinMaxHeight < CARuinMinHeight) CARuinMaxHeight=CARuinMinHeight;
 		

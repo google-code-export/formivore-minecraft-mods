@@ -561,7 +561,8 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		ArrayList<byte[][]> rules=new ArrayList<byte[][]>();
 		String[] ruleStrs =(read.split(splitString)[1]).split(",");
 		for(String ruleStr : ruleStrs){
-			rules.add(BuildingCellularAutomaton.parseCARule(ruleStr.trim(),lw));
+			byte[][] rule=BuildingCellularAutomaton.parseCARule(ruleStr.trim(),lw);
+			if(rule!=null) rules.add(rule);
 		}
 		if(rules.size()==0) return null;
 		return rules;
