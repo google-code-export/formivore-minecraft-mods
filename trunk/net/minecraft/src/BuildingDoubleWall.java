@@ -34,8 +34,8 @@ public class BuildingDoubleWall extends Building
 
 		//Plan out a pair of walls in opposite directions from given start coordinates.
 		//Start planning from position 1 (pos 0 is fixed).
-		wall1 = new BuildingWall(bID,wgt,ws,bDir,Building.R_HAND, ws.MaxL/2,true,i0,j0,k0);
-		wall2 = new BuildingWall(bID,wgt,ws,flipDir(bDir),Building.L_HAND, ws.MaxL/2,true,i0,j0,k0).setTowers(wall1);
+		wall1 = new BuildingWall(bID,wgt,ws,bDir,Building.R_HAND, ws.MaxL/2,true,getIJKPt(0,0,0));
+		wall2 = new BuildingWall(bID,wgt,ws,flipDir(bDir),Building.L_HAND, ws.MaxL/2,true,getIJKPt(0,0,-1)).setTowers(wall1);
 		int a =wall1.plan(1,0,ws.MergeWalls ? ws.WWidth : BuildingWall.DEFAULT_LOOKAHEAD,!ws.MergeWalls)+1;
 		int b =wall2.plan(1,0,ws.MergeWalls ? ws.WWidth : BuildingWall.DEFAULT_LOOKAHEAD,!ws.MergeWalls)+1;
 
@@ -44,11 +44,17 @@ public class BuildingDoubleWall extends Building
 				System.out.println("Abandoning wall "+wall1.IDString()+"length="+(b+a-1)+", reason 1)"+wall1.failString()+". 2)"+wall2.failString()+".");
 			return false;
 		}
-
+		
 
 		if(BuildingWall.DEBUG>1) { wall1.printWall(); wall2.printWall(); }
 
 		//copy to one array for smoothing
+		//
+		// [0, ... temp.... ,b-1,b,...     ...,a+b-1]
+		// [b-1,... wall2 ...,0][0,... wall1 ...,a-1]
+		//
+		//note this is different th
+		//
 		int[] tempx=new int[a+b];
 		int[] tempz=new int[a+b];
 		for(int m=0;m<b;m++) { tempx[m]=-wall2.xArray[b-m-1]; tempz[m]=wall2.zArray[b-m-1];}

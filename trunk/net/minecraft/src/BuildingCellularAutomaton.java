@@ -23,6 +23,7 @@ public class BuildingCellularAutomaton extends Building {
 	private final static byte DEAD=0,ALIVE=1;
 	public final static byte DIE=-1,NOCHANGE=0,LIVE=1;
 	private final float MEAN_SIDE_LENGTH_PER_POPULATE=15.0f;
+	private final static int HOLE_FLOOR_BUFFER=2;
 	
 	private byte[][][] layers = null;
 	public byte[][] seed=null;
@@ -208,8 +209,8 @@ public class BuildingCellularAutomaton extends Building {
 					if(fBB[0][z]<=x && x<fBB[1][z] && fBB[2][z]<=y && y<fBB[3][z]){ 
 						if(makeFloors){
 							floorBlocks.get(z).add(new int[]{x,y});
-							if(x<holeLimits[y][0]) holeLimits[y][0]=x;
-							if(x>holeLimits[y][1]) holeLimits[y][1]=x;
+							if(x-HOLE_FLOOR_BUFFER<holeLimits[y][0]) holeLimits[y][0]=x-HOLE_FLOOR_BUFFER;
+							if(x+HOLE_FLOOR_BUFFER>holeLimits[y][1]) holeLimits[y][1]=x+HOLE_FLOOR_BUFFER;
 							floorBlockCounts[z]++;
 						}
 					}
@@ -251,7 +252,7 @@ public class BuildingCellularAutomaton extends Building {
 			//now clear a hole surrounding the central floor volume
 			for(int y=0; y<bLength; y++)
 				for(int x=holeLimits[y][0]; x<holeLimits[y][1]; x++)
-					if(layers[z][x][y]!=ALIVE && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
+					if((x<0 || x > bWidth-1 || layers[z][x][y]!=ALIVE) && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
 						setBlockLocal(x,z,y,HOLE_ID);
 			
 			//then gradually taper hole limits...
@@ -372,9 +373,10 @@ public class BuildingCellularAutomaton extends Building {
 	
 	
 	private int pickCAChestType(int z){
-		if(  Math.abs(zGround-z) < random.nextInt(1 + z>zGround ? (bHeight-zGround):zGround) )
-			 return random.nextBoolean() ? EASY_CHEST_ID : MEDIUM_CHEST_ID;
-		else return random.nextBoolean() ? MEDIUM_CHEST_ID : HARD_CHEST_ID;
+		if(  Math.abs(zGround-z) > random.nextInt(1 + z>zGround ? (bHeight-zGround):zGround) 
+		 && (z>zGround ? (bHeight-zGround):zGround) > 20)
+			 return random.nextBoolean() ? MEDIUM_CHEST_ID : HARD_CHEST_ID;
+		else return random.nextBoolean() ? EASY_CHEST_ID : MEDIUM_CHEST_ID;
 	}
 	
 	

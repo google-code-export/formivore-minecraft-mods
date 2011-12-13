@@ -133,17 +133,6 @@ public class BuildingTower extends Building
 		//							Each floor has a 50% chance of building spawners except ground floor.
 		//If floor hasUndeadSpawner =>	Always build spawner_count spawners (resampling for each spawner).
 		//								No windows/doors unless ground floor.
-		/*
-		boolean ghastTower=false;
-		for(int blockID : SpawnerRule.getBlockIDs())
-			if(blockID==GHAST_SPAWNER_ID) ghastTower=true;
-		if(ghastTower){
-			if(roofStyle!=ROOF_CRENEL || SpawnerRule.getBlock(random)[0]!=GHAST_SPAWNER_ID){ //chose once for whole tower
-				ghastTower=false;
-				
-			}
-		}
-		*/
 		boolean undeadTower=false, ghastTower=false;
 		if(SpawnerRule!=TemplateRule.RULE_NOT_PROVIDED){
 			for(int blockID : SpawnerRule.getBlockIDs())
