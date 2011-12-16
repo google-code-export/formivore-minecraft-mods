@@ -293,7 +293,7 @@ public class BuildingTower extends Building
 			}
 		}
 		if(ghastTower) populateGhastSpawner(bHeight+1);
-		else if(roofStyle==ROOF_CRENEL && bHeight>20 ) populatePortal(bHeight+1);
+		else if(roofStyle==ROOF_CRENEL && bHeight>22 ) populatePortal(bHeight+1);
 
 		//*** debug signs ***
 		if(BuildingWall.DEBUG_SIGNS){

@@ -40,9 +40,9 @@ public class mod_WalledCity extends BuildingExplorationHandler
 								STREET_TEMPLATES_FOLDER_NAME="streets";
 
 	//USER MODIFIABLE PARAMETERS, values here are defaults
-	public float GlobalFrequency=0.05F, UndergroundGlobalFrequency=0.005F;
+	public float GlobalFrequency=0.02F, UndergroundGlobalFrequency=0.001F;
 	public int TriesPerChunk=1;
-	public int MinCitySeparation=500, UndergroundMinCitySeparation=250;
+	public int MinCitySeparation=800, UndergroundMinCitySeparation=500;
 	public boolean CityBuiltMessage=true;
 	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
 
@@ -145,9 +145,12 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			for(WorldGeneratorThread wgt: exploreThreads) killZombie(wgt);
 			exploreThreads=new LinkedList<WorldGeneratorThread>();
 			
+			//MP PORT
+			//cityLocationsSaveFile=new File(BASE_DIRECTORY,"citylocations.txt");
+			cityLocationsSaveFile=new File(((SaveHandler)world.func_40479_y()).getSaveDirectory(),"citylocations.txt"); //classy
+			
 			//clear city locations, read in saved locations if they exist
 			cityLocations=new ArrayList<int[]>();
-			cityLocationsSaveFile=new File(((SaveHandler)world.func_40479_y()).getSaveDirectory(),"citylocations.txt"); //classy
 			if(cityLocationsSaveFile.exists()){
 				cityLocations=new ArrayList<int[]>();
 				BufferedReader br = null;

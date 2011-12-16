@@ -84,7 +84,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		//plan walls[0]
 		walls[0] = new BuildingWall(ID,this,ows,dir[0],axXHand,ows.MinL+random.nextInt(ows.MaxL-ows.MinL),false,i0,j0,k0).setMinJ(minJ);
 		walls[0].plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,true);
-		if(BuildingWall.DEBUG>1) System.out.println("Planning for "+walls[0].IDString()+" from "+walls[0].globalCoordString(0,0,0));
 		if(walls[0].bLength<ows.MinL) return false;
 
 		//plan walls[1]
@@ -92,7 +91,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		walls[1] = new BuildingWall(ID+1,this,ows,dir[1],axXHand, ows.MinL+random.nextInt(ows.MaxL-ows.MinL),false,walls[0].getIJKPt(-1-ows.TowerXOffset,0,1+ows.TowerXOffset)).setTowers(walls[0]).setMinJ(minJ);
 		if(!wc.cityIsSeparated(walls[1].i1,walls[1].k1,cityType)) return false;
 		walls[1].plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,false);
-		if(BuildingWall.DEBUG>1) System.out.println("Planning for "+walls[1].IDString()+" from "+walls[1].globalCoordString(0,0,0));
 		if(walls[1].bLength<ows.MinL) return false;
 
 		//plan walls[2]
@@ -104,7 +102,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		walls[2].setCursor(0);
 		walls[2].setTarget(walls[2].getIJKPt(0,0,distToTarget));
 		walls[2].plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,false);
-		if(BuildingWall.DEBUG>1) System.out.println("Planning for "+walls[2].IDString()+" from "+walls[2].globalCoordString(0,0,0));
 		if(walls[2].bLength<walls[2].y_targ){
 			if(BuildingWall.DEBUG>1) System.out.println("Abandoning on 3rd wall "+walls[2].IDString()+" planned length "+walls[2].bLength+" less than targeted length "+walls[2].y_targ+". Reason: "+walls[2].failString());
 			return false;
@@ -119,7 +116,6 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		walls[0].setCursor(0);
 		walls[3].setCursor(0);
 		walls[3].setTarget(walls[0].getIJKPt(-1-ows.TowerXOffset,0,-1-ows.TowerXOffset));
-		if(BuildingWall.DEBUG>1) System.out.println("Planning for "+walls[3].IDString()+" from "+walls[3].globalCoordString(0,0,0));
 		walls[3].plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,false);
 		if(walls[3].bLength<walls[3].y_targ){
 			if(BuildingWall.DEBUG>1)  System.out.println("Abandoning on 4th wall "+walls[3].IDString()+" planned length "+walls[3].bLength+" less than targeted "+walls[3].y_targ+". Reason: "+walls[3].failString());
@@ -167,13 +163,13 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 					if(j2==Building.HIT_WATER) waterArea++;
 					if(Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2,j2,k2)]){
 						wc.logOrPrint("Rejected "+ows.name+" city "+ID+", found previous construction in city zone!");
-						//return false;
+						return false;
 					}
 				}
 		}}
 		if(!ows.LevelInterior && (float)waterArea/(float)cityArea > MAX_WATER_PERCENTAGE){
 			wc.logOrPrint("Rejected "+ows.name+" city "+ID+", too much water! City area was " +(100.0f*(float)waterArea/(float)cityArea)+"% water!");
-			//return false;
+			return false;
 		}
 		
 		
@@ -187,7 +183,8 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		}
 		//We've passed all checks, register this city site
 		walls[0].setCursor(0);
-		int[] cityCenter=walls[0].getSurfaceIJKPt(-walls[1].bLength/2, walls[0].bLength/2,world.field_35472_c,false,Building.IGNORE_WATER);
+		int[] cityCenter=new int[]{(walls[0].i1+walls[1].i1+walls[2].i1+walls[3].i1)/4,0,(walls[0].k1+walls[1].k1+walls[2].k1+walls[3].k1)/4};
+		cityCenter[1]=Building.findSurfaceJ(world, cityCenter[0], cityCenter[1], world.field_35472_c-1, false, 3);
 		for(int w=0;w<4;w++) 
 			wc.cityLocations.add(new int[]{walls[w].i1,walls[w].k1,cityType});
 		wc.saveCityLocations();
@@ -202,7 +199,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		if(ows.LevelInterior) levelCity();
 		
 		TemplateWall avenueWS=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
-		LinkedList<BuildingWall> interiorAvenues=new LinkedList<BuildingWall>();
+		LinkedList<BuildingWall> radialAvenues=new LinkedList<BuildingWall>();
 		
 		//layout
 		layout=new int[Math.abs(corner1[0]-corner2[0])][Math.abs(corner1[2]-corner2[2])];
@@ -212,10 +209,12 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		int gateFlankingTowers=0;
 		for(BuildingWall w : walls){
 			//build city walls
-			if(BuildingWall.DEBUG > 1) w.printWall();
 			w.endBLength=0;
 			w.buildFromTML();
-			BuildingWall[] avenues=w.buildGateway(w.bLength/4,3*w.bLength/4,GATE_HEIGHT,avenueWS.WWidth,avenueWS,random.nextInt(6)<gateFlankingTowers ? 0:axXHand,500,null,-axXHand,150,cityCenter,w.bDir>1 ? 1:-1);
+			int radialAvenueHand=w.bDir==dir[0] || w.bDir==dir[1] ? -1:1;
+			int startScan=w.getY(cityCenter) + (radialAvenueHand==w.bHand ? (avenueWS.WWidth-1):0);
+			BuildingWall[] avenues=w.buildGateway(new int[]{w.bLength/4,3*w.bLength/4}, startScan, GATE_HEIGHT, avenueWS.WWidth, avenueWS, 
+					random.nextInt(6)<gateFlankingTowers ? 0:axXHand, 500, null, -axXHand, 150, cityCenter, radialAvenueHand);
 			w.makeBuildings(axXHand==-1,axXHand==1,true,false, false);
 			if(w.gatewayStart!=BuildingWall.NO_GATEWAY) gateFlankingTowers++;
 
@@ -223,19 +222,17 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 			//build avenues
 			if(avenues!=null){
 				avenues[0].buildFromTML();
-				//avenues[1].buildFromTML(true);
-				interiorAvenues.add(avenues[1]);
+				radialAvenues.add(avenues[1]);
 			}else {
 				//no gateway on this city side, try just building an interior avenue from midpoint
-				w.setCursor(w.bLength/2);
-				BuildingWall midpointAvenue=new BuildingWall(0, this,sws,Building.rotDir(w.bDir,-axXHand),w.bDir>1 ? 1:-1, ows.MaxL,false,w.getSurfaceIJKPt(-1, 0,world.field_35472_c,false,Building.IGNORE_WATER));
-				midpointAvenue.setTarget(cityCenter);
-				midpointAvenue.plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,true);
-				if(midpointAvenue.bLength > 20){
-					if(BuildingWall.DEBUG > 1) System.out.println("Built a non-gateway avenue for dir="+w.bDir+" wall.");
-					midpointAvenue.smooth(10,10,true);
-					//midpointAvenue.buildFromTML(true);
-					interiorAvenues.add(midpointAvenue);
+				w.setCursor(startScan);
+				BuildingWall radialAvenue=new BuildingWall(0, this, sws, Building.rotDir(w.bDir,-axXHand), radialAvenueHand, ows.MaxL, false,
+						                                   w.getSurfaceIJKPt(-1, 0,world.field_35472_c,false,Building.IGNORE_WATER));
+				radialAvenue.setTarget(cityCenter);
+				radialAvenue.plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,true);
+				if(radialAvenue.bLength > 20){
+					radialAvenue.smooth(10,10,true);
+					radialAvenues.add(radialAvenue);
 				}
 			}
 		}
@@ -257,56 +254,69 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		}
 		
 		
-
-		
-		
 		if(!master.isFlushingGenThreads) suspendGen();
 		//===============================================      streets   ===============================================
-		//build avenues and cross avenues
-		LinkedList<BuildingDoubleWall> branchAvenues=new LinkedList<BuildingDoubleWall>();
-		int avInterval=ows.StreetDensity > 3*TemplateWall.MAX_STREET_DENSITY/4 ? 60 : 35;
-		for(BuildingWall avenue : interiorAvenues){
-			for(int n=avenue.bLength-avInterval; n>=25; n-=avInterval){
-				avenue.setCursor(n);
-				BuildingDoubleWall crossAvenue=new BuildingDoubleWall(ID,this,sws,Building.rotDir(avenue.bDir,Building.ROT_R),Building.R_HAND,avenue.getIJKPt(0,0,0));
-				if(crossAvenue.plan())
-					branchAvenues.add(crossAvenue);
-			}
-			avenue.buildFromTML();
-			avenue.setLayoutCode(LAYOUT_CODE_AVENUE);
-		}
-		for(BuildingDoubleWall avenue : branchAvenues) avenue.build(LAYOUT_CODE_AVENUE);
+		//Plan/Build Order:
+		//1)Plan radial avenues as part of wall building
+		//2)Plan cross avenues
+		//3)Build radial avenues
+		//4)Plan Streets
+		//5)Build cross avenues
+		//6)Build streets
+		//7)Build radial avenue buildings
+		//8)Build cross avenue buildings
+		//9)Build street buildings
 		
-
-		//number of streets scales as Lmean^(3/2). Filling a 2-D space with 1-D objects, but these objects don't go on forever.
-		int maxTries=Lmean*((int)Math.sqrt((double)Lmean))*ows.StreetDensity*ows.StreetDensity/90;
+		//build avenues and cross avenues
+		boolean cityIsDense=ows.StreetDensity >= 3*TemplateWall.MAX_STREET_DENSITY/4;
+		LinkedList<BuildingDoubleWall> crossAvenues=new LinkedList<BuildingDoubleWall>();
+		int avInterval=cityIsDense ? 60 
+								   : Lmean > 110 ? 35:20;
+				
+		//maxStreetCount scales linearly with LMean since we fill 2-D city quadrants with 1-D objects.
+		int maxStreetCount=Lmean*ows.StreetDensity/20;  
+		
+		for(BuildingWall radialAvenue : radialAvenues){
+			for(int n=radialAvenue.bLength-avInterval; n>=20; n-=avInterval){
+				radialAvenue.setCursor(n);
+				BuildingDoubleWall crossAvenue=new BuildingDoubleWall(ID,this,sws,Building.rotDir(radialAvenue.bDir,Building.ROT_R),Building.R_HAND,radialAvenue.getIJKPt(0,0,0));
+				if(crossAvenue.plan())
+					crossAvenues.add(crossAvenue);
+			}
+			radialAvenue.setLayoutCode(LAYOUT_CODE_AVENUE);
+		}
+		
+		for(BuildingWall avenue : radialAvenues) avenue.buildFromTML();
 		
 		LinkedList<BuildingDoubleWall> plannedStreets=new LinkedList<BuildingDoubleWall>();
 
-		for(int tries=0;tries<maxTries; tries++){
-			
+		int streetsBuilt=0;
+		for(int tries=0;tries<maxStreetCount; tries++){
 			if(tries % 5==0 && !master.isFlushingGenThreads) suspendGen();
 			int[] pt=randInteriorPoint();
 			pt[1]++;//want block above surface block
 			sws=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,true);
 			if(pt!=null && pt[1]!=-1){
-
 				//streets
 				BuildingDoubleWall street=new BuildingDoubleWall(ID+tries,this,sws,random.nextInt(4),Building.R_HAND,pt);
-				if(street.plan()) plannedStreets.add(street);
+				if(street.plan()){ plannedStreets.add(street); streetsBuilt++; }
 			}
 		}
+		
+		
+		for(BuildingDoubleWall avenue : crossAvenues) avenue.build(LAYOUT_CODE_AVENUE);
+		
+		
 		for(BuildingDoubleWall street : plannedStreets) street.build(LAYOUT_CODE_STREET);
 		
 		//build towers
-		boolean overlapTowers=ows.StreetDensity >= TemplateWall.MAX_STREET_DENSITY/2;
-		for(BuildingWall avenue : interiorAvenues)
-			avenue.makeBuildings(true,true,false,overlapTowers, true);
-		for(BuildingDoubleWall avenue : branchAvenues)
-			avenue.buildTowers(true,true,false,overlapTowers, true);
+		for(BuildingWall avenue : radialAvenues)
+			avenue.makeBuildings(true,true,false,cityIsDense, true);
+		for(BuildingDoubleWall avenue : crossAvenues)
+			avenue.buildTowers(true,true,false,cityIsDense, true);
 		for(BuildingDoubleWall street : plannedStreets){
 			if(!master.isFlushingGenThreads) suspendGen();
-			street.buildTowers(true,true,sws.MakeGatehouseTowers,overlapTowers, false);
+			street.buildTowers(true,true,sws.MakeGatehouseTowers,cityIsDense, false);
 		}
 		
 		

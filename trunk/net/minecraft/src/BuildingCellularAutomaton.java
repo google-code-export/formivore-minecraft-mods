@@ -29,26 +29,24 @@ public class BuildingCellularAutomaton extends Building {
 	public byte[][] seed=null;
 	private byte[][] caRule=null;
 	private int MaxOscillatorCullStep;
-	private int stairsBlock;
-	public boolean makeFloors;
 	int[][] fBB;
-	int zGround;
+	int zGround=0;
 	
 	
-	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,boolean SmoothWithStairs,boolean makeFloors_,int bDir_,int axXHand_, boolean centerAligned_,int width, int height, int length, int MaxOscillatorCullStep_, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
+	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, boolean centerAligned_,int width, int height, int length, int MaxOscillatorCullStep_, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
 		super(0,wgt_, bRule_, bDir_,axXHand_,centerAligned_,new int[]{width,height,length},sourcePt);
 		seed=seed_;
 		MaxOscillatorCullStep=MaxOscillatorCullStep_;
 		if((bWidth - seed.length)%2 !=0 ) bWidth++; //so seed can be perfectly centered
 		if((bLength - seed[0].length)%2 !=0 ) bLength++;
 		caRule=caRule_;
-		makeFloors=makeFloors_;
-		stairsBlock=SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : AIR_ID;
-		if(stairsBlock==WOOD_STAIRS_ID) stairsBlock=AIR_ID;
+		//makeFloors=makeFloors_;
+		//stairsBlock=SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : AIR_ID;
+		//if(stairsBlock==WOOD_STAIRS_ID) stairsBlock=AIR_ID;
 	}
 	
 	//unlike other Buildings, this should be called after plan()
-	public boolean queryCanBuild(int ybuffer) throws InterruptedException{
+	public boolean queryCanBuild(int ybuffer,boolean nonLayoutFrameCheck) throws InterruptedException{
 		if(!( queryExplorationHandler(0,0,bLength-1) && queryExplorationHandler(bWidth-1,0,0) && queryExplorationHandler(bWidth-1,0,bLength-1) )){
 			return false;
 		}
@@ -58,13 +56,13 @@ public class BuildingCellularAutomaton extends Building {
 	    	if(wgt.layoutIsClear(getIJKPt(0,0,ybuffer),getIJKPt(bWidth-1,0,bLength-1),layoutCode)){
 	    		wgt.setLayoutCode(getIJKPt(0,0,ybuffer),getIJKPt(bWidth-1,0,bLength-1),layoutCode);
 	    	} else return false;
-    	}else{
+    	}else if(nonLayoutFrameCheck){
     		if(isObstructedFrame(0,ybuffer)) return false;
     	}
 		return true;
 	}
 	
-	public boolean plan(){
+	public boolean plan(boolean bury){
 		//layers is z-flipped from usual orientation so z=0 is the top
 		layers=new byte[bHeight][bWidth][bLength];
 		for(int z=0; z<bHeight; z++) for(int x=0; x<bWidth; x++) for(int y=0; y<bLength; y++)
@@ -155,13 +153,14 @@ public class BuildingCellularAutomaton extends Building {
 		if(!shiftBuidlingJDown(15)) //do a height check to see we are not at the edge of a cliff etc.
 			return false;
 		boolean hitWater=false;
-		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),world.field_35472_c,false,0),
-			    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),world.field_35472_c,false,0),
-			    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),world.field_35472_c,false,0),
-			    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),world.field_35472_c,false,0)};
+		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),j0+10,false,0),
+			    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),j0+10,false,0),
+			    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),j0+10,false,0),
+			    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),j0+10,false,0)};
 		for(int height : heights) hitWater |= height==HIT_WATER;
-		if(!hitWater){
+		if(bury && !hitWater){
 			zGround=random.nextInt(3*bHeight/4);
+			if(j0-zGround < 5) zGround=j0-5;
 			j0-=zGround; //make ruin partially buried
 		}
 		
@@ -184,7 +183,9 @@ public class BuildingCellularAutomaton extends Building {
 		return true;
 	}
 		
-	public void build(){
+	public void build(boolean SmoothWithStairs,boolean makeFloors){
+		int stairsBlock=SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : AIR_ID;
+		if(stairsBlock==WOOD_STAIRS_ID) stairsBlock=AIR_ID;
 		TemplateRule[] stairs=new TemplateRule[]{ new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_NORTH]},bRule.chance),
 												  new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_EAST]},bRule.chance),
 												  new TemplateRule(new int[]{stairsBlock,STAIRS_DIR_TO_META[DIR_SOUTH]}, bRule.chance),
@@ -221,14 +222,14 @@ public class BuildingCellularAutomaton extends Building {
 							(			  layers[z][x][y-1]!=ALIVE //y-1 empty and..
 								&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y-1]==ALIVE)) //not obstructing gaps to the sides
 								&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
-							))
+							) && random.nextInt(100)<bRule.chance)
 						)setBlockLocal(x,z,y,stairs[DIR_NORTH]);
 						else
 						if(y-1>=0      && layers[z][x][y-1]==ALIVE && (	y+1==bLength ||
 							(		      layers[z][x][y+1]!=ALIVE 
 									&& (x+1==bWidth || !(layers[z][x+1][y]!=ALIVE && layers[z][x+1][y+1]==ALIVE)) 
 									&& (x-1<0       || !(layers[z][x-1][y]!=ALIVE && layers[z][x-1][y+1]==ALIVE))				 
-							))
+							) && random.nextInt(100)<bRule.chance)
 						)setBlockLocal(x,z,y,stairs[DIR_SOUTH]);
 						
 						else
@@ -236,14 +237,14 @@ public class BuildingCellularAutomaton extends Building {
 							(			 layers[z][x-1][y]!=ALIVE 
 									&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x-1][y+1]==ALIVE))
 									&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x-1][y-1]==ALIVE))				 
-							))
+							) && random.nextInt(100)<bRule.chance)
 						)setBlockLocal(x,z,y,stairs[DIR_EAST]);
 						else
 						if(x-1>=0     && layers[z][x-1][y]==ALIVE && (	x+1==bWidth ||
 							(		     layers[z][x+1][y]!=ALIVE 
 									&& (y+1==bLength|| !(layers[z][x][y+1]!=ALIVE && layers[z][x+1][y+1]==ALIVE))
 									&& (y-1<0       || !(layers[z][x][y-1]!=ALIVE && layers[z][x+1][y-1]==ALIVE))				 
-							))
+							) && random.nextInt(100)<bRule.chance)
 						)setBlockLocal(x,z,y,stairs[DIR_WEST]);
 					}
 				}
@@ -333,7 +334,7 @@ public class BuildingCellularAutomaton extends Building {
 			if(layout[x][y]){
 				int[] pt=getIJKPt(x,z,y);
 				int lightVal=world.getSavedLightValue(EnumSkyBlock.Sky, pt[0], pt[1], pt[2]); 
-				if(lightVal!=0 && lightVal<5){ //there is some kind of where where lightVal coming up as zero, even though it is not
+				if(lightVal<5 && !(lightVal==0 && j0+z>world.field_35472_c>>1)){ //there is some kind of bug where where lightVal coming up as zero, even though it is not
 					setBlockLocal(x,z,y,UPRIGHT_SPAWNER_ID);
 					builtSpawner=true;
 				}else if(lightVal<10){
@@ -344,7 +345,7 @@ public class BuildingCellularAutomaton extends Building {
 			}
 		}
 		
-		if(builtSpawner && random.nextInt(2)==0){
+		if(builtSpawner && random.nextInt(3)!=0){
 			for(int tries=0; tries < 8; tries++){
 				int x=random.nextInt(fWidth)+fBB[0][z],
 				    y=random.nextInt(fLength)+fBB[2][z];
@@ -382,10 +383,10 @@ public class BuildingCellularAutomaton extends Building {
 	
 	public boolean shiftBuidlingJDown(int maxShift){
 		//try 4 corners and center
-		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),world.field_35472_c,false,IGNORE_WATER),
-							    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),world.field_35472_c,false,IGNORE_WATER),
-							    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),world.field_35472_c,false,IGNORE_WATER),
-							    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),world.field_35472_c,false,IGNORE_WATER)};
+		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),j0+10,false,IGNORE_WATER),
+							    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),j0+10,false,IGNORE_WATER),
+							    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),j0+10,false,IGNORE_WATER),
+							    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),j0+10,false,IGNORE_WATER)};
 		
 		int minHeight=heights[minIdx(heights)];
 		if(heights[maxIdx(heights)] - minHeight > maxShift) return false;
@@ -445,32 +446,6 @@ public class BuildingCellularAutomaton extends Building {
 		for(int n=0; n<9; n++) if(rule[1][n]==ALIVE) sb.append(n);
 		return sb.toString();
 	}
-	
-	public final static String[][] DEFAULT_CA_RULES=new String[][]{
-		{"B36/S013468","(110,74)"},
-		{"B36/S013468",""},
-		{"B36/S013468",""},
-		{"B38/S023468","(169,138)"},
-		{"B38/S023468",""},
-		{"B38/S023468",""},
-		{"B368/S245","Morley"},
-		{"B368/S245",""},
-		{"B3/S23","Life - good for weird temples"},
-		{"B3/S23",""},
-		{"B3/S23",""},
-		{"B36/S125","2x2 - pillar & arch temple/tower/statue"},
-		{"B36/S125",""},
-		{"B36/S23","High Life - space invaders"},
-		{"B36/S23",""},
-		{"B3/S012345678","Inkspots - nice towers"},
-		{"B3/S012345678",""},
-		{"B45/S2345","45-rule - square towers"},
-		{"B45/S2345",""},
-		{"B2/S01","\"temple\""},
-		{"B35678/S015678","legged amoeba"},
-		{"B35678/S015678",""},
-		{"B35678/S015678",""}
-	};
 	
 }
 

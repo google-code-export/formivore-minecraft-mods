@@ -1456,6 +1456,7 @@ public class Building
     public final static boolean[] IS_DELAY_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_LOAD_TRASMITER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_WATER_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
+    public final static boolean[] IS_FLOWING_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_ORE_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_HUMANS_PLUS_FLAG=new boolean[SPECIAL_BLOCKID_END+1];
     public final static boolean[] IS_STAIRS_BLOCK=new boolean[SPECIAL_BLOCKID_END+1];
@@ -1470,6 +1471,8 @@ public class Building
     		//note lava is considered to NOT be a liquid, and is therefore not wallable. This is so we can build cities on the lava surface.
     		IS_WATER_BLOCK[blockID]= blockID==WATER_ID || blockID==STATIONARY_WATER_ID || blockID==ICE_ID;
     		
+    		IS_FLOWING_BLOCK[blockID]=IS_WATER_BLOCK[blockID] || blockID==STATIONARY_LAVA_ID || blockID==LAVA_ID || blockID==SAND_ID || blockID==GRAVEL_ID;
+    		
     		IS_WALLABLE[blockID]= IS_WATER_BLOCK[blockID]
     		   || blockID==AIR_ID || blockID==SAPLING_ID || blockID==LOG_ID || blockID==LEAVES_ID || blockID==WEB_ID || blockID==LONG_GRASS_ID
     		   || blockID==DEAD_BUSH_ID || blockID==YELLOW_FLOWER_ID || blockID==RED_ROSE_ID || blockID==BROWN_MUSHROOM_ID || blockID==RED_MUSHROOM_ID
@@ -1478,21 +1481,20 @@ public class Building
     		   || blockID==LILY_PAD_ID || blockID==NETHER_WART_ID; 
 
     		IS_ORE_BLOCK[blockID]=blockID==COAL_ORE_ID || blockID==IRON_ORE_ID || blockID==GOLD_ORE_ID || blockID==LAPIS_ORE_ID || blockID==REDSTONE_ORE_ID
-    		                   || blockID==DIAMOND_ORE_ID;
-    			
+    		   || blockID==DIAMOND_ORE_ID || blockID==CLAY_ID;
+    		
     		//Define by what it is not. Not IS_WALLABLE and not a naturally occurring solid block (obsidian/bedrock are exceptions)
-    		IS_ARTIFICAL_BLOCK[blockID]= !( IS_WALLABLE[blockID] || IS_ORE_BLOCK[blockID] 
-    		   || blockID==STONE_ID || blockID==DIRT_ID || blockID==GRASS_ID || blockID==GRAVEL_ID || blockID==SAND_ID || blockID==CLAY_ID
-    		   || blockID==NETHERRACK_ID || blockID==SOUL_SAND_ID || blockID==MYCELIUM_ID || blockID==LAVA_ID || blockID==STATIONARY_LAVA_ID);
-    
+    		IS_ARTIFICAL_BLOCK[blockID]= !( IS_WALLABLE[blockID] || IS_ORE_BLOCK[blockID]
+    		   || blockID==STONE_ID || blockID==DIRT_ID || blockID==GRASS_ID || blockID==GRAVEL_ID || blockID==SAND_ID || blockID==NETHERRACK_ID 
+    		   || blockID==SOUL_SAND_ID || blockID==MYCELIUM_ID || blockID==LAVA_ID || blockID==STATIONARY_LAVA_ID);
+    		
     		IS_DELAY_BLOCK[blockID]=IS_STAIRS_BLOCK[blockID]
-    		   || blockID==TORCH_ID || blockID==LEVER_ID || blockID==SIGN_POST_ID || blockID==SIGN_ID || blockID==REDSTONE_TORCH_ON_ID
+    		   || blockID==TORCH_ID || blockID==LEVER_ID || blockID==SIGN_POST_ID || blockID==SIGN_ID || blockID==REDSTONE_TORCH_ON_ID || blockID==FIRE_ID
     		   || blockID==REDSTONE_TORCH_OFF_ID || blockID==STONE_BUTTON_ID || blockID==GLOWSTONE_ID || blockID==VINES_ID || IS_STAIRS_BLOCK[blockID];
     		
     		//Define by what it is not.
-    		IS_LOAD_TRASMITER_BLOCK[blockID]= !(IS_WALLABLE[blockID] 
-    		   ||  blockID==HOLE_ID || blockID==PRESERVE_ID ||blockID==TORCH_ID || blockID==LADDER_ID || blockID==GRAVEL_ID || blockID==SAND_ID
-    		   || blockID==LAVA_ID || blockID==STATIONARY_LAVA_ID);
+    		IS_LOAD_TRASMITER_BLOCK[blockID]= !(IS_WALLABLE[blockID]  || IS_FLOWING_BLOCK[blockID]
+    		   ||  blockID==HOLE_ID || blockID==PRESERVE_ID || blockID==AIR_ID || blockID==TORCH_ID || blockID==LADDER_ID);
     		
     		IS_HUMANS_PLUS_FLAG[blockID]= blockID==HUMANS_PLUS_ASSASIN_FLAG_ID || blockID==HUMANS_PLUS_ROGUE_FLAG_ID || blockID==HUMANS_PLUS_BANDIT_FLAG_ID 
  		       ||  blockID==HUMANS_PLUS_PEACEFUL_FLAG_ID || blockID==HUMANS_PLUS_MILITIA_FLAG_ID || blockID==HUMANS_PLUS_SHADOW_FLAG_ID;
