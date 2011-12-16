@@ -108,19 +108,11 @@ public class TemplateWall extends TemplateTML{
 		if(extraOptions.containsKey("make_end_towers")) MakeEndTowers=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("make_end_towers")) == 1;
 		if(extraOptions.containsKey("make_underground_entranceways")) MakeUndergroundEntranceways=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("make_underground_entranceways")) == 1;
 		if(extraOptions.containsKey("merge_walls")) MergeWalls=BuildingExplorationHandler.readIntParam(lw,0,"=",(String)extraOptions.get("merge_walls")) == 1;
+		
+		//default tower variables
 		if(extraOptions.containsKey("default_tower_weight")) DefaultTowerWeight=BuildingExplorationHandler.readIntParam(lw,DefaultTowerWeight,"=",(String)extraOptions.get("default_tower_weight"));
-		if(extraOptions.containsKey("ca_ruin_rule")) CARuinRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("ca_ruin_rule"),rules);
-		if(extraOptions.containsKey("ca_ruin_weight")) CARuinWeight=BuildingExplorationHandler.readIntParam(lw,CARuinWeight,"=",(String)extraOptions.get("ca_ruin_weight"));
-		if(extraOptions.containsKey("ca_ruin_min_height")) CARuinMinHeight=BuildingExplorationHandler.readIntParam(lw,CARuinMinHeight,"=",(String)extraOptions.get("ca_ruin_min_height"));
-		if(extraOptions.containsKey("ca_ruin_max_height")) CARuinMaxHeight=BuildingExplorationHandler.readIntParam(lw,CARuinMaxHeight,"=",(String)extraOptions.get("ca_ruin_max_height"));
-		if(extraOptions.containsKey("ca_ruin_max_width")) CARuinContainerWidth=BuildingExplorationHandler.readIntParam(lw,CARuinContainerWidth,"=",(String)extraOptions.get("ca_ruin_max_width"));
-		if(extraOptions.containsKey("ca_ruin_automata_rules")) CARuinAutomataRules=BuildingExplorationHandler.readAutomataList(lw,"=",(String)extraOptions.get("ca_ruin_automata_rules"));
 		if(extraOptions.containsKey("tower_offset")) TowerXOffset=BuildingExplorationHandler.readIntParam(lw,TowerXOffset,"=",(String)extraOptions.get("tower_offset"));
 		if(extraOptions.containsKey("spawner_rule")) SpawnerRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("spawner_rule"),rules);
-		if(extraOptions.containsKey("mob_probability")) mobProb=BuildingExplorationHandler.readFloatParam(lw,mobProb,"=",(String)extraOptions.get("mob_probability"));
-		if(extraOptions.containsKey("pig_zombie_probability")) pigZombieProb=BuildingExplorationHandler.readFloatParam(lw,pigZombieProb,"=",(String)extraOptions.get("pig_zombie_probability"));
-		if(extraOptions.containsKey("enderman_probability")) endermanProb=BuildingExplorationHandler.readFloatParam(lw,endermanProb,"=",(String)extraOptions.get("enderman_probability"));
-		if(extraOptions.containsKey("cave_spider_probability")) caveSpiderProb=BuildingExplorationHandler.readFloatParam(lw,caveSpiderProb,"=",(String)extraOptions.get("cave_spider_probability"));
 		if(extraOptions.containsKey("populate_furniture")) PopulateFurniture=BuildingExplorationHandler.readFloatParam(lw,0,"=",(String)extraOptions.get("populate_furniture")) == 1;
 		if(extraOptions.containsKey("make_doors")) MakeDoors=BuildingExplorationHandler.readFloatParam(lw,0,"=",(String)extraOptions.get("make_doors")) == 1;
 		if(extraOptions.containsKey("circular_probability")) CircularProb=BuildingExplorationHandler.readFloatParam(lw,CircularProb,"=",(String)extraOptions.get("circular_probability"));
@@ -138,6 +130,21 @@ public class TemplateWall extends TemplateTML{
 		if(extraOptions.containsKey("circular_tower_roof_styles")) CircRoofStyles=BuildingExplorationHandler.readNamedCheckList(lw,CircRoofStyles,"=",(String)extraOptions.get("circular_tower_roof_styles"),BuildingTower.ROOFSTYLE_NAMES,"");
 		if(extraOptions.containsKey("circular_tower_roof_rule")) CircRoofRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("circular_tower_roof_rule"),rules);
 
+		//default tower variables (deprecated)
+		if(extraOptions.containsKey("mob_probability")) mobProb=BuildingExplorationHandler.readFloatParam(lw,mobProb,"=",(String)extraOptions.get("mob_probability"));
+		if(extraOptions.containsKey("pig_zombie_probability")) pigZombieProb=BuildingExplorationHandler.readFloatParam(lw,pigZombieProb,"=",(String)extraOptions.get("pig_zombie_probability"));
+		if(extraOptions.containsKey("enderman_probability")) endermanProb=BuildingExplorationHandler.readFloatParam(lw,endermanProb,"=",(String)extraOptions.get("enderman_probability"));
+		if(extraOptions.containsKey("cave_spider_probability")) caveSpiderProb=BuildingExplorationHandler.readFloatParam(lw,caveSpiderProb,"=",(String)extraOptions.get("cave_spider_probability"));
+		
+		//caruin variables
+		if(extraOptions.containsKey("ca_ruin_rule")) CARuinRule=explorationHandler.readRuleIdOrRule("=",(String)extraOptions.get("ca_ruin_rule"),rules);
+		if(extraOptions.containsKey("ca_ruin_weight")) CARuinWeight=BuildingExplorationHandler.readIntParam(lw,CARuinWeight,"=",(String)extraOptions.get("ca_ruin_weight"));
+		if(extraOptions.containsKey("ca_ruin_min_height")) CARuinMinHeight=BuildingExplorationHandler.readIntParam(lw,CARuinMinHeight,"=",(String)extraOptions.get("ca_ruin_min_height"));
+		if(extraOptions.containsKey("ca_ruin_max_height")) CARuinMaxHeight=BuildingExplorationHandler.readIntParam(lw,CARuinMaxHeight,"=",(String)extraOptions.get("ca_ruin_max_height"));
+		if(extraOptions.containsKey("ca_ruin_max_width")) CARuinContainerWidth=BuildingExplorationHandler.readIntParam(lw,CARuinContainerWidth,"=",(String)extraOptions.get("ca_ruin_max_width"));
+		if(extraOptions.containsKey("ca_ruin_automata_rules")) CARuinAutomataRules=BuildingExplorationHandler.readAutomataList(lw,"=",(String)extraOptions.get("ca_ruin_automata_rules"));
+		
+		//&&&&&&&&&&&&&&&&&&&&&&  post-processing  &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 		if(MaxL <= MinL) MaxL=MinL+1;
 		if(StreetDensity<0) StreetDensity=0;
 		if(StreetDensity>MAX_STREET_DENSITY) StreetDensity=MAX_STREET_DENSITY;
