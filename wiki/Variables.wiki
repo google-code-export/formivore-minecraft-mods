@@ -75,11 +75,12 @@ The minimum separation required between buildings built alongside this wall.<br>
 Defaults to `75`.
 
 <font color= #800080>`make_buildings` </font>= `1/0`<br>
-If set to 1 make buildings along side this wall, if set to 0 don't.<br>
+If set to 1 make buildings alongside this wall, if set to 0 don't.<br>
 Defaults to `1`.
 
 <font color= #800080>`make_end_towers` </font>= `1/0`<br>
-If set to 1 make towers at the wall endpoints, if set to 0 don't.<br>
+<font color= #800080>`make_gatehouse_towers` </font>= `1/0`<br>
+If set to 1 make towers at the wall endpoints/in the middle of walls, if set to 0 don't.<br>
 Defaults to `1`.
 
 <font color= #800080>`make_underground_entraceways` </font>= `1/0`<br>
@@ -96,7 +97,7 @@ The block rule used as the main structural block for the default towers. Can eit
 
 <font color= #800080>`default_tower_weight` </font>= `weight`<br>
 The weight of towers. Both default towers and buildings from template listed in the building_templates variable can be generated alongside walls. This weight specifies how likely default tower are relative to template buildings.<br>
-Default to `1`.
+Defaults to `1`.
 
 <font color= #800080>`tower_offset` </font>= `offset`<br>
 The x offset (distance from centerline) of side towers from the wall edges. Negative values will create towers closer to the center.<br>
@@ -114,6 +115,10 @@ Defaults to no chests.
 
 <font color= #800080>`populate_furniture` </font>= `1/0`<br>
 If set to one mod will generate some furniture inside of towers.<br>
+Defaults to `0`.
+
+<font color= #800080>`make_doors` </font>= `1/0`<br>
+If set to one mod will place wooden doors in doorways of towers.<br>
 Defaults to `0`.
 
 <font color= #800080>`circular_probability` </font>= `probability`<br>
@@ -143,3 +148,22 @@ or <font color= #800080>`square_roof_rule` </font>= `<rule definition>`<br>
 or <font color= #800080>`circular_tower_roof_rule` </font>= `<rule definition>`<br>
 The rule used to generate roofs for towers. Can either define a new rule on this line or reference a rule later in the file using a rule number.
 If no rule is provided a default choice is made based on <font color= #800080>`tower_block` </font>.
+
+==CA Ruin Variables==
+
+These variables control any CA Ruins that are generated alongside this wall.
+
+<font color= #800080>`ca_ruin_rule` </font>= `<rule definition>`<br>
+or <font color= #800080>`tower_rule` </font>= `rule number`<br>
+The block rule used as the main structural block for the CA Ruins. Can either define a new rule on this line or reference a rule later in the file using a rule number.<br>
+Defaults to <font color= #800080>`tower_rule` </font>.
+
+<font color= #800080>`ca_ruin_weight` </font>= `weight`<br>
+The chance to build weight of CA Ruins relative to the default towers/templates that can also be built alongside this wall.<br>
+Defaults to `0`.
+
+<font color= #800080>`ca_ruin_min_height` </font>= `height`<br>
+<font color= #800080>`ca_ruin_max_height` </font>= `height`<br>
+<font color= #800080>`ca_ruin_max_width` </font>= `width`<br>
+The range of heights and widths allowed for CA Ruins. Height is chosen randomly from the range given. Width is determined by the automata itself, but is bounded by <font color= #800080>`ca_ruin_max_width` </font>.<br>
+Defaults to 20 / 35 / 15
