@@ -37,7 +37,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 								CITY_TEMPLATES_FOLDER_NAME="greatwall";
 
 	//USER MODIFIABLE PARAMETERS, values below are defaults
-	public float GlobalFrequency=0.0015F;
+	public float GlobalFrequency=0.001F;
 	public int TriesPerChunk=1;
 	public float CurveBias=0.0F;
 	public int LengthBiasNorm=200;

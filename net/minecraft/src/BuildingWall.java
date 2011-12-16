@@ -589,12 +589,17 @@ public class BuildingWall extends Building
 			byte[][] caRule=ws.CARuinAutomataRules.get(random.nextInt(ws.CARuinAutomataRules.size()));
 			for(int tries=0; tries < 10; tries++){
 				byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(8,8,0.5F,random);
-				BuildingCellularAutomaton bca=new BuildingCellularAutomaton(wgt,ws.CARuinRule,true,true,dir,1,true,ws.CARuinContainerWidth,
+				BuildingCellularAutomaton bca=new BuildingCellularAutomaton(wgt,ws.CARuinRule,dir,1,true,ws.CARuinContainerWidth,
 									ws.CARuinMinHeight+random.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight+1),ws.CARuinContainerWidth, 12,seed,caRule,pt);
-				if(bca.plan() && bca.queryCanBuild(ybuffer)){
-					bca.build();
+				if(bca.plan(false) && bca.queryCanBuild(ybuffer,ws.CARuinContainerWidth<=15)){
+					bca.build(true,true);
 					return true;
 				}
+			}
+			
+			//We've failed. If an end building, try making a tower instead 
+			if(bDir==dir && ws.makeDefaultTower.weight>0){
+				return makeBuilding(ws.makeDefaultTower,tw,ybuffer,overlapTowers,dir,pt);
 			}
 		}
 		else{
@@ -602,6 +607,11 @@ public class BuildingWall extends Building
 			if(buildingTML.queryCanBuild(ybuffer)){
 				buildingTML.build();
 				return true;
+			}
+			
+			//We've failed. If an end building, try making a tower instead 
+			if(bDir==dir && ws.makeDefaultTower.weight>0){
+				return makeBuilding(ws.makeDefaultTower,tw,ybuffer,overlapTowers,dir,pt);
 			}
 		}
 		return false;
@@ -627,13 +637,24 @@ public class BuildingWall extends Building
 	//RETURNS:
 	//y-position where gateway was build or -1 if no gateways was built
 	//
-	public BuildingWall[] buildGateway(int startScan, int endScan, int gateHeight,int gateWidth,TemplateWall rs,int flankTHand,
+	public BuildingWall[] buildGateway(int[] scanWindow, int scanStart, int gateHeight,int gateWidth,TemplateWall rs,int flankTHand,
 			int XMaxLen,int[] XTarget,int XHand, int antiXMaxLen, int[] antiXTarget, int antiXHand) throws InterruptedException {
 		BuildingWall[] avenues=null;
 		if(rs!=null) gateWidth=rs.WWidth;
+		if(scanStart < scanWindow[0]) scanStart=scanWindow[0];
+		if(scanStart > scanWindow[1]) scanStart=scanWindow[1];
+		int scanA=scanStart, scanB=scanStart+1;
 		
-		for(int m=0; Math.abs(m)<(endScan-startScan)/2; m=-m+(m<=0 ? 1:0)){
-			setCursor((endScan + startScan)/2+m);
+		for(boolean aOrB=true; scanA>=scanWindow[0] || scanB<=scanWindow[1]; aOrB=!aOrB){
+			setCursor(aOrB ? scanA : scanB);
+			if(aOrB){ 
+				if(scanA<scanWindow[0]) continue;
+				scanA-=3;
+			}else{
+				if(scanB>scanWindow[1]) continue;
+				scanB+=3;
+			}
+			
 			if(curvature(zArray[n0], zArray[n0-gateWidth/2], zArray[n0-gateWidth-1], 1)==0 &&
 			   curvature(xArray[n0], xArray[n0-gateWidth/2], xArray[n0-gateWidth-1], 0)==0)
 			{

@@ -101,7 +101,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 				if(Building.CIRCLE_SHAPE[top_diam][x1][y1]>=0){
 					//keep gravel and water from pouring in
 					for(int z2=z1+1; z2<=z1+3; z2++)
-						if( Building.IS_LOAD_TRASMITER_BLOCK[world.getBlockId(i+offset+x1, j+z2, k+offset+y1)])
+						if( Building.IS_FLOWING_BLOCK[world.getBlockId(i+offset+x1, j+z2, k+offset+y1)])
 							world.setBlock(i+offset+x1, j+z1+1, k+offset+y1,Building.STONE_ID);
 			}}}
 			
@@ -199,7 +199,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 			if(Building.CIRCLE_SHAPE[hollow[3]][pt[0]][pt[2]]==0){		
 				pt[0]+=hollow[0];
 				pt[2]+=hollow[2];
-				pt[1]=Building.findSurfaceJ(world, pt[0], pt[2], hollow[1]-(hollow[3]+1)/2,false,Building.IGNORE_WATER);
+				pt[1]=Building.findSurfaceJ(world, pt[0], pt[2], hollow[1]-(hollow[3]+1)/2,false,Building.IGNORE_WATER)+1;
 				TemplateWall sws=TemplateWall.pickBiomeWeightedWallStyle(pws.streets,world,pt[0],pt[2],random,true);
 				sws.MergeWalls=true;
 				BuildingDoubleWall street=new BuildingDoubleWall(tries,this,sws,random.nextInt(4),Building.R_HAND,pt);

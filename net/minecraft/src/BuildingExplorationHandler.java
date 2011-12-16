@@ -50,9 +50,9 @@ import net.minecraft.client.Minecraft;
 
 	b)Add the following lines to the end of the tick() function in World.java:
 	if(populatorWalledCity!=null) 
-        populatorWalledCity.doOnTick();
+        populatorWalledCity.doOnTick(this);
     if(populatorGreatWall!=null) {
-        populatorGreatWall.doOnTick();
+        populatorGreatWall.doOnTick(this);
         populatorGreatWall.master=populatorWalledCity;
     }
     
@@ -82,6 +82,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	protected final static int CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=1;
 	public final static int[] NO_CALL_CHUNK=null;
+	private final static int MIN_CHUNK_SEPARATION_FROM_PLAYER=6;
 	
 	public final static String VERSION_STRING="v2.2.0";
 	public final static String GREAT_WALL_MOD_STRING="mod_GreatWall "+VERSION_STRING;
@@ -280,8 +281,12 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		 || Math.abs(chunkK - kChunkHome) > max_exploration_distance)){
 				return THREAD_TERMINATE;
 		}
-		if(mc.thePlayer!=null && (chunkI==((int)mc.thePlayer.posX)>>4 || chunkK==((int)mc.thePlayer.posZ)>>4)){ //try not to bury the player alive
-			return THREAD_TERMINATE;
+		if(mc.thePlayer!=null){
+			if(Math.abs(chunkI-((int)mc.thePlayer.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
+			&& Math.abs(chunkK-((int)mc.thePlayer.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
+				System.out.println("Terminating generation thread. Player=("+(((int)mc.thePlayer.posX)>>4)+","+(((int)mc.thePlayer.posZ)>>4)+"), queriedChunk=("+chunkI+","+chunkK+").");
+				return THREAD_TERMINATE;
+			}
 		}
 
 		
@@ -313,7 +318,6 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 			if(isCreatingDefaultChunks){
 				//MP PORT - comment out below line
 				mc.loadingScreen.displayLoadingString(loadingMessage);
-				//mc.loadingScreen.printText("Generating cities");
 			}
 			isFlushingGenThreads=true;
 			flushCallChunk=callChunk;
