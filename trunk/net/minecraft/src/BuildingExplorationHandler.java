@@ -47,14 +47,12 @@ import net.minecraft.client.Minecraft;
 	a)Declare the following variables at the beginning of World.java:
     public PopulatorWalledCity populatorWalledCity;
     public PopulatorGreatWall populatorGreatWall;
+    public PopulatorCARuins populatorCARuins;
 
 	b)Add the following lines to the end of the tick() function in World.java:
-	if(populatorWalledCity!=null) 
-        populatorWalledCity.doOnTick(this);
-    if(populatorGreatWall!=null) {
-        populatorGreatWall.doOnTick(this);
-        populatorGreatWall.master=populatorWalledCity;
-    }
+	if(populatorWalledCity!=null) populatorWalledCity.doOnTick(this);
+    if(populatorGreatWall!=null) populatorGreatWall.doOnTick(this);
+    if(populatorCARuins!=null) populatorCARuins.doOnTick(this);
     
     c)Add the following lines to the end of the populate() function in ChunkProviderGenerate.java 
     if(worldObj.populatorWalledCity==null) worldObj.populatorWalledCity=new PopulatorWalledCity();
@@ -62,8 +60,13 @@ import net.minecraft.client.Minecraft;
     	worldObj.populatorGreatWall=new PopulatorGreatWall();
     	worldObj.populatorGreatWall.master=worldObj.populatorWalledCity;
    	}
+   	if(worldObj.populatorCARuins==null) {
+        worldObj.populatorCARuins=new PopulatorCARuins();
+        worldObj.populatorCARuins.master=worldObj.populatorWalledCity;
+    }
     worldObj.populatorWalledCity.GenerateSurface(worldObj, rand, k, l);
     worldObj.populatorGreatWall.GenerateSurface(worldObj, rand, k, l);
+    worldObj.populatorCARuins.GenerateSurface(worldObj, rand, k, l);
     
     d)Add the following lines to the end of the populate() function in ChunkProviderHell.java.
     if(worldObj.populatorWalledCity==null) worldObj.populatorWalledCity=new PopulatorWalledCity();
@@ -71,8 +74,13 @@ import net.minecraft.client.Minecraft;
     	worldObj.populatorGreatWall=new PopulatorGreatWall();
     	worldObj.populatorGreatWall.master=worldObj.populatorWalledCity;
    	}
+   	if(worldObj.populatorCARuins==null) {
+        worldObj.populatorCARuins=new PopulatorCARuins();
+        worldObj.populatorCARuins.master=worldObj.populatorWalledCity;
+    }
     worldObj.populatorWalledCity.GenerateSurface(worldObj, hellRNG, k, l);
     worldObj.populatorGreatWall.GenerateSurface(worldObj, hellRNG, k, l); 
+    worldObj.populatorCARuins.GenerateSurface(worldObj, hellRNG, k, l);
 
  */
 
