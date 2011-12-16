@@ -39,7 +39,7 @@ import net.minecraft.client.Minecraft;
 
 //Guide for Multiplayer Port
 /*
-1)use Eclipse's Refactor->Rename to rename mod_GreatWall to PopulatorGreatWall and mod_WalledCity to PopulatorWalledCity
+1)use Eclipse's Refactor->Rename to rename mod_GreatWall,mod_WalledCity, and mod_CARuins to PopulatorGreatWall, PopulatorWalledCity, and PopulatorCARuins
 2)Do a search for the string 'MP PORT' and make replacements
 3)Fix any remaining errors, should be commented or self-evident
 4)If necessary, add hooks to World.java, ChunkProviderGenerate.java and ChunkProviderHell.java:

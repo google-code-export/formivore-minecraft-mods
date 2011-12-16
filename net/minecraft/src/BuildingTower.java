@@ -397,7 +397,7 @@ public class BuildingTower extends Building
 	}
 	
 	private boolean populatePortal(int z){
-		if(isNether(world)){ if(random.nextInt(NETHER_PORTAL_ODDS)!=0) return false; }
+		if(world.worldProvider.isHellWorld){ if(random.nextInt(NETHER_PORTAL_ODDS)!=0) return false; }
 		else if(random.nextInt(SURFACE_PORTAL_ODDS)!=0) return false;
 		boolean hasSupport=false;
 		for(int y1=bLength/2-2; y1<bLength/2+2;y1++){

@@ -482,7 +482,6 @@ public class Building
  	//&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setPainting &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
  	//MP PORT
  	//public void setPainting(int[] pt, int metadata){}
- 	
  	public void setPainting(int[] pt, int metadata){
  		//painting uses same orientation meta as ladders.
  		//Have to adjust ijk since unlike ladders the entity exists at the block it is hung on.
@@ -628,7 +627,7 @@ public class Building
 	   if(IS_ORE_BLOCK[oldSurfaceBlockId]) oldSurfaceBlockId=STONE_ID;
 	   if(oldSurfaceBlockId==DIRT_ID || (lowPt[1] < world.field_35472_c/2 && oldSurfaceBlockId==SAND_ID))
 		   oldSurfaceBlockId=GRASS_ID;
-	   if(oldSurfaceBlockId==0) oldSurfaceBlockId= Building.isNether(world) ? NETHERRACK_ID : GRASS_ID;
+	   if(oldSurfaceBlockId==0) oldSurfaceBlockId= world.worldProvider.isHellWorld ? NETHERRACK_ID : GRASS_ID;
 	   int fillBlockId=oldSurfaceBlockId==GRASS_ID ? DIRT_ID : oldSurfaceBlockId;
 		
 	   for(; lowPt[1]<=jtop; lowPt[1]++)
@@ -731,13 +730,15 @@ public class Building
     	return (int)Math.sqrt((double)((pt1[0]-pt2[0])*(pt1[0]-pt2[0]) + (pt1[1]-pt2[1])*(pt1[1]-pt2[1]) + (pt1[2]-pt2[2])*(pt1[2]-pt2[2])));
     }
     
+    /*
 	public static boolean isNether(World world){
 		//BUKKIT PORT
 		//return world.getBiome(0,0)==Biome.HELL;
 		//MP PORT
-		//return world.worldProvider.isHellWorld;
-		return world.worldProvider.isNether;
+		return world.worldProvider.isHellWorld;
+		//return world.worldProvider.isNether;
 	}
+	*/
 	
 	public static long getWorldCode(World world){
 		//BUKKIT PORT
@@ -754,7 +755,7 @@ public class Building
 	
     public static int findSurfaceJ(World world, int i, int k, int jinit, boolean wallIsSurface, int waterSurfaceBuffer){
     	int blockId;
-		if(isNether(world)) {
+		if(world.worldProvider.isHellWorld) {
 			if( (i%2==1) ^ (k%2==1) ) {
 				for(int j=world.field_35472_c-1; j>-1; j--) {
 					if(world.getBlockId(i,j,k)==0) 
