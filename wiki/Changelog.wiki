@@ -1,15 +1,15 @@
 ===Version 2.2.1===
-  *CARuins now can generate interior floors and dungeons.
-  *City locations now save between play sessions.
-  *City and CARuin spawn frequency reduced.
-  *City templates updated with CARuins and some new buildings.
-  *Added CARuins to the server distro.
-  *Better error reporting in log files.
+  * CARuins now can generate interior floors and dungeons.
+  * City locations now save between play sessions.
+  * City and CARuin spawn frequency reduced.
+  * City templates updated with CARuins and some new buildings.
+  * Added CARuins to the server distro.
+  * Better error reporting in log files.
 
 ===Version 2.2.0===
-  *Updated for Minecraft 1.0
-  *Updated templates with more exciting mob spawners
-  *new mod that creates structures from cellular automata!
+  * Updated for Minecraft 1.0
+  * Updated templates with more exciting mob spawners
+  * new mod that creates structures from cellular automata!
 
 ===Version 2.1.2===
   * Better support for modded blocks. Added special blocks for Humans+ spawners.
