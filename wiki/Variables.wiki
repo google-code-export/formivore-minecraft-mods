@@ -96,7 +96,7 @@ or <font color= #800080>`tower_rule` </font>= `rule number`<br>
 The block rule used as the main structural block for the default towers. Can either define a new rule on this line or reference a rule later in the file using a rule number. *<font color=#FF0000>There is no default, this variable must be defined for wall templates or the template will be considered invalid.</font>*
 
 <font color= #800080>`default_tower_weight` </font>= `weight`<br>
-The weight of towers. Both default towers and buildings from template listed in the building_templates variable can be generated alongside walls. This weight specifies how likely default tower are relative to template buildings.<br>
+The likelihood weight of towers. Both default towers and buildings from template listed in the building_templates variable can be generated alongside walls. This weight specifies how likely default tower are relative to template buildings.<br>
 Defaults to `1`.
 
 <font color= #800080>`tower_offset` </font>= `offset`<br>
@@ -159,7 +159,7 @@ The block rule used as the main structural block for the CA Ruins. Can either de
 Defaults to <font color= #800080>`tower_rule` </font>.
 
 <font color= #800080>`ca_ruin_weight` </font>= `weight`<br>
-The chance to build weight of CA Ruins relative to the default towers/templates that can also be built alongside this wall.<br>
+The likelihood weight of CA Ruins relative to the default towers/templates that can also be built alongside this wall.<br>
 Defaults to `0`.
 
 <font color= #800080>`ca_ruin_min_height` </font>= `height`<br>
@@ -167,3 +167,7 @@ Defaults to `0`.
 <font color= #800080>`ca_ruin_max_width` </font>= `width`<br>
 The range of heights and widths allowed for CA Ruins. Height is chosen randomly from the range given. Width is determined by the automata itself, but is bounded by <font color= #800080>`ca_ruin_max_width` </font>.<br>
 Defaults to 20 / 35 / 15
+
+<font color= #800080>`ca_ruin_automata_rules` </font>= `CARule1,CARule2,CARule3,...`<br>
+The automata-defining rules that will be used to generate structures (Not to be confused with block rules!). Rules should be a comma separated list in the By/Sx format. See <a href="http://en.wikipedia.org/wiki/Life-like_cellular_automaton">en.wikipedia.org/wiki/Life-like_cellular_automaton</a>.<br>
+Defaults to `B2/S01`.
