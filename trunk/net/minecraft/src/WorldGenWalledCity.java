@@ -56,7 +56,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		BacktrackLength=wc.BacktrackLength;
 		chestTries=wc.chestTries;
 		chestItems=wc.chestItems;
-		cityType=Building.isNether(world) ? mod_WalledCity.CITY_TYPE_NETHER : mod_WalledCity.CITY_TYPE_SURFACE;
+		cityType=world.worldProvider.isHellWorld ? mod_WalledCity.CITY_TYPE_NETHER : mod_WalledCity.CITY_TYPE_SURFACE;
 		setName("WorldGenWalledCityThread");
 		
 	}
@@ -432,10 +432,10 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(BuildingWall w : walls) w.setCursor(0);
 		int incI=Building.signum(corner2[0]-corner1[0],0), incK=Building.signum(corner2[2]-corner1[2],0);
 		int[] pt=new int[3];
-		int jmin=Building.isNether(world) ? jmean : Math.max(jmean, world.field_35472_c/2);
+		int jmin=world.worldProvider.isHellWorld ? jmean : Math.max(jmean, world.field_35472_c/2);
 		for(BuildingWall w : walls){
 			for(int n=0;n<w.bLength;n++)
-				if(w.zArray[n]+w.j1+w.WalkHeight-1 < jmin && (Building.isNether(world) || jmin >= world.field_35472_c/2))
+				if(w.zArray[n]+w.j1+w.WalkHeight-1 < jmin && (world.worldProvider.isHellWorld || jmin >= world.field_35472_c/2))
 					jmin=w.zArray[n]+w.j1+w.WalkHeight-1;
 		}
 		int jmax=Math.max(jmean + Lmean/LEVELLING_DEVIATION_SLOPE, jmin);
