@@ -13,7 +13,7 @@ NOTE – a [http://www.youtube.com/watch?v=vCpVlrUu2Po&feature=player_embedded v
   #1Open your minecraft_server.jar using an archive program like 7-zip or Winrar.
   #2Drag the mod class files from the class_files folder into the minecraft_server.jar
   #3Close 7-zip or Winrar.
-  #4Drag the mod resources folder into the folder that contains minecraft_server.jar. If you are using scripts or some advanced process to run the server, it's possible this may not be the right folder. Put the resources folder in whatever folder the walled_city_log.txt file appears in.
+  #4Drag the mod resources folder into the folder that contains minecraft_server.jar. If you are using scripts or some advanced process to run the server, it's possible this may not be the right folder. Put the resources folder in whatever folder the walled_city_log.txt file appears in when you run the server with the mod installed.
   #5Enjoy. Clients do not have to install anything to connect to a server running this mod.
 
 ===Activating the modded templates===
