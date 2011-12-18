@@ -6,7 +6,7 @@ NOTE – a [http://www.youtube.com/watch?v=vCpVlrUu2Po&feature=player_embedded v
   #4Drag the class files from inside the mod distribution’s class_files folder into the Minecraft jar.
   #5Delete META-INF directory within minecraft.jar.
   #6Close 7-zip or Winrar.
-  #7For the Walled City and Great Wall mods, drag the mod distribution’s resources folder into the main Minecraft directory (drag the resources folder, not its contents). Select the option to merge the folders if prompted. This should add e.g. a resources/greatwall directory.
+  #7(For the Walled City and Great Wall mods), drag the mod distribution’s resources folder into the main Minecraft directory (drag the resources folder, not its contents). Select the option to merge the folders if prompted. This should add e.g. a resources/greatwall directory.
   #8Enjoy.
 
 ===INSTALLATION – SMP server===
