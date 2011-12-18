@@ -30,7 +30,7 @@ I’m very interested in receiving crash reports so I can fix bugs. Post crash r
   * Your OS
   * Whether you were running any other mods (besides modloader).
   * When the crash occurred (e.g. before the menu screen, while generating a world, while doing something in-game).
-  * Minecraft’s crash report. Minecraft may quit or blackscreen before you can view the error report. In this case the Minecraft <a href=http://dl.dropbox.com/u/23286303/minecrafterrortest.bat>error test</a> batch file should allow you to retrieve the log file. Use the error test script by double clicking on it in Windows to start minecraft.
+  * Minecraft’s crash report. Minecraft may quit or blackscreen before you can view the error report. In this case the Minecraft <a href=http://formivore-minecraft-mods.googlecode.com/files/minecrafterrortest.bat>error test</a> batch file should allow you to retrieve the log file. Use the error test script by double clicking on it in Windows to start minecraft.
 
 <font color=#632423>*_Q: Generation bugs*</font><br>
 If you see the mod generate something that look really ugly/buggy and want to report it, please include a screenshot. A picture is worth a thousand words. A lot of strange things can happen, particularly when interacting with other mods.
