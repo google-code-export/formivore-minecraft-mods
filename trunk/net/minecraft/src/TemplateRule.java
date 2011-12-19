@@ -110,7 +110,7 @@ public class TemplateRule {
     		int m=random.nextInt(blockIDs.length);
     		return new int[]{blockIDs[m],blockMDs[m]};
     	}
-    	return Building.HOLE_BLOCK;
+    	return Building.HOLE_BLOCK_LIGHTING;
     }
     
     public boolean isPreserveRule(){

@@ -161,7 +161,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 					int j2=Building.findSurfaceJ(world,i2,k2,world.field_35472_c-1,true,3);
 					cityArea++;
 					if(j2==Building.HIT_WATER) waterArea++;
-					if(Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2,j2,k2)]){
+					if(ows.LevelInterior && Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2,j2,k2)]){
 						wc.logOrPrint("Rejected "+ows.name+" city "+ID+", found previous construction in city zone!");
 						return false;
 					}
