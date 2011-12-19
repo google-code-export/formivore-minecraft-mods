@@ -62,7 +62,6 @@ public class Building
 		public final static int DIR_WEST_EAST=1, DIR_SOUTH_NORTH=0;
 		public final static int ROT_R=1,ROT_L=-1,ROT_180=2;
 		public final static int R_HAND=1,L_HAND=-1;
-		//public final static int WORLD_HEIGHT=128;
 	
 		//**** WORKING VARIABLES **** 
 		protected World world;
@@ -79,7 +78,7 @@ public class Building
 		private int xI,yI,xK,yK; //
 		
 		protected int bHand; //hand of secondary axis. Takes values of 1 for right-handed, -1 for left-handed.
-		protected int bDir; //Direction code of primary axis. Takes values of DIR_WEST=1,DIR_EAST=-1,DIR_SOUTH=2,DIR_NORTH=-2.
+		protected int bDir; //Direction code of primary axis. Takes values of DIR_NORTH=0,DIR_EAST=1,DIR_SOUTH=2,DIR_WEST=3.
 
 
 	//****************************  CONSTRUCTORS - Building  *************************************************************************************//
@@ -101,7 +100,6 @@ public class Building
 			else setOrigin(alignPt[0],alignPt[1],alignPt[2]);
 		}
 		delayedBuildQueue=new LinkedList<int[]>();
-		//worldHeight=world.field_35472_c;
 	}
     
     //******************** ORIENTATION FUNCTIONS *************************************************************************************************************//
@@ -358,11 +356,16 @@ public class Building
     	
     	if(blockID==HOLE_ID){
     		int presentBlock=world.getBlockId(pt[0], pt[1], pt[2]);
-    		if(presentBlock!=AIR_ID && !IS_WATER_BLOCK[presentBlock])
+    		//world.setBlock(pt[0], pt[1], pt[2], GLASS_ID);
+    		if(presentBlock!=AIR_ID && !IS_WATER_BLOCK[presentBlock]){
     			if( !(IS_WATER_BLOCK[world.getBlockId(pt[0]-1,pt[1],pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1],pt[2]-1)]
     			   || IS_WATER_BLOCK[world.getBlockId(pt[0]+1,pt[1],pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1],pt[2]+1)]) 
-    			   || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1]+1,pt[2])]) //don't adjacent to a water block
+    			   || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1]+1,pt[2])]) //{//don't adjacent to a water block
     				world.setBlock(pt[0], pt[1], pt[2], AIR_ID);
+    				//if(metadata==0) world.setBlock(pt[0], pt[1], pt[2], AIR_ID);
+    				//else setBlocNoLighting(world,pt[0], pt[1], pt[2],AIR_ID);
+    			//} else world.setBlock(pt[0], pt[1], pt[2], WOOL_ID);
+    		}
     	}
     	
     	switch(blockID) {
@@ -390,6 +393,14 @@ public class Building
 			case VILLAGER_SPAWNER_ID: setMobSpawner(pt,1,11); return;
 			case SNOW_GOLEM_SPAWNER_ID: setMobSpawner(pt,1,12); return;
 			case MUSHROOM_COW_SPAWNER_ID: setMobSpawner(pt,1,13); return;
+			case SHEEP_SPAWNER_ID: setMobSpawner(pt,1,14); return;
+			case COW_SPAWNER_ID: setMobSpawner(pt,1,15); return;
+			case CHICKEN_SPAWNER_ID: setMobSpawner(pt,1,16); return;
+			case SQUID_SPAWNER_ID: setMobSpawner(pt,1,17); return;
+			case WOLF_SPAWNER_ID: setMobSpawner(pt,1,18); return;
+			case GIANT_ZOMBIE_SPAWNER_ID: setMobSpawner(pt,1,19); return;
+			case SILVERFISH_SPAWNER_ID: setMobSpawner(pt,1,20); return;
+			case DRAGON_SPAWNER_ID: setMobSpawner(pt,1,21); return;
     	}
     	if(IS_HUMANS_PLUS_FLAG[blockID]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,metadata});
     }
@@ -413,6 +424,14 @@ public class Building
         	case 11: mob="Villager"; break;
         	case 12: mob="SnowMan"; break;
         	case 13: mob="MushroomCow"; break;
+        	case 14: mob="Sheep"; break;
+        	case 15: mob="Cow"; break;
+        	case 16: mob="Chicken"; break;
+        	case 17: mob="Squid"; break;
+        	case 18: mob="EntityWolf"; break;
+        	case 19: mob="GiantZombie"; break;
+        	case 20: mob="Silverfish"; break;
+        	case 21: mob="Dragon";
         	default: mob="Skeleton"; break;
 		} 
         world.setBlock(pt[0],pt[1],pt[2],MOB_SPAWNER_ID);
@@ -1227,7 +1246,7 @@ public class Building
     public final static int DRAGON_EGG_ID=122;
     
     //Special Blocks
-    public final static int SPECIAL_BLOCKID_START=299, SPECIAL_BLOCKID_END=332;
+    public final static int SPECIAL_BLOCKID_START=299, SPECIAL_BLOCKID_END=340;
     public final static int HOLE_ID=299;
 	public final static int PRESERVE_ID=300;
 	public final static int ZOMBIE_SPAWNER_ID=301;
@@ -1260,7 +1279,14 @@ public class Building
 	public final static int VILLAGER_SPAWNER_ID=330;
 	public final static int SNOW_GOLEM_SPAWNER_ID=331;
 	public final static int MUSHROOM_COW_SPAWNER_ID=332;
-
+	public final static int SHEEP_SPAWNER_ID=333;
+	public final static int COW_SPAWNER_ID=334;
+	public final static int CHICKEN_SPAWNER_ID=335;
+	public final static int SQUID_SPAWNER_ID=336;
+	public final static int WOLF_SPAWNER_ID=337;
+	public final static int GIANT_ZOMBIE_SPAWNER_ID=338;
+	public final static int SILVERFISH_SPAWNER_ID=339;
+	public final static int DRAGON_SPAWNER_ID=340;
 	
 	
 	//Spawner Blocks from other mods
@@ -1441,7 +1467,8 @@ public class Building
 	   						  SOUTH_FACE_TORCH_BLOCK=new int[]{TORCH_ID,BUTTON_DIR_TO_META[DIR_SOUTH]},
 	   						  EAST_FACE_LADDER_BLOCK=new int[]{LADDER_ID,LADDER_DIR_TO_META[DIR_EAST]},
 	   						  AIR_BLOCK=new int[]{0,0},
-	   						  HOLE_BLOCK=new int[]{Building.HOLE_ID,0},
+	   						  HOLE_BLOCK_LIGHTING=new int[]{Building.HOLE_ID,0},
+	   						  HOLE_BLOCK_NO_LIGHTING=new int[]{Building.HOLE_ID,1},
 	   						  PRESERVE_BLOCK=new int[]{Building.PRESERVE_ID,0},
 	   						  HARD_SPAWNER_BLOCK=new int[]{Building.HARD_SPAWNER_ID,0},
 	   						  PIG_ZOMBIE_SPAWNER_BLOCK=new int[]{Building.PIG_ZOMBIE_SPAWNER_ID,0},

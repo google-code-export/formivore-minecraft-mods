@@ -411,7 +411,7 @@ public class BuildingWall extends Building
 					boolean wallBlockPresent=isWallBlock(x1,z1,0);
 					idAndMeta= z1<bHeight 
 								? ws.rules[layer[z1+ws.embed][x1]].getBlockOrHole(random) 
-								: HOLE_BLOCK;
+								: HOLE_BLOCK_NO_LIGHTING;
 
 					//starting from top, preserve old wall block until we run into a non-wall block
 					if(keepWallFromAbove && wallBlockPresent && (idAndMeta[0]==AIR_ID || idAndMeta[0]==HOLE_ID)){
@@ -590,8 +590,8 @@ public class BuildingWall extends Building
 			for(int tries=0; tries < 10; tries++){
 				byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(8,8,0.5F,random);
 				BuildingCellularAutomaton bca=new BuildingCellularAutomaton(wgt,ws.CARuinRule,dir,1,true,ws.CARuinContainerWidth,
-									ws.CARuinMinHeight+random.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight+1),ws.CARuinContainerWidth, 12,seed,caRule,pt);
-				if(bca.plan(false) && bca.queryCanBuild(ybuffer,ws.CARuinContainerWidth<=15)){
+									ws.CARuinMinHeight+random.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight+1),ws.CARuinContainerWidth, seed,caRule,pt);
+				if(bca.plan(false,12) && bca.queryCanBuild(ybuffer,ws.CARuinContainerWidth<=15)){
 					bca.build(true,true);
 					return true;
 				}

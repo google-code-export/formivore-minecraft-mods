@@ -24,25 +24,21 @@ public class BuildingCellularAutomaton extends Building {
 	public final static byte DIE=-1,NOCHANGE=0,LIVE=1;
 	private final float MEAN_SIDE_LENGTH_PER_POPULATE=15.0f;
 	private final static int HOLE_FLOOR_BUFFER=2;
+	private final static int UNCRYSTALLIZED=-1;
 	
 	private byte[][][] layers = null;
 	public byte[][] seed=null;
 	private byte[][] caRule=null;
-	private int MaxOscillatorCullStep;
 	int[][] fBB;
 	int zGround=0;
 	
 	
-	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, boolean centerAligned_,int width, int height, int length, int MaxOscillatorCullStep_, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
+	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, boolean centerAligned_,int width, int height, int length, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
 		super(0,wgt_, bRule_, bDir_,axXHand_,centerAligned_,new int[]{width,height,length},sourcePt);
 		seed=seed_;
-		MaxOscillatorCullStep=MaxOscillatorCullStep_;
 		if((bWidth - seed.length)%2 !=0 ) bWidth++; //so seed can be perfectly centered
 		if((bLength - seed[0].length)%2 !=0 ) bLength++;
 		caRule=caRule_;
-		//makeFloors=makeFloors_;
-		//stairsBlock=SmoothWithStairs ? blockToStairs(bRule.primaryBlock) : AIR_ID;
-		//if(stairsBlock==WOOD_STAIRS_ID) stairsBlock=AIR_ID;
 	}
 	
 	//unlike other Buildings, this should be called after plan()
@@ -62,7 +58,7 @@ public class BuildingCellularAutomaton extends Building {
 		return true;
 	}
 	
-	public boolean plan(boolean bury){
+	public boolean plan(boolean bury, int MinHeightBeforeOscillation){
 		//layers is z-flipped from usual orientation so z=0 is the top
 		layers=new byte[bHeight][bWidth][bLength];
 		for(int z=0; z<bHeight; z++) for(int x=0; x<bWidth; x++) for(int y=0; y<bLength; y++)
@@ -77,12 +73,14 @@ public class BuildingCellularAutomaton extends Building {
 		for(int x=0; x<seed.length; x++) for(int y=0; y<seed[0].length; y++)
 			layers[0][BB[0][0]+x][BB[2][0]+y]=seed[x][y];
 		
+		int crystallizationHeight=UNCRYSTALLIZED;
+		
 		
 		for(int z=1; z<bHeight; z++){
 			boolean layerIsAlive=false;
-			boolean layerIsFixed=z>=1;
-			boolean layerIsPeriod2=z>=2;
-			boolean layerIsPeriod3=z>=3;
+			boolean layerIsFixed=crystallizationHeight==UNCRYSTALLIZED && z>=1;
+			boolean layerIsPeriod2=crystallizationHeight==UNCRYSTALLIZED && z>=2;
+			boolean layerIsPeriod3=crystallizationHeight==UNCRYSTALLIZED && z>=3;
 			BB[0][z]=bWidth/2;
 			BB[1][z]=bWidth/2;
 			BB[2][z]=bLength/2;
@@ -114,22 +112,28 @@ public class BuildingCellularAutomaton extends Building {
 				
 			}}
 			if(!layerIsAlive){
-				if(z<=MaxOscillatorCullStep) return false;
+				if(z<=MinHeightBeforeOscillation) return false;
 				bHeight=z;
 				break;
 			}
 			if(layerIsFixed){
-				//crystalizationHeight=z-1;
-				if(z-1<=MaxOscillatorCullStep) return false;
+				if(z-1<=MinHeightBeforeOscillation) return false;
+				crystallizationHeight=z-1;
 			}
 			if(layerIsPeriod2){
-				//crystalizationHeight=z-2;
-				if(z-2<=MaxOscillatorCullStep) return false;
+				if(z-2<=MinHeightBeforeOscillation) return false;
+				crystallizationHeight=z-2;
 			}
 			if(layerIsPeriod3){
-				//crystalizationHeight=z-3;
-				if(z-3<=MaxOscillatorCullStep) return false;
+				if(z-3<=MinHeightBeforeOscillation) return false;
+				crystallizationHeight=z-3;
 			}
+			
+			if(crystallizationHeight>UNCRYSTALLIZED && z>3*crystallizationHeight/2){
+				bHeight=z;
+				break;
+			}
+			
 		}
 		
 		//prune top layer
@@ -158,6 +162,8 @@ public class BuildingCellularAutomaton extends Building {
 			    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),j0+10,false,0),
 			    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),j0+10,false,0)};
 		for(int height : heights) hitWater |= height==HIT_WATER;
+		
+		if(j0+bHeight>world.field_35472_c) j0=world.field_35472_c-bHeight;
 		if(bury && !hitWater){
 			zGround=random.nextInt(3*bHeight/4);
 			if(j0-zGround < 5) zGround=j0-5;
@@ -173,10 +179,10 @@ public class BuildingCellularAutomaton extends Building {
 				layers2[z][x][y]=layers[lZ][x+minX][y+minY];
 			}}
 			//floor bounding box
-			fBB[0][z]=BB[0][lZ] - minX + (BB[1][z] - BB[0][z])/4;
-			fBB[1][z]=BB[1][lZ] - minX - (BB[1][z] - BB[0][z])/4;
-			fBB[2][z]=BB[2][lZ] - minY + (BB[3][z] - BB[2][z])/4;
-			fBB[3][z]=BB[3][lZ] - minY - (BB[3][z] - BB[2][z])/4;
+			fBB[0][z]=BB[0][lZ] - minX + (BB[1][lZ] - BB[0][lZ])/4;
+			fBB[1][z]=BB[1][lZ] - minX - (BB[1][lZ] - BB[0][lZ])/4;
+			fBB[2][z]=BB[2][lZ] - minY + (BB[3][lZ] - BB[2][lZ])/4;
+			fBB[3][z]=BB[3][lZ] - minY - (BB[3][lZ] - BB[2][lZ])/4;
 		}
 		layers=layers2;		
 		
@@ -196,22 +202,31 @@ public class BuildingCellularAutomaton extends Building {
 			floorBlockCounts[m]=0;
 			floorBlocks.add(new ArrayList<int[]>());
 		}
+		int centerX=(fBB[0][0]+fBB[1][0])/2;
 		int[][]holeLimits=new int[bLength][2];
-		for(int y=0; y<bLength; y++){ holeLimits[y][0]=bWidth/2; holeLimits[y][1]=bWidth/2; }
+		for(int y=0; y<bLength; y++){ holeLimits[y][0]=centerX; holeLimits[y][1]=centerX+1; }
 		
-		for(int z=0; z<bHeight; z++){
+		
+		
+		for(int z=bHeight-1; z>=0; z--){
+			//for(int y=0; y<bLength; y++){ holeLimits[y][0]=centerX; holeLimits[y][1]=centerX+1; }
 			
 			for(int x=0; x<bWidth; x++){ for(int y=0; y<bLength; y++){
+				//if(fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z])
+				//	setBlockLocal(x,z,y,GLASS_ID);
+				
 				if(layers[z][x][y]==ALIVE)
 					setBlockLocal(x,z,y,bRule);
 				
 				else if(z>0 && layers[z-1][x][y]==ALIVE){ //if a floor block
 					//if in central core
-					if(fBB[0][z]<=x && x<fBB[1][z] && fBB[2][z]<=y && y<fBB[3][z]){ 
+					if(fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z]){ 
 						if(makeFloors){
 							floorBlocks.get(z).add(new int[]{x,y});
-							if(x-HOLE_FLOOR_BUFFER<holeLimits[y][0]) holeLimits[y][0]=x-HOLE_FLOOR_BUFFER;
-							if(x+HOLE_FLOOR_BUFFER>holeLimits[y][1]) holeLimits[y][1]=x+HOLE_FLOOR_BUFFER;
+							if(x-HOLE_FLOOR_BUFFER<holeLimits[y][0]) 
+								holeLimits[y][0]=Math.max(fBB[0][z], x-HOLE_FLOOR_BUFFER);
+							if(x+HOLE_FLOOR_BUFFER>holeLimits[y][1]) 
+								holeLimits[y][1]=Math.min(fBB[1][z], x+HOLE_FLOOR_BUFFER);
 							floorBlockCounts[z]++;
 						}
 					}
@@ -252,15 +267,16 @@ public class BuildingCellularAutomaton extends Building {
 			
 			//now clear a hole surrounding the central floor volume
 			for(int y=0; y<bLength; y++)
-				for(int x=holeLimits[y][0]; x<holeLimits[y][1]; x++)
-					if((x<0 || x > bWidth-1 || layers[z][x][y]!=ALIVE) && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
+				for(int x=holeLimits[y][0]+1; x<=holeLimits[y][1]-1; x++)
+					if(layers[z][x][y]!=ALIVE && !IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)])
 						setBlockLocal(x,z,y,HOLE_ID);
 			
 			//then gradually taper hole limits...
-			for(int y=0; y<bLength; y++){ 
-				holeLimits[y][0] = holeLimits[y][0] < bWidth/2 ? holeLimits[y][0]+1 : bWidth/2; 
-				holeLimits[y][1] = holeLimits[y][1] > bWidth/2 ? holeLimits[y][1]-1 : bWidth/2; 
-			}
+			if(z%2==0){
+				for(int y=0; y<bLength; y++){ 
+					holeLimits[y][0] = holeLimits[y][0] < centerX ? (holeLimits[y][0]+1) : centerX; 
+					holeLimits[y][1] = holeLimits[y][1] > (centerX+1) ? (holeLimits[y][1]-1) : centerX+1; 
+			}}
 		}
 		
 		if(makeFloors)

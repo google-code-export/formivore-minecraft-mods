@@ -167,7 +167,7 @@ public class BuildingTower extends Building
 						{
 							buffer[x1+1][z1+1][y1+1]=bRule.getBlockOrHole(random);
 						}
-						else buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK;
+						else buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK_NO_LIGHTING;
 					}
 					
 					//column above source point
@@ -219,10 +219,10 @@ public class BuildingTower extends Building
 				for(int x1=bWidth/2-1;x1<=bWidth/2+1;x1++){
 					for(int y1=1; y1<Math.min(3, sideWindowY-1);y1++)
 						if(!circular || circle_shape[x1][y1]==0)
-							buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK;
+							buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK_LIGHTING;
 					for(int y1=bLength-Math.min(3, sideWindowY-1); y1<bLength-1;y1++)
 						if(!circular || circle_shape[x1][y1]==0)
-							buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK;
+							buffer[x1+1][z1+1][y1+1]=HOLE_BLOCK_LIGHTING;
 				}
 			}
 			else if(SpawnerRule!=TemplateRule.RULE_NOT_PROVIDED && random.nextInt(100)<SpawnerRule.chance && !ghastTower){
@@ -325,12 +325,12 @@ public class BuildingTower extends Building
 				buffer[x+xFace+1][z-1+1][y+yFace+1]=new int[]{STEP_ID,blockToStepMeta(bRule.primaryBlock)};//build a step-up
 			}
 		} else for(int z1=z;z1<z+height;z1++) 
-			buffer[x+1][z1+1][y+1]=HOLE_BLOCK; //carve out the aperture
+			buffer[x+1][z1+1][y+1]=HOLE_BLOCK_LIGHTING; //carve out the aperture
 		
 		//clear a step in front of window if there is a floor at z+1
 		if(isFloor(x+xFace,z+2,y+yFace) && isWallBlock(x+xFace,z,y+yFace) &&
 				x+xFace+1>=0 && x+xFace+1<buffer.length && y+yFace+1>=0 && y+yFace+1<buffer[0][0].length)
-			buffer[x+xFace+1][z+1+1][y+yFace+1]=HOLE_BLOCK;	
+			buffer[x+xFace+1][z+1+1][y+yFace+1]=HOLE_BLOCK_LIGHTING;	
 	}
 	
 	//****************************************  FUNCTIONS  - populators *************************************************************************************//
@@ -461,21 +461,21 @@ public class BuildingTower extends Building
 					buffer[x1+1][bHeight+1][y1+1]=bRule.getBlockOrHole(random);
 				for(int m=0; m<bWidth; m+=2){
 					if(!(getBlockIdLocal(m, bHeight, -1)==bRule.primaryBlock[0]|| getBlockIdLocal(m, bHeight-1, -1)==bRule.primaryBlock[0]))
-						buffer[m+1][bHeight+1+1][0+1]= (m+1)%2==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
+						buffer[m+1][bHeight+1+1][0+1]= (m+1)%2==0 ? HOLE_BLOCK_LIGHTING : bRule.getBlockOrHole(random);
 					if(!(getBlockIdLocal(m, bHeight, bLength)==bRule.primaryBlock[0] || getBlockIdLocal(m, bHeight-1, bLength)==bRule.primaryBlock[0]))
-						buffer[m+1][bHeight+1+1][bLength-1+1] = (m+1)%2==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
+						buffer[m+1][bHeight+1+1][bLength-1+1] = (m+1)%2==0 ? HOLE_BLOCK_LIGHTING : bRule.getBlockOrHole(random);
 				}
 				for(int m=0; m<bLength; m+=2){
 					if(!(getBlockIdLocal(-1, bHeight, m)==bRule.primaryBlock[0] || getBlockIdLocal(-1, bHeight-1, m)==bRule.primaryBlock[0]))
-						buffer[0+1][ bHeight+1+1][ m+1]= (m+1)%2==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
+						buffer[0+1][ bHeight+1+1][ m+1]= (m+1)%2==0 ? HOLE_BLOCK_LIGHTING : bRule.getBlockOrHole(random);
 					if(!(getBlockIdLocal(bWidth,bHeight,m)==bRule.primaryBlock[0] || getBlockIdLocal(bWidth, bHeight-1, m)==bRule.primaryBlock[0]))
-						buffer[bWidth-1+1][bHeight+1+1][ m+1]= (m+1)%2==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
+						buffer[bWidth-1+1][bHeight+1+1][ m+1]= (m+1)%2==0 ? HOLE_BLOCK_LIGHTING : bRule.getBlockOrHole(random);
 				}
 				for(int y1=1; y1<bLength-1;y1++)
 					for(int x1=1; x1<bWidth-1;x1++)
 						if(isWallBlock(x1, bHeight, y1) && 
 								!(isWallBlock(x1+1, bHeight, y1) || isWallBlock(x1-1, bHeight, y1) || isWallBlock(x1, bHeight, y1+1) ||isWallBlock(x1, bHeight, y1-1) ))
-							buffer[x1+1][bHeight+1-1+1][y1+1] = HOLE_BLOCK;
+							buffer[x1+1][bHeight+1-1+1][y1+1] = HOLE_BLOCK_LIGHTING;
 			}
 			buffer[2][bHeight+1][bLength/2]=EAST_FACE_LADDER_BLOCK;
 			buffer[2][bHeight+2][bLength/2]=new int[]{TRAP_DOOR_ID,3};
@@ -484,7 +484,7 @@ public class BuildingTower extends Building
 			for(int m=0; m<(minHorizDim+1)/2; m++){
 				for(int x1=m; x1<bWidth-m; x1++){
 					for(int y1=m; y1<bLength-m; y1++) {
-						buffer[x1+1][ bHeight+m+1][ y1+1]= HOLE_BLOCK;
+						buffer[x1+1][ bHeight+m+1][ y1+1]= HOLE_BLOCK_LIGHTING;
 						if(m==(bWidth+1)/2-1)
 							buffer[x1+1][ bHeight+m+1+1][ y1+1] = trimRule.getBlockOrHole(random);
 					}
@@ -527,7 +527,7 @@ public class BuildingTower extends Building
 					for(int y1=z12; y1<bLength-z12;y1++) for(int x1=z12; x1<bWidth-z12;x1++)
 						buffer[x1+1][z1+bHeight+1][y1+1] =doubleStepRule.getBlockOrHole(random);
 					for(int y1=z12+2; y1<bLength-z12-2;y1++) for(int x1=z12+2; x1<bWidth-z12-2;x1++)
-						buffer[x1+1][z1+bHeight+1][y1+1] =HOLE_BLOCK;
+						buffer[x1+1][z1+bHeight+1][y1+1] =HOLE_BLOCK_LIGHTING;
 					buffer[z12+1][z1+bHeight+1+1][z12+1] = stepRule.getBlockOrHole(random);
 					buffer[z12+1][z1+bHeight+1+1][bLength-z12-1+1] = stepRule.getBlockOrHole(random);
 					buffer[bWidth-z12-1+1][z1+bHeight+1+1][z12+1] = stepRule.getBlockOrHole(random);
@@ -542,7 +542,7 @@ public class BuildingTower extends Building
 				for(int y1=0; y1<diam;y1++){ for(int x1=0; x1<diam;x1++){
 					if(CIRCLE_SHAPE[diam][x1][y1]>=0)
 						buffer[x1+(bWidth-diam)/2+1][bHeight+z1+1+1][ y1+(bLength-diam)/2+1]
-						    = (CIRCLE_SHAPE[diam][x1][y1]==1 || z1>=(minHorizDim+1)/2-2) ? roofRule.getBlockOrHole(random) : HOLE_BLOCK;
+						    = (CIRCLE_SHAPE[diam][x1][y1]==1 || z1>=(minHorizDim+1)/2-2) ? roofRule.getBlockOrHole(random) : HOLE_BLOCK_LIGHTING;
 					if(z1<(minHorizDim-1)/2){
 						int nextDiam=SPHERE_SHAPE[minHorizDim][z1+1];
 						int x2=x1-(diam-nextDiam)/2, y2=y1-(diam-nextDiam)/2;
@@ -558,7 +558,7 @@ public class BuildingTower extends Building
 				for(int y1=0; y1<diam;y1++){ for(int x1=0; x1<diam;x1++){
 					if(CIRCLE_SHAPE[diam][x1][y1]>=0)
 						buffer[x1+(bWidth-diam)/2+1][bHeight+z1+1+1][y1+(bLength-diam)/2+1] 
-						     = CIRCLE_SHAPE[diam][x1][y1]==1 ? roofRule.getBlockOrHole(random) : HOLE_BLOCK;
+						     = CIRCLE_SHAPE[diam][x1][y1]==1 ? roofRule.getBlockOrHole(random) : HOLE_BLOCK_LIGHTING;
 					if(z1>0 && CIRCLE_SHAPE[diam][x1][y1]!=0 && CIRCLE_SHAPE[prevDiam][x1+(prevDiam-diam)/2][y1+(prevDiam-diam)/2]==0)
 						buffer[x1+(bWidth-diam)/2+1][bHeight+z1+1][ y1+(bLength-diam)/2+1]=roofRule.getBlockOrHole(random);
 				}}
@@ -576,7 +576,7 @@ public class BuildingTower extends Building
 			for(int m=0;m<=minHorizDim/2;m++){
 				for(int p=0;p<maxAxLen;p++){
 					for(int r=m+1; r<minAxLen-m-1; r++) 
-						buildXYRotated(p+1,bHeight+m+1,r+1,HOLE_BLOCK,rot);
+						buildXYRotated(p+1,bHeight+m+1,r+1,HOLE_BLOCK_LIGHTING,rot);
 					buildXYRotated(p+1,bHeight+m+1,m-1+1,forwardsStairsRule,rot);
 					buildXYRotated(p+1,bHeight+m+1,minAxLen-m+1,backwardsStirRule,rot);
 					if(!(minHorizDim%2==0 && m==minHorizDim/2)){
@@ -601,7 +601,7 @@ public class BuildingTower extends Building
 					buffer[x1+1][bHeight+1][y1+1]=doubleStepRule.getBlockOrHole(random);
 				if(circle_shape[x1][y1]==1){
 					for(int z1=bHeight; z1<bHeight+minHorizDim; z1++){
-						if(buffer[x1+1][z1+1][y1+1]==HOLE_BLOCK)
+						if(buffer[x1+1][z1+1][y1+1]==HOLE_BLOCK_LIGHTING)
 							buffer[x1+1][z1+1][y1+1]=bRule.getBlockOrHole(random);
 						else break;
 				}}
@@ -611,7 +611,7 @@ public class BuildingTower extends Building
 			int xBuff=(bWidth-minHorizDim)/2, yBuff=(bLength-minHorizDim)/2;
 			for(int x1=0;x1<minHorizDim;x1++){ for(int y1=0;y1<minHorizDim;y1++){
 				if(circle_shape[x1][y1]>=0)
-					buffer[x1+xBuff+1][bHeight+1][y1+yBuff+1]=circle_shape[x1][y1]==0 ? HOLE_BLOCK : bRule.getBlockOrHole(random);
+					buffer[x1+xBuff+1][bHeight+1][y1+yBuff+1]=circle_shape[x1][y1]==0 ? HOLE_BLOCK_LIGHTING : bRule.getBlockOrHole(random);
 				else if(!circular) buffer[x1+xBuff+1][bHeight+1][y1+yBuff+1]=bRule.getBlockOrHole(random);
 			}}
 			if(!circular){
@@ -673,7 +673,7 @@ public class BuildingTower extends Building
 
 			//remove blocks if no support
 			for(int x=0;x<xLim;x++){ for(int y=0;y<yLim;y++) {
-				if(support[x][z][y]==0 && buffer[x][z][y][0]!=Building.PRESERVE_ID) buffer[x][z][y]=HOLE_BLOCK;
+				if(support[x][z][y]==0 && buffer[x][z][y][0]!=Building.PRESERVE_ID) buffer[x][z][y]=HOLE_BLOCK_LIGHTING;
 				//else buffer[x][z][y]=new int[]{40+support[x][z][y],0};
 			}}
 		}
