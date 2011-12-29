@@ -79,19 +79,25 @@ public class mod_CARuins extends BuildingExplorationHandler{
 	private final static String SETTINGS_FILE_NAME="CARuinsSettings.txt",
 								LOG_FILE_NAME="caruins_log.txt";
 	
+	public final static String[] SEED_TYPE_STRINGS=new String[]{"SymmetricSeedWeight","LinearSeedWeight","CircularSeedWeight","CruciformSeedWeight"};
+	public final static int[] SEED_TYPE_CODES=new int[]{0,1,2,3};
+	public int[] seedTypeWeights=new int[]{8,2,2,1};
+	
 	public float GlobalFrequency=0.01F;
 	public int TriesPerChunk=1;
 	public int MinHeight=20,MaxHeight=70;
 	public int ContainerWidth=40, ContainerLength=40;
-	public int linearChance=50;
+	//public int linearChance=50;
 	public float SymmetricSeedDensity=0.5F;
-	public int SymmetricSeedMaxWidth=8;
 	public int MinHeightBeforeOscillation=12;
 	public boolean SmoothWithStairs=true, MakeFloors=true;
 	
 	public TemplateRule[] blockRules=new TemplateRule[DEFAULT_BLOCK_RULES.length];
 	
 	ArrayList<byte[][]> caRules=null;
+	int[][] caRulesWeightsAndIndex=null;
+	
+	byte[][] fixedRule;
 	
 	//****************************  CONSTRUCTOR - mod_GreatWall*************************************************************************************//
 	public mod_CARuins() {	
@@ -103,6 +109,15 @@ public class mod_CARuins extends BuildingExplorationHandler{
 		for(int m=0; m<DEFAULT_BLOCK_RULES .length; m++){
 			blockRules[m]=DEFAULT_BLOCK_RULES[m];
 		}
+		
+		Random rnd=new Random();
+		int a=rnd.nextInt(2)+2, b=rnd.nextInt(2)+2;
+		String ruleStr="B4";
+		for(int m=5;m<=8;m++) if(rnd.nextInt(3)!=0)  ruleStr+=m;
+		ruleStr+="/S";
+		for(int m=0;m<=8;m++) if(rnd.nextInt(3)!=0)  ruleStr+=m;
+		fixedRule=BuildingCellularAutomaton.parseCARule(ruleStr, null);
+		System.out.println("Using fixed rule "+ruleStr);
 		
 		//MP PORT - uncomment
 		//loadDataFiles();
@@ -155,10 +170,11 @@ public class mod_CARuins extends BuildingExplorationHandler{
 		
 		File settingsFile=new File(BASE_DIRECTORY,SETTINGS_FILE_NAME);
 		caRules=new ArrayList<byte[][]>();
+		ArrayList<Integer> caRuleWeights=new ArrayList<Integer>();
 		if(settingsFile.exists()){
 			BufferedReader br = null;
 			//ArrayList<int[]> digitalCARules=new ArrayList<int[]>();
-			String seedType="", zeroNeighborsStr="";
+			//String zeroNeighborsStr="";
 			try{
 				br=new BufferedReader( new FileReader(settingsFile) );
 				lw.println("Getting global options...");    
@@ -173,12 +189,11 @@ public class mod_CARuins extends BuildingExplorationHandler{
 					if(read.startsWith( "MakeFloors" )) MakeFloors = readIntParam(lw,1,":",read)==1;
 					if(read.startsWith( "ContainerWidth" )) ContainerWidth = readIntParam(lw,ContainerWidth,":",read);
 					if(read.startsWith( "ContainerLength" )) ContainerLength = readIntParam(lw,ContainerLength,":",read);
-					
-					if(read.startsWith( "SeedType" )) seedType=read.split(":")[1].trim();
 					if(read.startsWith( "SymmetricSeedDensity" )) SymmetricSeedDensity = readFloatParam(lw,SymmetricSeedDensity,":",read);
-					if(read.startsWith( "SymmetricSeedMaxWidth" )) SymmetricSeedMaxWidth = readIntParam(lw,SymmetricSeedMaxWidth,":",read);
 					
-					
+					for(int m=0; m<SEED_TYPE_STRINGS.length; m++){
+						if(read.startsWith(SEED_TYPE_STRINGS[m] )) seedTypeWeights[m] = readIntParam(lw,seedTypeWeights[m],":",read);
+					}
 					
 					for(int m=0; m<DEFAULT_BLOCK_RULES.length; m++){
 						try{ 
@@ -192,8 +207,11 @@ public class mod_CARuins extends BuildingExplorationHandler{
 					
 					if(read.startsWith(AUTOMATA_RULES_STRING)){
 						for(read=br.readLine(); read!= null; read=br.readLine()){
-							if(read.startsWith("B") || read.startsWith("b")) 
-								caRules.add(BuildingCellularAutomaton.parseCARule(read.split("#")[0],lw));
+							if(read.startsWith("B") || read.startsWith("b")){
+								String[] splitStr=read.split(",");
+								caRules.add(BuildingCellularAutomaton.parseCARule(splitStr[0],lw));
+								caRuleWeights.add(readIntParam(lw,1,"=",splitStr[1].trim()));
+							}
 						}
 						break;
 					}
@@ -202,11 +220,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 				if(TriesPerChunk > MAX_TRIES_PER_CHUNK) TriesPerChunk = MAX_TRIES_PER_CHUNK;
 			}catch(IOException e) { lw.println(e.getMessage()); }
 			finally{ try{ if(br!=null) br.close();} catch(IOException e) {} }
-			
-			
-			if(seedType.toUpperCase().equals(LINEAR_STR.toUpperCase())) linearChance=100;
-			else if(seedType.toUpperCase().equals(SYMMETRIC_STR.toUpperCase())) linearChance=0;
-			else linearChance=50;
+
 		}
 		else{
 			PrintWriter pw=null;
@@ -231,14 +245,16 @@ public class mod_CARuins extends BuildingExplorationHandler{
 				pw.println("ContainerWidth:"+ContainerWidth);
 				pw.println("ContainerLength:"+ContainerLength);
 				pw.println();
-				pw.println("<-Seed type is the type of seed used. Enter one of: linear, symmetric, or both.->");
+				pw.println("<-Seed type weights are the relative likelihood weights that different seeds will be used. Weights are nonnegative integers.->");
 				pw.println("<-SymmetricSeedDensity is the density (out of 1.0) of live blocks in the symmetric seed.->");
-				pw.println("<-SymmetricSeedMaxWidth is the maximum width of symmetric seeds->");
-				pw.println("<-BlockRule is the template rule that controls what blocks the structure will be made out of.->");
-				pw.println("SeedType:"+(linearChance==100 ? LINEAR_STR: linearChance==0 ? SYMMETRIC_STR:BOTH_STR));
 				pw.println("SymmetricSeedDensity:"+SymmetricSeedDensity);
-				pw.println("SymmetricSeedMaxWidth:"+SymmetricSeedMaxWidth);
+				for(int m=0; m<SEED_TYPE_STRINGS.length; m++){
+					pw.println(SEED_TYPE_STRINGS[m]+":"+seedTypeWeights[m]);
+				}
+				
+				
 				pw.println();
+				pw.println("<-BlockRule is the template rule that controls what blocks the structure will be made out of.->");
 				for(int m=0; m<DEFAULT_BLOCK_RULES.length; m++){
 					pw.println(BLOCK_RULE_NAMES[m]+":"+DEFAULT_BLOCK_RULES[m].toString());
 				}
@@ -250,12 +266,19 @@ public class mod_CARuins extends BuildingExplorationHandler{
 				pw.println("<-   For example, the Game of Life has the rule code B3/S23.->");
 				pw.println(AUTOMATA_RULES_STRING);
 				for(String[] defaultRule : DEFAULT_CA_RULES){
-					pw.println(defaultRule[0] + (defaultRule[1].length()>0 ? ("  #"+defaultRule[1]) : ""));
+					pw.println(defaultRule[0] + ", weight="+defaultRule[1]+(defaultRule[2].length()>0 ? (",  #"+defaultRule[2]) : ""));
 					caRules.add(BuildingCellularAutomaton.parseCARule(defaultRule[0],lw));
+					caRuleWeights.add(Integer.parseInt(defaultRule[1]));
 				}
 			}
 			catch(Exception e) { lw.println(e.getMessage()); }
 			finally{ if(pw!=null) pw.close(); }
+		}
+		
+		caRulesWeightsAndIndex=new int[2][caRuleWeights.size()];
+		for(int m=0; m<caRuleWeights.size(); m++){
+			caRulesWeightsAndIndex[0][m]=caRuleWeights.get(m);
+			caRulesWeightsAndIndex[1][m]=m;
 		}
 	}
 	
@@ -264,15 +287,25 @@ public class mod_CARuins extends BuildingExplorationHandler{
 	public void generate( World world, Random random, int i, int k ) {
 		if(random.nextFloat() < GlobalFrequency){
 			exploreThreads.add(new WorldGeneratorThread(master, world, random, i, k,TriesPerChunk, GlobalFrequency){
+					byte[][] caRule=null;
+				
 					public boolean generate(int i0, int j0, int k0) throws InterruptedException{
 						setName("WorldGenAutomata");
 						chestTries=master.chestTries;
 						chestItems=master.chestItems;
 						int th=MinHeight+random.nextInt(MaxHeight-MinHeight+1);
-						byte[][] caRule=caRules.get(random.nextInt(caRules.size()));
-						byte[][] seed = random.nextInt(100) < linearChance
-							? BuildingCellularAutomaton.makeLinearSeed(ContainerWidth,random)
-							: BuildingCellularAutomaton.makeSymmetricSeed(SymmetricSeedMaxWidth,SymmetricSeedMaxWidth,SymmetricSeedDensity,random);
+						
+						
+						if(caRule==null) //if we haven't picked in an earlier generate call 
+							caRule=caRules.get(Building.pickWeightedOption(random, caRulesWeightsAndIndex[0], caRulesWeightsAndIndex[1]));
+						if(caRule==null) return false;
+						
+						int seedCode=Building.pickWeightedOption(random, seedTypeWeights, SEED_TYPE_CODES);
+						byte[][] seed = seedCode==0 || (caRule[0][0]==0 && caRule[0][1]==0 && caRule[0][2]==0 && caRule[0][3]==0) //only use symmetric for 4-rules
+										  			? BuildingCellularAutomaton.makeSymmetricSeed(Math.min(ContainerWidth,ContainerLength),SymmetricSeedDensity,random)
+									  : seedCode==1 ? BuildingCellularAutomaton.makeLinearSeed(ContainerWidth,random)
+									  : seedCode==2 ? BuildingCellularAutomaton.makeCircularSeed(Math.min(ContainerWidth,ContainerLength),random)
+									  : 			  BuildingCellularAutomaton.makeCruciformSeed(Math.min(ContainerWidth,ContainerLength),random);
 						
 						TemplateRule blockRule=blockRules[Building.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(i0,k0))];
 						
@@ -280,6 +313,19 @@ public class mod_CARuins extends BuildingExplorationHandler{
 								                           ContainerWidth, th,ContainerLength,seed,caRule,new int[]{i0,j0,k0});
 						if(bca.plan(true,MinHeightBeforeOscillation) && bca.queryCanBuild(0,true)){
 							bca.build(SmoothWithStairs,MakeFloors);
+							
+							
+							if(GlobalFrequency < 0.05 && random.nextInt(2)!=0){
+								for(int tries=0; tries < 10; tries++){
+									int[] pt=new int[]{i0+(2*random.nextInt(2)-1)*(ContainerWidth + random.nextInt(ContainerWidth)),
+												   	   0,
+												       k0+(2*random.nextInt(2)-1)*(ContainerWidth + random.nextInt(ContainerWidth))};
+									pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.field_35472_c-1,true,3)+1;
+									if(generate(pt[0], pt[1], pt[2])) 
+										break;
+								}
+							}
+							
 							return true;
 						}
 						return false;
@@ -291,28 +337,26 @@ public class mod_CARuins extends BuildingExplorationHandler{
 	}
 	
 	public final static String[][] DEFAULT_CA_RULES=new String[][]{
-		{"B36/S013468","(110,74)"},
-		{"B36/S013468",""},
-		{"B36/S013468",""},
-		{"B38/S023468","(169,138)"},
-		{"B38/S023468",""},
-		{"B38/S023468",""},
-		{"B368/S245","Morley"},
-		{"B368/S245",""},
-		{"B3/S23","Life - good for weird temples"},
-		{"B3/S23",""},
-		{"B3/S23",""},
-		{"B36/S125","2x2 - pillar & arch temple/tower/statue"},
-		{"B36/S125",""},
-		{"B36/S23","High Life - space invaders"},
-		{"B36/S23",""},
-		//{"B3/S012345678","Inkspots - nice towers"},
-		//{"B3/S012345678",""},
-		{"B45/S2345","45-rule - square towers"},
-		{"B45/S2345",""},
-		{"B2/S01","\"temple\""},
-		{"B35678/S015678","legged amoeba"},
-		{"B35678/S015678",""},
-		{"B35678/S015678",""}
+		//3-rule
+		{"B3/S23",        "5", "Life - good for weird temples"},
+		{"B36/S013468",   "3", "pillars and hands"},
+		{"B367/S02347",   "2", "towers with interiors and chasms"},
+		{"B34/S2356",     "3", "towers with hetrogenous shapes"},
+		{"B368/S245",     "8", "Morley - good hanging bits"},
+		{"B36/S125",      "4", "2x2 - pillar & arch temple/tower/statue"},
+		{"B36/S23",       "4", "High Life - space invaders, hanging arms."},
+		{"B3568/S148",    "4", "fuzzy stilts"},
+		{"B3/S1245",      "8", "complex"},
+		{"B3567/S13468",  "5", "fat fuzzy"},
+		{"B356/S16",      "5", "fuzzy with spurs"},
+		{"B3468/S123",    "3", "towers with arches"},
+		{"B35678/S015678","2", "checkerboard"},
+		{"B35678/S0156",  "12", "spermatazoa"},
+		//2-rule
+		{"B26/S12368",    "1", "mayan pyramid"},
+		{"B248/S45",      "1", "gaudi pyramid"},
+		{"B2457/S013458", "1", "complex interior pyramid"},
+		//4-rule
+		{"B45/S2345",     "6", "45-rule - square towers"},
 	};
 }
