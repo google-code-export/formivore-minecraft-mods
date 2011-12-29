@@ -239,8 +239,8 @@ public class TemplateWall extends TemplateTML{
 	//****************************************  FUNCTIONS - tower accessors *************************************************************************************//
 	
 	public int pickRoofStyle(boolean circular, Random random){ 
-		return circular ? Building.selectWeightedOption(random,CircRoofStyles,BuildingTower.ROOF_STYLE_IDS) : 
-			Building.selectWeightedOption(random,SqrRoofStyles,BuildingTower.ROOF_STYLE_IDS);
+		return circular ? Building.pickWeightedOption(random,CircRoofStyles,BuildingTower.ROOF_STYLE_IDS) : 
+			Building.pickWeightedOption(random,SqrRoofStyles,BuildingTower.ROOF_STYLE_IDS);
 	}
 	
 	public int getTMinWidth(boolean circular){ return circular ? CircMinWidth : SqrMinWidth; }

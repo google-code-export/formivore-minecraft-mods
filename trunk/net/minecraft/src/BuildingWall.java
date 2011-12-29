@@ -111,7 +111,7 @@ public class BuildingWall extends Building
 			roofRule=ws.getRoofRule(circular);
 			if(roofRule!=TemplateRule.RULE_NOT_PROVIDED) roofRule=roofRule.getFixedRule(random);
 			if(endTowers && ws.MakeEndTowers){
-				endBTemplate=ws.buildings.get(Building.selectWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
+				endBTemplate=ws.buildings.get(Building.pickWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
 				endBLength = endBTemplate== ws.makeDefaultTower ? ws.pickTWidth(circular,random)
 							:(endBTemplate== ws.makeCARuin      ? ws.CARuinContainerWidth
 							:									  endBTemplate.length);
@@ -461,10 +461,10 @@ public class BuildingWall extends Building
 				setSignOrPost(-1,WalkHeight-1,0,false,3,lines);
 				setSignOrPost(bWidth,WalkHeight-1,0,false,2,lines);
 			}
-			
-			flushDelayed();
 
-		}
+		}//end main loop
+		
+		flushDelayed();
 
 		setCursor(0);
 	}
@@ -554,7 +554,7 @@ public class BuildingWall extends Building
 			else if((buildOnL && clearSide==L_HAND) || (buildOnR && clearSide==R_HAND)){   //side towers
 				//if(DEBUG>1) System.out.println("Building side tower for "+IDString()+" at n="+n0+" "+globalCoordString(0,0,0)+" with clearSide="+clearSide+" width "+tw);
 				
-       			TemplateTML template=ws.buildings.get(Building.selectWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
+       			TemplateTML template=ws.buildings.get(Building.pickWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
        			int ybuffer= - ws.TowerXOffset + (isAvenue ? 0:1);
 				int[] pt=getIJKPtAtN(nMid, clearSide==bHand ? (bWidth - ybuffer):ybuffer-1, 0, 0);
 				if(makeBuilding(template,tw,ybuffer,overlapTowers,rotDir(bDir,clearSide),pt))
@@ -588,7 +588,7 @@ public class BuildingWall extends Building
 		else if(template==ws.makeCARuin){
 			byte[][] caRule=ws.CARuinAutomataRules.get(random.nextInt(ws.CARuinAutomataRules.size()));
 			for(int tries=0; tries < 10; tries++){
-				byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(8,8,0.5F,random);
+				byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(ws.CARuinContainerWidth,0.5F,random);
 				BuildingCellularAutomaton bca=new BuildingCellularAutomaton(wgt,ws.CARuinRule,dir,1,true,ws.CARuinContainerWidth,
 									ws.CARuinMinHeight+random.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight+1),ws.CARuinContainerWidth, seed,caRule,pt);
 				if(bca.plan(false,12) && bca.queryCanBuild(ybuffer,ws.CARuinContainerWidth<=15)){

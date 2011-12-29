@@ -24,7 +24,8 @@ public class BuildingCellularAutomaton extends Building {
 	public final static byte DIE=-1,NOCHANGE=0,LIVE=1;
 	private final float MEAN_SIDE_LENGTH_PER_POPULATE=15.0f;
 	private final static int HOLE_FLOOR_BUFFER=2;
-	private final static int UNCRYSTALLIZED=-1;
+	private final static int UNREACHED=-1;
+	private final static int SYMMETRIC_SEED_MIN_WIDTH=4,CIRCULAR_SEED_MIN_WIDTH=4;
 	
 	private byte[][][] layers = null;
 	public byte[][] seed=null;
@@ -73,14 +74,13 @@ public class BuildingCellularAutomaton extends Building {
 		for(int x=0; x<seed.length; x++) for(int y=0; y<seed[0].length; y++)
 			layers[0][BB[0][0]+x][BB[2][0]+y]=seed[x][y];
 		
-		int crystallizationHeight=UNCRYSTALLIZED;
-		
+		int crystallizationHeight=UNREACHED;
 		
 		for(int z=1; z<bHeight; z++){
 			boolean layerIsAlive=false;
-			boolean layerIsFixed=crystallizationHeight==UNCRYSTALLIZED && z>=1;
-			boolean layerIsPeriod2=crystallizationHeight==UNCRYSTALLIZED && z>=2;
-			boolean layerIsPeriod3=crystallizationHeight==UNCRYSTALLIZED && z>=3;
+			boolean layerIsFixed=crystallizationHeight==UNREACHED && z>=1;
+			boolean layerIsPeriod2=crystallizationHeight==UNREACHED && z>=2;
+			boolean layerIsPeriod3=crystallizationHeight==UNREACHED && z>=3;
 			BB[0][z]=bWidth/2;
 			BB[1][z]=bWidth/2;
 			BB[2][z]=bLength/2;
@@ -111,6 +111,7 @@ public class BuildingCellularAutomaton extends Building {
 					if(z>=3 && layers[z][x][y]!=layers[z-3][x][y]) layerIsPeriod3=false;
 				
 			}}
+			
 			if(!layerIsAlive){
 				if(z<=MinHeightBeforeOscillation) return false;
 				bHeight=z;
@@ -129,7 +130,7 @@ public class BuildingCellularAutomaton extends Building {
 				crystallizationHeight=z-3;
 			}
 			
-			if(crystallizationHeight>UNCRYSTALLIZED && z>3*crystallizationHeight/2){
+			if(crystallizationHeight>UNREACHED && z>2*crystallizationHeight){
 				bHeight=z;
 				break;
 			}
@@ -157,15 +158,18 @@ public class BuildingCellularAutomaton extends Building {
 		if(!shiftBuidlingJDown(15)) //do a height check to see we are not at the edge of a cliff etc.
 			return false;
 		boolean hitWater=false;
-		int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),j0+10,false,0),
-			    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),j0+10,false,0),
-			    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),j0+10,false,0),
-			    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),j0+10,false,0)};
-		for(int height : heights) hitWater |= height==HIT_WATER;
+		if(caRule[0][2]!=ALIVE){ //if not a 2-rule
+			int[] heights=new int[]{findSurfaceJ(world, getI(bWidth-1,0), getK(bWidth-1,0),j0+10,false,0),
+				    findSurfaceJ(world, getI(0,bLength-1), getK(0,bLength-1),j0+10,false,0),
+				    findSurfaceJ(world, getI(bWidth-1,bLength-1), getK(bWidth-1,bLength-1),j0+10,false,0),
+				    findSurfaceJ(world, getI(bWidth/2,bLength/2), getK(bWidth/2,bLength/2),j0+10,false,0)};
+			for(int height : heights) hitWater |= height==HIT_WATER;
+		}
 		
-		if(j0+bHeight>world.field_35472_c) j0=world.field_35472_c-bHeight;
+		if(j0+bHeight>=world.field_35472_c) j0=world.field_35472_c-bHeight-1;
 		if(bury && !hitWater){
-			zGround=random.nextInt(3*bHeight/4);
+			zGround= caRule[0][2]==ALIVE ? Math.max(0,bHeight-bWidth/3-random.nextInt(bWidth))  
+										 : random.nextInt(3*bHeight/4);
 			if(j0-zGround < 5) zGround=j0-5;
 			j0-=zGround; //make ruin partially buried
 		}
@@ -220,7 +224,7 @@ public class BuildingCellularAutomaton extends Building {
 				
 				else if(z>0 && layers[z-1][x][y]==ALIVE){ //if a floor block
 					//if in central core
-					if(fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z]){ 
+					if(z<bHeight-5 && fBB[0][z]<=x && x<=fBB[1][z] && fBB[2][z]<=y && y<=fBB[3][z]){ 
 						if(makeFloors){
 							floorBlocks.get(z).add(new int[]{x,y});
 							if(x-HOLE_FLOOR_BUFFER<holeLimits[y][0]) 
@@ -288,7 +292,7 @@ public class BuildingCellularAutomaton extends Building {
 	public void buildFloors(int[] floorBlockCounts, ArrayList<ArrayList<int[]>> floorBlocks){
 		while(true){
 			int maxFloorBlocks=floorBlockCounts[1], maxFloor=1;
-			for(int floor=2; floor<bHeight-1; floor++){
+			for(int floor=2; floor<bHeight-5; floor++){
 				if(floorBlockCounts[floor-1]+floorBlockCounts[floor]+floorBlockCounts[floor+1] >maxFloorBlocks){ //add the two floors since we can raise one to the other
 					maxFloorBlocks=floorBlockCounts[floor-1]+floorBlockCounts[floor]+floorBlockCounts[floor+1];
 					maxFloor=floor;
@@ -322,15 +326,19 @@ public class BuildingCellularAutomaton extends Building {
 	private void makeFloorCrossAt(int x, int z, int y, boolean[][] layout){
 		makeFloorAt(x,z,y,layout);
 		if(x-1 >= fBB[0][z]) makeFloorAt(x-1,z,y,layout);
-		if(x+1  < fBB[1][z]) makeFloorAt(x+1,z,y,layout);
+		if(x+1 <= fBB[1][z]) makeFloorAt(x+1,z,y,layout);
 		if(y-1 >= fBB[2][z]) makeFloorAt(x,z,y-1,layout);
-		if(y+1  < fBB[2][z]) makeFloorAt(x,z,y+1,layout);
+		if(y+1 <= fBB[2][z]) makeFloorAt(x,z,y+1,layout);
 	}
 	
 	private void makeFloorAt(int x, int z, int y, boolean[][] layout){
 		if(layout[x][y]) return;
-		if(IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)] && IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z+1,y)]) return;
-		if(!IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z-1,y)]){
+		if(IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z,y)] && IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z+1,y)]){ //pillar
+			if(!IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z+2,y)])
+				setBlockLocal(x,z+2,y,bRule);
+			return;
+		}
+		if(!IS_ARTIFICAL_BLOCK[getBlockIdLocal(x,z-1,y)]){ //raise to floor
 			int[] idAndMeta=bRule.getNonAirBlock(random);
 			setBlockWithLightingLocal(x,z-1,y,idAndMeta[0],idAndMeta[1],true);
 		}
@@ -411,12 +419,16 @@ public class BuildingCellularAutomaton extends Building {
 	}
 
 	
-	public static byte[][]makeSymmetricSeed(int maxWidth, int maxLength, float seedDensity, Random random){
-		int width=random.nextInt(maxWidth)+1,length=random.nextInt(maxLength)+1;
+	public static byte[][]makeSymmetricSeed(int maxWidth, float seedDensity, Random random){
+		maxWidth=random.nextInt(random.nextInt(Math.max(1,maxWidth-SYMMETRIC_SEED_MIN_WIDTH))+1) + 1;
+		int width =random.nextInt(random.nextInt(maxWidth)+1)+SYMMETRIC_SEED_MIN_WIDTH,
+			length=random.nextInt(random.nextInt(maxWidth)+1)+SYMMETRIC_SEED_MIN_WIDTH;
 		byte[][] seed=new byte[width][length];
 		
+		int diam=Math.max(width,length);
 		for(int x=0; x<(width+1)/2; x++){ for(int y=0; y<(length+1)/2; y++){ 
-			seed[x][y]=random.nextFloat() < seedDensity? ALIVE:DEAD;
+			seed[x][y]=(Building.CIRCLE_SHAPE[diam][x][y]>=0 && random.nextFloat() < seedDensity) //use a circular mask to avoid ugly corners 
+					? ALIVE:DEAD; 
 			seed[width-x-1][y]=seed[x][y];
 			seed[x][length-y-1]=seed[x][y];
 			seed[width-x-1][length-y-1]=seed[x][y];
@@ -432,6 +444,27 @@ public class BuildingCellularAutomaton extends Building {
 		for(int x=0; x<width; x++)seed[x][0]=ALIVE;
 		return seed;
 	}
+	
+	public static byte[][] makeCruciformSeed(int maxWidth, Random random){
+		if(maxWidth<=1) return new byte[][]{{ALIVE}}; //degenerate case
+		
+		int width=2*(random.nextInt(random.nextInt(maxWidth/2)+1)+1)+1, //width and length are always odd
+		   length=2*(random.nextInt(random.nextInt(maxWidth/2)+1)+1)+1;
+		
+		byte[][] seed=new byte[width][length];
+		for(int x=0; x<width; x++) for(int y=0; y<length; y++)
+			seed[x][y]=(x==width/2 || y==length/2) ? ALIVE:DEAD;
+		return seed;
+	}
+	
+	public static byte[][] makeCircularSeed(int maxWidth, Random random){
+		int diam=random.nextInt(random.nextInt(random.nextInt(Math.max(1,maxWidth-CIRCULAR_SEED_MIN_WIDTH))+1)+1) + CIRCULAR_SEED_MIN_WIDTH;
+		byte[][] seed=new byte[diam][diam];
+		for(int x=0; x<diam; x++) for(int y=0; y<diam; y++)
+			seed[x][y]=Building.CIRCLE_SHAPE[diam][x][y]==1 ? ALIVE:DEAD;
+		return seed;
+	}
+	
 	
 	public final static byte[][] parseCARule(String str, PrintWriter lw){
 		try{

@@ -356,15 +356,12 @@ public class Building
     	
     	if(blockID==HOLE_ID){
     		int presentBlock=world.getBlockId(pt[0], pt[1], pt[2]);
-    		//world.setBlock(pt[0], pt[1], pt[2], GLASS_ID);
     		if(presentBlock!=AIR_ID && !IS_WATER_BLOCK[presentBlock]){
     			if( !(IS_WATER_BLOCK[world.getBlockId(pt[0]-1,pt[1],pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1],pt[2]-1)]
-    			   || IS_WATER_BLOCK[world.getBlockId(pt[0]+1,pt[1],pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1],pt[2]+1)]) 
-    			   || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1]+1,pt[2])]) //{//don't adjacent to a water block
+    			   || IS_WATER_BLOCK[world.getBlockId(pt[0]+1,pt[1],pt[2])] || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1],pt[2]+1)]
+    			   || IS_WATER_BLOCK[world.getBlockId(pt[0],pt[1]+1,pt[2])])) {//don't adjacent to a water block
     				world.setBlock(pt[0], pt[1], pt[2], AIR_ID);
-    				//if(metadata==0) world.setBlock(pt[0], pt[1], pt[2], AIR_ID);
-    				//else setBlocNoLighting(world,pt[0], pt[1], pt[2],AIR_ID);
-    			//} else world.setBlock(pt[0], pt[1], pt[2], WOOL_ID);
+    			}
     		}
     	}
     	
@@ -475,7 +472,7 @@ public class Building
  			return new ItemStack(bRule.primaryBlock[0],random.nextInt(10),bRule.primaryBlock[1]);
  		}
  		int[][] itempool=wgt.chestItems[chestType];
- 		int idx=selectWeightedOption(random,itempool[3],itempool[0]);
+ 		int idx=pickWeightedOption(random,itempool[3],itempool[0]);
  		return new ItemStack(itempool[1][idx], 
  							 itempool[4][idx] + random.nextInt(itempool[5][idx]-itempool[4][idx]+1), 
  							 itempool[2][idx]);
@@ -679,10 +676,10 @@ public class Building
    		//		return true;
    		
    		for(int x1=0; x1<bWidth; x1++)
-   			if(isWallBlock(x1,z1,bLength-1)) return true;
+   			if(isArtificialWallBlock(x1,z1,bLength-1)) return true;
    		for(int y1=ybuffer; y1<bLength-1;y1++){
-   			if(isWallBlock(0,z1,y1)) return true;
-   			if(isWallBlock(bWidth-1,z1,y1)) return true;
+   			if(isArtificialWallBlock(0,z1,y1)) return true;
+   			if(isArtificialWallBlock(bWidth-1,z1,y1)) return true;
    		}
    	}
    	return false;
@@ -803,7 +800,7 @@ public class Building
 		return -1;
     }
 	  
-	  public static int selectWeightedOption( Random random, int[] weights, int[] options){
+	  public static int pickWeightedOption( Random random, int[] weights, int[] options){
 	  	int sum=0, n;
 	  	for(n=0;n<weights.length;n++) sum+=weights[n];
 	  	if(sum<=0) {
