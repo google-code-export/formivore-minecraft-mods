@@ -57,7 +57,7 @@ to
 rule1=0,100,4         #rule1 is now to build cobblestone
 }}}
 
-<font color=#632423>*_Q: How can I change how the hostile mobs/zombie pigmen spawn?*_</font><br>
+<font color=#632423>*_Q: How can I change how the hostile mobs spawn?*_</font><br>
 You will have to modify the templates for this. Each <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#How_The_Mods_Use_Template_Files>wall template</a> has <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Variables#Default_Tower_Variables>spawner_rule </a> variable that controls what type of spawners will be created in the default towers. For example the RuinedMossyCity has the spawner rule
 {{{
 spawner_rule=0,35,327
