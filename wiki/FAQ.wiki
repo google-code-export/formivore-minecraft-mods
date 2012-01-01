@@ -58,7 +58,11 @@ rule1=0,100,4         #rule1 is now to build cobblestone
 }}}
 
 <font color=#632423>*_Q: How can I change how the hostile mobs/zombie pigmen spawn?*_</font><br>
-You will have to modify the templates for this. Each <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#How_The_Mods_Use_Template_Files>wall template</a> has <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Variables#Default_Tower_Variables>spawner_rule </a> variable that controls what type of spawners will be created in the default towers.
+You will have to modify the templates for this. Each <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/TemplateFormat#How_The_Mods_Use_Template_Files>wall template</a> has <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Variables#Default_Tower_Variables>spawner_rule</a> variable that controls what type of spawners will be created in the default towers. For example the RuinedMossyCity has the spawner rule
+{{{
+spawner_rule=0,35,327
+}}}
+means that towers have a 35% chance of having a blaze spawner (327 is the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>special blockID</a> for blaze spawners). To get rid of spawners entirely, just delete this line.
 
 <font color=#632423>*_Q: Is there an option to change <X feature>?*_</font><br>
 There are a large number of options that can adjust the size, density, frequency, and material, and style of walls and cities. Most of these are specified in the template files for each individual wall or city template file. Scan through the [Variables] to see if the option that does what you want exists. There are also a few global options that you can adjust for all walls/cities in the `WalledCitySettings.txt` and `GreatWallModSettings.txt` files.
