@@ -62,7 +62,7 @@ You will have to modify the templates for this. Each <a href=http://code.google.
 {{{
 spawner_rule=0,35,327
 }}}
-means that towers have a 35% chance of having a blaze spawner. 327 is the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>special blockID </a> for blaze spawners. To get rid of spawners entirely, just delete this line.
+This means that towers have a 35% chance of having a blaze spawner. 327 is the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/BlockRules#Special_blockIDs>special blockID </a> for blaze spawners. To get rid of spawners entirely, just delete this line.
 
 <font color=#632423>*_Q: Is there an option to change <X feature>?*_</font><br>
 There are a large number of options that can adjust the size, density, frequency, and material, and style of walls and cities. Most of these are specified in the template files for each individual wall or city template file. Scan through the [Variables] to see if the option that does what you want exists. There are also a few global options that you can adjust for all walls/cities in the `WalledCitySettings.txt` and `GreatWallModSettings.txt` files.
