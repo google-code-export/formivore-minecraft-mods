@@ -62,7 +62,7 @@ public class Building
 		public final static int DIR_WEST_EAST=1, DIR_SOUTH_NORTH=0;
 		public final static int ROT_R=1,ROT_L=-1,ROT_180=2;
 		public final static int R_HAND=1,L_HAND=-1;
-	
+		
 		//**** WORKING VARIABLES **** 
 		protected World world;
 		protected Random random;
@@ -73,7 +73,7 @@ public class Building
 		protected WorldGeneratorThread wgt;
 		protected boolean centerAligned; //if true, alignPt x is the central axis of the building
 										 //if false, alignPt is the origin
-
+		
 		protected int i0, j0, k0; //origin coordinates (x=0,z=0,y=0). The child class may want to move the origin as it progress to use as a "cursor" position.
 		private int xI,yI,xK,yK; //
 		
@@ -122,8 +122,6 @@ public class Building
 	  						xK=-bHand; 	yK=0; 
 	  		break;
   		}
-			
-		
   	}
     
   	
@@ -443,7 +441,7 @@ public class Building
     
   //&&&&&&&&&&&&&&&&& SPECIAL BLOCK FUNCTION - setLootChest &&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
  	private final void setLootChest(int[] pt,int chestType){
- 		//try{
+ 		try{
  			world.setBlock(pt[0],pt[1],pt[2],CHEST_ID);
         
  			//BUKKIT PORT
@@ -461,10 +459,10 @@ public class Building
 			        	tileentitychest.setInventorySlotContents(random.nextInt(tileentitychest.getSizeInventory()), itemstack);
 		    	}
 		    }
-        //} catch(Exception e) { 
-        	//System.out.println("Error placing loot chest: "+e.toString());
-        	//e.printStackTrace();
-        //}
+        } catch(Exception e) { 
+        	System.out.println("Error placing loot chest: "+e.toString());
+        	e.printStackTrace();
+        }
     }
  	
  	private ItemStack getChestItemstack(int chestType){
@@ -691,8 +689,7 @@ public class Building
    			for(int y1=pt1[2]; y1<=pt2[2]; y1++)
 				if(!isWallable(x1,z1,y1)) return true;
    	return false;
-   }
-    
+   }  
 	  
    //******************** STATIC FUNCTIONS ******************************************************************************************************************************************//
    
@@ -852,7 +849,7 @@ public class Building
 				}
 				if(metadata==0 || metadata==1) return metadata + tempdata;
 			}
-			return LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metadata])];
+			return LADDER_DIR_TO_META[orientDirToBDir(LADDER_META_TO_DIR[metadata])] + tempdata;
 			
 		case RAILS_ID:
 			switch( bDir ) {
@@ -1515,7 +1512,8 @@ public class Building
     		
     		IS_DELAY_BLOCK[blockID]=IS_STAIRS_BLOCK[blockID]
     		   || blockID==TORCH_ID || blockID==LEVER_ID || blockID==SIGN_POST_ID || blockID==SIGN_ID || blockID==REDSTONE_TORCH_ON_ID || blockID==FIRE_ID
-    		   || blockID==REDSTONE_TORCH_OFF_ID || blockID==STONE_BUTTON_ID || blockID==GLOWSTONE_ID || blockID==VINES_ID || IS_STAIRS_BLOCK[blockID];
+    		   || blockID==REDSTONE_TORCH_OFF_ID || blockID==STONE_BUTTON_ID || blockID==GLOWSTONE_ID || blockID==VINES_ID || blockID==REDSTONE_WIRE_ID
+    		   || blockID==DISPENSER_ID || blockID==FURNACE_ID;
     		
     		//Define by what it is not.
     		IS_LOAD_TRASMITER_BLOCK[blockID]= !(IS_WALLABLE[blockID]  || IS_FLOWING_BLOCK[blockID]
@@ -1709,39 +1707,37 @@ public class Building
 			{3,IRON_SPADE_ID,0,1,1,1},
 			{4,STRING_ID,0,1,1,1},
 			{5,IRON_PICKAXE_ID,0,2,1,1},
-			{6,STORAGE_MINECART_ID,0,1,1,1},
-			{7,GLASS_BOTTLE_ID,0,2,2,5},
+			{6,LEATHER_BOOTS_ID,0,1,1,1},
+			{7,BUCKET_ID,0,1,1,1},
 			{8,LEATHER_HELMET_ID,0,1,1,1},
-			{9,LADDER_ID,0,1,8,12},
-			{10,GOLD_NUGGET_ID,0,2,1,3},
-			{11,POTION_ID,5,1,1,1}}, //healing
-			//{12,POTION_ID,10,1,1,1}, //slowness
-			//{13,POTION_ID,4,1,1,1}}, //poison
+			{9,SEEDS_ID,0,1,10,15},
+			{10,GOLD_NUGGET_ID,0,2,3,8},
+			{11,POTION_ID,5,2,1,1}, //healing I
+			{12,POTION_ID,4,1,1,1}}, //poison, hehe
 			
 		{	//Medium
 			{0,IRON_SWORD_ID,0,2,1,1}, 
 			{1,MILK_BUCKET_ID,0,2,1,1},
 			{2,WEB_ID,0,1,8,16},
 			{3,IRON_SPADE_ID,0,1,1,1},
-			{4,POTION_ID,2,1,1,1},
-			{5,DIAMOND_HOE_ID,0,1,0,1},
-			{6,WATCH_ID,0,1,1,1},
-			{7,IRON_PICKAXE_ID,0,3,1,1},
-			{8,BUCKET_ID,0,1,1,1},
-			{9,MAP_ID,0,1,1,1},
-			{10,APPLE_ID,0,2,2,3},
-			{11,COMPASS_ID,0,1,1,1},
-			{12,IRON_INGOT_ID,0,1,5,8},
-			{13,ENDER_PEARL_ID,0,1,1,3},
-			{14,GOLD_NUGGET_ID,0,2,5,9},
-			{15,POTION_ID,5,3,1,1}, //healing
-			{16,POTION_ID,2,1,1,1}, //speed
-			{17,POTION_ID,9,1,1,1}}, //strength
+			{4,DIAMOND_HOE_ID,0,1,0,1},
+			{5,WATCH_ID,0,1,1,1},
+			{6,IRON_PICKAXE_ID,0,3,1,1},
+			{7,MAP_ID,0,1,1,1},
+			{8,APPLE_ID,0,2,2,3},
+			{9,COMPASS_ID,0,1,1,1},
+			{10,IRON_INGOT_ID,0,1,5,8},
+			{11,ENDER_PEARL_ID,0,1,1,3},
+			{12,GOLD_NUGGET_ID,0,2,8,15},
+			{13,POTION_ID,2,1,1,1},
+			{14,POTION_ID,37,3,1,1}, //healing II
+			{15,POTION_ID,34,1,1,1}, //swiftness II
+			{16,POTION_ID,9,1,1,1}}, //strength
 			
 		{	//Hard
 			{0,STICKY_PISTON_ID,0,2,6,12},  
 			{1,WEB_ID,0,1,8,24},
-			{2,COOKIE_ID,0,2,12,24},
+			{2,COOKIE_ID,0,2,8,18},
 			{3,DIAMOND_AXE_ID,0,1,1,1},
 			{4,ICE_ID,0,1,12,24},
 			{5,SLIME_BALL_ID,0,2,12,24},
@@ -1753,8 +1749,9 @@ public class Building
 			{11,TNT_ID,0,2,8,20},
 			{12,DIAMOND_ID,0,2,1,4},
 			{13,GOLD_NUGGET_ID,0,2,30,64},
-			{14,POTION_ID,5,3,1,1}, //healing
-			{15,POTION_ID,3,1,1,1}}, //fire resistance
+			{14,POTION_ID,37,3,1,1}, //healing II
+			{15,POTION_ID,49,2,1,1}, //regeneration II
+			{16,POTION_ID,3,2,1,1}}, //fire resistance
 			
 			
 		{	//Tower

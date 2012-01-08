@@ -2,6 +2,10 @@ package net.minecraft.src;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Random;
 /*
  *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
@@ -26,6 +30,9 @@ public class BuildingCellularAutomaton extends Building {
 	private final static int HOLE_FLOOR_BUFFER=2;
 	private final static int UNREACHED=-1;
 	private final static int SYMMETRIC_SEED_MIN_WIDTH=4,CIRCULAR_SEED_MIN_WIDTH=4;
+	private final static int[] MEDIUM_LIGHT_SPAWNERS =    new int[]{BLAZE_SPAWNER_ID,BLAZE_SPAWNER_ID,BLAZE_SPAWNER_ID,SILVERFISH_SPAWNER_ID,SILVERFISH_SPAWNER_ID,LAVA_SLIME_SPAWNER_ID},
+							   MEDIUM_LIGHT_WIDE_SPAWNERS=new int[]{BLAZE_SPAWNER_ID,SILVERFISH_SPAWNER_ID,SILVERFISH_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID,SPIDER_SPAWNER_ID},
+							   LOW_LIGHT_SPAWNERS =       new int[]{UPRIGHT_SPAWNER_ID,UPRIGHT_SPAWNER_ID,SILVERFISH_SPAWNER_ID,LAVA_SLIME_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID};
 	
 	private byte[][][] layers = null;
 	public byte[][] seed=null;
@@ -283,13 +290,15 @@ public class BuildingCellularAutomaton extends Building {
 			}}
 		}
 		
+		flushDelayed();
+		
 		if(makeFloors)
 			buildFloors(floorBlockCounts, floorBlocks);
-		
-		flushDelayed();
 	}
 	
 	public void buildFloors(int[] floorBlockCounts, ArrayList<ArrayList<int[]>> floorBlocks){
+		ArrayList<int[]> floors=new ArrayList<int[]>();
+		
 		while(true){
 			int maxFloorBlocks=floorBlockCounts[1], maxFloor=1;
 			for(int floor=2; floor<bHeight-5; floor++){
@@ -305,10 +314,7 @@ public class BuildingCellularAutomaton extends Building {
 				for(int[] pt : floorBlocks.get(maxFloor))   makeFloorCrossAt(pt[0],maxFloor,pt[1],layout);
 				for(int[] pt : floorBlocks.get(maxFloor+1)) makeFloorCrossAt(pt[0],maxFloor,pt[1],layout);
 				
-				
-				do{
-					populateFloor(maxFloor,maxFloorBlocks,layout);
-				}while(random.nextFloat() < 1.0f - MEAN_SIDE_LENGTH_PER_POPULATE/MathHelper.sqrt_float((float)maxFloorBlocks));
+				floors.add(new int[]{maxFloor,maxFloorBlocks});
 				
 				if(maxFloor-3>=0) floorBlockCounts[maxFloor-3]=0;
 				if(maxFloor-2>=0) floorBlockCounts[maxFloor-2]=0;
@@ -319,8 +325,24 @@ public class BuildingCellularAutomaton extends Building {
 				if(maxFloor+3<bHeight) floorBlockCounts[maxFloor+3]=0;
 			}
 			else break;
+			
+			flushDelayed();
 		}
 		
+		//populate
+		Collections.sort(floors,new Comparator() {
+			public int compare(Object o1, Object o2) {
+                int a = ((int[])o1)[0];
+                int b = ((int[])o2)[0];
+                return a < b ? -1 : a == b ? 0 : 1;
+            }
+		});
+		for(int m=floors.size()-1; m>=0; m--){
+			if(m>0) populateLadderOrStairway(floors.get(m-1)[0],floors.get(m)[0],true);
+			do{
+				populateFloor(floors.get(m)[0],floors.get(m)[1]);
+			}while(random.nextFloat() < 1.0f - MEAN_SIDE_LENGTH_PER_POPULATE/MathHelper.sqrt_float((float)floors.get(m)[1]));
+		}
 	}
 	
 	private void makeFloorCrossAt(int x, int z, int y, boolean[][] layout){
@@ -347,36 +369,66 @@ public class BuildingCellularAutomaton extends Building {
 		layout[x][y]=true;
 	}
 	
-	private void populateFloor(int z,int floorBlocks,boolean[][] layout){
-		boolean builtSpawner=false;
+	private void populateLadderOrStairway(int z1, int z2, boolean buildStairs){
+		int fWidth=fBB[1][z2] - fBB[0][z2], fLength=fBB[3][z2] - fBB[2][z2];
+		if(fWidth <=0 || fLength <= 0) return;
+		
+		BuildingSpiralStaircase bss;
+		for(int tries=0; tries < 8; tries++){
+			int x=random.nextInt(fWidth)+fBB[0][z2],
+			    y=random.nextInt(fLength)+fBB[2][z2];
+			if(isFloor(x,z2,y)){
+				int dir=random.nextInt(4);
+				if(buildStairs && (bss=new BuildingSpiralStaircase(wgt, bRule, dir, 1, false, z1-z2+1, getIJKPt(x,z2-1,y))).bottomIsFloor() ){
+					bss.build(0,0);
+				}else if(isFloor(x,z1,y)){
+					//ladder
+					for(int z=z1; z<z2; z++){
+						setBlockLocal(x+DIR_TO_X[dir],z,y+DIR_TO_Y[dir],bRule);
+						setBlockLocal(x,z,y,LADDER_ID,LADDER_DIR_TO_META[flipDir(dir)]);
+					}
+				}
+				return;
+			}
+		}
+	}
+	
+	private void populateFloor(int z,int floorBlocks){
+		int[] spawnerSelection=null;
 		int fWidth=fBB[1][z] - fBB[0][z], fLength=fBB[3][z] - fBB[2][z];
 		if(fWidth <=0 || fLength <= 0) return;
 		
-		for(int tries=0; tries < 8 && !builtSpawner; tries++){
-			int x=random.nextInt(fWidth)+fBB[0][z],
-			    y=random.nextInt(fLength)+fBB[2][z];
-			if(layout[x][y]){
-				int[] pt=getIJKPt(x,z,y);
-				int lightVal=world.getSavedLightValue(EnumSkyBlock.Sky, pt[0], pt[1], pt[2]); 
-				if(lightVal<5 && !(lightVal==0 && j0+z>world.field_35472_c>>1)){ //there is some kind of bug where where lightVal coming up as zero, even though it is not
-					setBlockLocal(x,z,y,UPRIGHT_SPAWNER_ID);
-					builtSpawner=true;
-				}else if(lightVal<10){
-					setBlockLocal(x,z,y,floorBlocks > 70 ? CAVE_SPIDER_SPAWNER_ID : BLAZE_SPAWNER_ID);
-					builtSpawner=true;
-				}
-				break;
-			}
-		}
-		
-		if(builtSpawner && random.nextInt(3)!=0){
+		//spawners
+		if(random.nextInt(100)<70){
 			for(int tries=0; tries < 8; tries++){
 				int x=random.nextInt(fWidth)+fBB[0][z],
 				    y=random.nextInt(fLength)+fBB[2][z];
-				if(layout[x][y]){
+				if(isFloor(x,z,y)){
+					int[] pt=getIJKPt(x,z,y);
+					int lightVal=world.getSavedLightValue(EnumSkyBlock.Sky, pt[0], pt[1], pt[2]);
+					
+					//Choose spawner types. There is some kind of bug where where lightVal coming up as zero, even though it is not
+					if(lightVal<5 && !(lightVal==0 && j0+z>world.field_35472_c>>1)) 
+						spawnerSelection=LOW_LIGHT_SPAWNERS;
+					else if(lightVal<10)
+						spawnerSelection = floorBlocks > 70 ? MEDIUM_LIGHT_WIDE_SPAWNERS : MEDIUM_LIGHT_SPAWNERS;
+						
+					if(spawnerSelection!=null){
+						setBlockLocal(x,z,y,spawnerSelection[random.nextInt(spawnerSelection.length)]);
+						break;
+					}
+				}
+			}
+		}
+		
+		//chest
+		if(random.nextInt(100) < (spawnerSelection==null ? 20:70)){
+			for(int tries=0; tries < 8; tries++){
+				int x=random.nextInt(fWidth)+fBB[0][z],
+				    y=random.nextInt(fLength)+fBB[2][z];
+				if(isFloor(x,z,y)){
 					setBlockLocal(x,z-1,y,pickCAChestType(z));
 					setBlockLocal(x,z-2,y,bRule);
-					layout[x][y]=false;
 					if(random.nextBoolean()){
 						break; //chance of > 1 chest. Expected # of chests is one.
 					}
@@ -384,16 +436,48 @@ public class BuildingCellularAutomaton extends Building {
 			}
 		}
 		
+		//1 TNT trap
 		int s=random.nextInt(1+random.nextInt(5))-2;
 		for(int tries=0; tries<s; tries++){
 			int x=random.nextInt(fWidth)+fBB[0][z],
 		        y=random.nextInt(fLength)+fBB[2][z];
-			if(layout[x][y]){
+			if(isFloor(x,z,y)){
 				setBlockLocal(x,z,y,STONE_PLATE_ID);
 				setBlockLocal(x,z-1,y,TNT_ID);
 				setBlockLocal(x,z-2,y,bRule);
 			}
 		}
+		
+		//2 TNT trap
+		s=spawnerSelection==null ? random.nextInt(1+random.nextInt(7))-2 : 0;
+		for(int tries=0; tries<s; tries++){
+			int x=random.nextInt(fWidth)+fBB[0][z],
+		        y=random.nextInt(fLength)+fBB[2][z];
+			if(isFloor(x,z,y) && isFloor(x,z,y=1)){
+				for(int x1=x-1;x1<=x+1;x1++) 
+					for(int y1=y-1;y1<=y+2;y1++)
+						for(int z1=z-3;z1<=z-2;z1++) 
+							setBlockLocal(x1,z1,y1,bRule);
+				setBlockLocal(x,z,y,STONE_PLATE_ID);
+				setBlockLocal(x,z-2,y,TNT_ID);
+				setBlockLocal(x,z-2,y+1,TNT_ID);
+			}
+		}
+		
+		
+		//dispenser trap
+		if(spawnerSelection==null || random.nextBoolean()){
+			for(int tries=0; tries<10; tries++){
+				int x=random.nextInt(fWidth)+fBB[0][z],
+			        y=random.nextInt(fLength)+fBB[2][z];
+				BuildingDispenserTrap bdt=new BuildingDispenserTrap(wgt, bRule, random.nextInt(4),1, getIJKPt(x,z,y));
+				if(bdt.queryCanBuild(2)){
+					bdt.build(random.nextBoolean() ? BuildingDispenserTrap.ARROW_MISSILE : BuildingDispenserTrap.DAMAGE_POTION_MISSILE, true);
+					break;
+				}
+			}
+		}
+		
 	}
 	
 	

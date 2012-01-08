@@ -119,6 +119,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	protected String loadingMessage="";
 	public int[] flushCallChunk=NO_CALL_CHUNK;
 	public PrintWriter lw=null;
+	//public float GlobalChallengeSlider=1.0F;
 	
 	//Humans+ reflection fields
  	Constructor h_EntityFlagConstr=null;

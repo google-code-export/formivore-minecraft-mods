@@ -38,22 +38,18 @@ public class mod_WalledCity extends BuildingExplorationHandler
 								LOG_FILE_NAME="walled_city_log.txt",
 								CITY_TEMPLATES_FOLDER_NAME="walledcity",
 								STREET_TEMPLATES_FOLDER_NAME="streets";
-
+	
 	//USER MODIFIABLE PARAMETERS, values here are defaults
 	public float GlobalFrequency=0.02F, UndergroundGlobalFrequency=0.001F;
 	public int TriesPerChunk=1;
 	public int MinCitySeparation=800, UndergroundMinCitySeparation=500;
 	public boolean CityBuiltMessage=true;
 	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
-
+	public boolean RejectOnPreexistingArtifacts=true;
+	
 	//DATA VARIABLES
 	public ArrayList<TemplateWall> cityStyles=null, undergroundCityStyles=new ArrayList<TemplateWall>();
-	//private long explrWorldCode;
 	public ArrayList<int[]> cityLocations;
-	//, undergroundCityLocations;
-	
-	//private HashMap<Long,ArrayList<int[]> > worldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >(),
-	//										undergroundWorldCityLocationsMap=new HashMap<Long,ArrayList<int[]> >();
 	
 	public LinkedList<int[]> citiesBuiltMessages=new LinkedList<int[]>();
 	
@@ -94,7 +90,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 					undergroundCityStyles.add(uws);
 					m--;
 			}}
-
+			
 			lw.println("\nTemplate loading complete.");
 			lw.println("Probability of generation attempt per chunk explored is "+GlobalFrequency+", with "+TriesPerChunk+" tries per chunk.");
 			if(GlobalFrequency <0.000001 && UndergroundGlobalFrequency<0.000001) errFlag=true;
@@ -110,7 +106,6 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	
 	//****************************  FUNCTION - cityIsSeparated *************************************************************************************//
 	public boolean cityIsSeparated(int i, int k, int cityType){
-		//ArrayList<int[]> locations = cityType==CITY_TYPE_WALLED ? cityLocations : undergroundCityLocations;
 		if(cityLocations ==null) 
 			return true;
 		for(int [] location : cityLocations){
@@ -176,13 +171,13 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	
 	//****************************  FUNCTION - chatCityBuilt *************************************************************************************//
 	//BUKKIT PORT / MP PORT
-	//public void chatBuildingCity(String msg){ if(msg!=null) logOrPrint(msg); }
+	//public void chatBuildingCity(String chatString, String logString){ if(logString!=null) logOrPrint(logString); }
 	//public void chatCityBuilt(int[] args){}
 	
-	public void chatBuildingCity(String msg){
-		if(msg!=null) logOrPrint(msg);
+	public void chatBuildingCity(String chatString, String logString){
+		if(logString!=null) logOrPrint(logString);
 		if(CityBuiltMessage && mc.thePlayer!=null){
-			mc.thePlayer.addChatMessage("** Building city... **");
+			mc.thePlayer.addChatMessage(chatString);
 		}
 	}
 	
@@ -254,7 +249,8 @@ public class mod_WalledCity extends BuildingExplorationHandler
 					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = readIntParam(lw,ConvexSmoothingScale,":",read);
 					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
 					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = readIntParam(lw,1,":",read)==1;
-					
+					if(read.startsWith( "RejectOnPreexistingArtifacts" )) RejectOnPreexistingArtifacts = readIntParam(lw,1,":",read)==1;
+					//if(read.startsWith( "GlobalChallengeSlider" )) GlobalChallengeSlider = readFloatParam(lw,GlobalChallengeSlider,":",read);
 					readChestItemsList(lw,read,br);
 		
 				}
@@ -270,25 +266,27 @@ public class mod_WalledCity extends BuildingExplorationHandler
 				pw.println();
 				pw.println("<-GlobalFrequency/UndergroundGlobalFrequency controls how likely aboveground/belowground cities are to appear. Should be between 0.0 and 1.0. Lower to make less common->");
 				pw.println("<-MinCitySeparation/UndergroundMinCitySeparation define a minimum allowable separation between city spawns.->");
-				pw.println("<-CityBuiltMessage controls whether the player receives message when a city is building. Set to 1 to receive message, 0 for no messages.->");
 				pw.println("GlobalFrequency:"+GlobalFrequency);
 				pw.println("UndergroundGlobalFrequency:"+UndergroundGlobalFrequency);
 				pw.println("MinCitySeparation:"+MinCitySeparation);
 				pw.println("MinUndergroundCitySeparation:"+UndergroundMinCitySeparation);
-				pw.println("CityBuiltMessage:"+(CityBuiltMessage ? 1:0));
 				pw.println();
 				pw.println("<-Wall Pathfinding->");
 				pw.println("<-ConcaveSmoothingScale and ConvexSmoothingScale specifiy the maximum length that can be smoothed away in walls for cocave/convex curves respectively.->");
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
+				pw.println("<-CityBuiltMessage controls whether the player receives message when a city is building. Set to 1 to receive message, 0 for no messages.->");
+				pw.println("<-RejectOnPreexistingArtifacts determines whether the planner rejects city sites that contain preexiting man-made blocks. Set to 1 to do this check.->");
 				pw.println("ConcaveSmoothingScale:"+ConcaveSmoothingScale);
 				pw.println("ConvexSmoothingScale:"+ConvexSmoothingScale);
 				pw.println("BacktrackLength:"+BacktrackLength);
+				pw.println("CityBuiltMessage:"+(CityBuiltMessage ? 1:0));
+				pw.println("RejectOnPreexistingArtifacts:"+(RejectOnPreexistingArtifacts ? 1:0));
 				pw.println();
 				pw.println();
 				pw.println("<-Chest contents->");
 				pw.println("<-Tries is the number of selections that will be made for this chest type.->");
-				pw.println("<-Format for items is <itemID>,<selection weight>,<min stack size>,<max stack size> ->");
-				pw.println("<-So e.g. 262,1,1,12 means a stack of between 1 and 12 arrows, with a selection weight of 1.->");
+				pw.println("<-Format for items is <itemID>,<likelihood weight>,<min stack size>,<max stack size> ->");
+				pw.println("<-So e.g. 262,1,1,12 means a stack of 1-12 arrows, with a likelihood weight of 1.->");
 				printDefaultChestItems(pw);
 			}catch(IOException e) { lw.println(e.getMessage()); }
 			finally{ if(pw!=null) pw.close(); }
@@ -309,8 +307,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 		finally{ if(pw!=null) pw.close(); }
 	}
 	
-	
-	
+
 }
 
 

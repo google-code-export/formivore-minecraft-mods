@@ -681,23 +681,32 @@ public class BuildingWall extends Building
 				}
 				
 				//build it
-				//gateway is built from n-gatewayWidth to n-1
-				
+				//gateway is built from n0-gateWidth+1 to n0	
 				if(rs==null ||  avenues[1].bLength>=MIN_GATEWAY_ROAD_LENGTH){ 
 					if(rs!=null){
 						avenues[0].smooth(10,10,false);
 						avenues[1].smooth(10,10,false);
 					}
-					gateHeight=Math.min(gateHeight,bHeight-1);
-					for(int x1=0;x1<bWidth;x1++)
-						for(int y1=0;y1>-gateWidth;y1--)
+					
+					int fenceBlock = bRule.chance<100 || bRule.primaryBlock[0]==NETHER_BRICK_ID ? NETHER_BRICK_FENCE_ID : FENCE_ID;
+					int fenceX = flankTHand==0 ? bWidth/2 : (flankTHand==bHand ? bWidth-2+ws.TowerXOffset:1-ws.TowerXOffset);
+					gateHeight = Math.min(gateHeight,bHeight-1);
+					for(int y1=0;y1>-gateWidth;y1--){
+						//gateway
+						for(int x1=0;x1<bWidth;x1++)
 							for(int z1=0;z1<gateHeight;z1++)
 								if(!((y1==0 || y1==1-gateWidth) && z1==gateHeight-1))
 									setBlockLocal(x1,z1,y1,AIR_ID);
-					if(flankTHand!=-bHand ) setBlockLocal(-1,gateHeight-2,-gateWidth,WEST_FACE_TORCH_BLOCK);
-					if(flankTHand!=-bHand ) setBlockLocal(-1,gateHeight-2,1,WEST_FACE_TORCH_BLOCK);
-					if(flankTHand!=bHand ) setBlockLocal(bWidth,gateHeight-2,-gateWidth,EAST_FACE_TORCH_BLOCK);
-					if(flankTHand!=bHand ) setBlockLocal(bWidth,gateHeight-2,1,EAST_FACE_TORCH_BLOCK);
+						//fence gate
+						for(int z1=gateHeight-2; z1<gateHeight; z1++)
+							if(random.nextInt(100) < bRule.chance) 
+								setBlockLocal(fenceX,z1,y1,fenceBlock);
+					}
+					if(flankTHand!=-bHand ) setBlockLocal(-1-ws.TowerXOffset,gateHeight-2,-gateWidth,WEST_FACE_TORCH_BLOCK);
+					if(flankTHand!=-bHand ) setBlockLocal(-1-ws.TowerXOffset,gateHeight-2,1,WEST_FACE_TORCH_BLOCK);
+					if(flankTHand!=bHand ) setBlockLocal(bWidth+ws.TowerXOffset,gateHeight-2,-gateWidth,EAST_FACE_TORCH_BLOCK);
+					if(flankTHand!=bHand ) setBlockLocal(bWidth+ws.TowerXOffset,gateHeight-2,1,EAST_FACE_TORCH_BLOCK);
+					
 					
 					//build flanking towers
 					if(n0+gateWidth+tw > bLength) flankTHand=0;
@@ -715,9 +724,34 @@ public class BuildingWall extends Building
 					}
 					flushDelayed();
 					
+					//stairs up to wall
+					gatewayStart=n0-gateWidth+1;
+					gatewayEnd=n0;
+					if(bWidth+2*ws.TowerXOffset>=5){
+						int ngw1=n0-gateWidth, ngw2=n0+1;
+						int x2=(flankTHand==0 || flankTHand==bHand) ? 1-ws.TowerXOffset : bWidth-2+ws.TowerXOffset;
+						
+						//preceding stairway
+						for(int n1=ngw1; n1>ngw1-5; n1--){
+							if(zArray[n1-2]==zArray[n1+1] && xArray[n1-3]==xArray[ngw1+1]){
+								new BuildingSpiralStaircase(wgt,bRule,flipDir(bDir),-bHand,false,-WalkHeight,
+										getIJKPtAtN(n1,x2,WalkHeight-2,-1)).build(1,n1-ngw1-2);
+								gatewayStart=n1-3;
+								break;
+						}}	
+						//following stairway
+						for(int n1=ngw2; n1<ngw2+5; n1++){
+							if(zArray[n1+2]==zArray[n1-1] && xArray[n1+3]==xArray[ngw2-1]){
+								new BuildingSpiralStaircase(wgt,bRule,bDir,bHand,false,-WalkHeight,
+										getIJKPtAtN(n1,x2,WalkHeight-2,1)).build(1,ngw2-n1-2);
+								gatewayEnd=n1+3;
+								break;
+						}}
+					}
 					
-					gatewayStart=n0+1-gateWidth-(flankTHand!=0 ? tw+ws.BuildingInterval/2:0);
-					gatewayEnd=n0+(flankTHand!=0 ? (tw+ws.BuildingInterval/2):0);
+					
+					gatewayStart-=(flankTHand!=0 ? tw+ws.BuildingInterval/2:0);
+					gatewayEnd  +=(flankTHand!=0 ? tw+ws.BuildingInterval/2:0);
 					return avenues;
 				}
 			}

@@ -161,7 +161,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 					int j2=Building.findSurfaceJ(world,i2,k2,world.field_35472_c-1,true,3);
 					cityArea++;
 					if(j2==Building.HIT_WATER) waterArea++;
-					if(ows.LevelInterior && Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2,j2,k2)]){
+					if(wc.RejectOnPreexistingArtifacts && ows.LevelInterior && Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2,j2,k2)]){
 						wc.logOrPrint("Rejected "+ows.name+" city "+ID+", found previous construction in city zone!");
 						return false;
 					}
@@ -195,7 +195,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		willBuild=true;
 		if(!master.isFlushingGenThreads) suspendGen();
 		
-		wc.chatBuildingCity("\n***** Building "+ows.name+" city"+", ID="+ID+" in "+Building.BIOME_NAMES[Building.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(walls[0].i1,walls[0].k1))]+" biome between "+walls[0].globalCoordString(0,0,0)+" and "+walls[2].globalCoordString(0,0,0) + " ******\n");
+		wc.chatBuildingCity("** Building city... **","\n***** Building "+ows.name+" city"+", ID="+ID+" in "+Building.BIOME_NAMES[Building.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(walls[0].i1,walls[0].k1))]+" biome between "+walls[0].globalCoordString(0,0,0)+" and "+walls[2].globalCoordString(0,0,0) + " ******\n");
 		if(ows.LevelInterior) levelCity();
 		
 		TemplateWall avenueWS=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);
