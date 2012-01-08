@@ -42,10 +42,10 @@ public class mod_CARuins extends BuildingExplorationHandler{
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //River             
 		new TemplateRule(new int[]{112},new int[]{0,},100),          		//Nether            
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //Sky               
-		new TemplateRule(new int[]{98,98,98},new int[]{0,1,2},100),          //FrozenOcean       
-		new TemplateRule(new int[]{98,98,98},new int[]{0,1,2},100),           //FrozenRiver       
-		new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100),          //IcePlains         
-		new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100),          //IceMountains      
+		new TemplateRule(new int[]{98,98,98},new int[]{0,1,2},100),         //FrozenOcean       
+		new TemplateRule(new int[]{98,98,98},new int[]{0,1,2},100),         //FrozenRiver       
+		new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100),         //IcePlains         
+		new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100),         //IceMountains      
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),        	//MushroomIsland    
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100)};     	//MushroomIslandShore 
 	
@@ -87,7 +87,6 @@ public class mod_CARuins extends BuildingExplorationHandler{
 	public int TriesPerChunk=1;
 	public int MinHeight=20,MaxHeight=70;
 	public int ContainerWidth=40, ContainerLength=40;
-	//public int linearChance=50;
 	public float SymmetricSeedDensity=0.5F;
 	public int MinHeightBeforeOscillation=12;
 	public boolean SmoothWithStairs=true, MakeFloors=true;
@@ -97,7 +96,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 	ArrayList<byte[][]> caRules=null;
 	int[][] caRulesWeightsAndIndex=null;
 	
-	byte[][] fixedRule;
+	//byte[][] fixedRule;
 	
 	//****************************  CONSTRUCTOR - mod_GreatWall*************************************************************************************//
 	public mod_CARuins() {	
@@ -110,6 +109,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 			blockRules[m]=DEFAULT_BLOCK_RULES[m];
 		}
 		
+		/*
 		Random rnd=new Random();
 		int a=rnd.nextInt(2)+2, b=rnd.nextInt(2)+2;
 		String ruleStr="B4";
@@ -118,6 +118,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 		for(int m=0;m<=8;m++) if(rnd.nextInt(3)!=0)  ruleStr+=m;
 		fixedRule=BuildingCellularAutomaton.parseCARule(ruleStr, null);
 		System.out.println("Using fixed rule "+ruleStr);
+		*/
 		
 		//MP PORT - uncomment
 		//loadDataFiles();
@@ -146,9 +147,6 @@ public class mod_CARuins extends BuildingExplorationHandler{
 			//read and check values from file
 			lw= new PrintWriter( new BufferedWriter( new FileWriter(new File(BASE_DIRECTORY,LOG_FILE_NAME)) ));
 			
-			//for(int[] rule : BuildingCellularAutomaton.DEFAULT_BIN_CA_RULES)
-			//	BuildingCellularAutomaton.intCodeToStr(rule);
-			
 			logOrPrint("Loading options and for the Cellular Automata Generator");
 			getGlobalOptions();
 
@@ -173,8 +171,6 @@ public class mod_CARuins extends BuildingExplorationHandler{
 		ArrayList<Integer> caRuleWeights=new ArrayList<Integer>();
 		if(settingsFile.exists()){
 			BufferedReader br = null;
-			//ArrayList<int[]> digitalCARules=new ArrayList<int[]>();
-			//String zeroNeighborsStr="";
 			try{
 				br=new BufferedReader( new FileReader(settingsFile) );
 				lw.println("Getting global options...");    
@@ -264,9 +260,10 @@ public class mod_CARuins extends BuildingExplorationHandler{
 				pw.println("<-An automata rule should be in the form B<neighbor digits>/S<neighbor digits>, where B stands for \"birth\" and S stands->");
 				pw.println("<-   for \"survive\". <neighbor digits> are the subset the digits from 0 to 8 on which the rule will birth or survive.->");
 				pw.println("<-   For example, the Game of Life has the rule code B3/S23.->");
+				pw.println("<-Rule weights are the relative likelihood weights that different rules will be used. Weights are nonnegative integers.->");
 				pw.println(AUTOMATA_RULES_STRING);
 				for(String[] defaultRule : DEFAULT_CA_RULES){
-					pw.println(defaultRule[0] + ", weight="+defaultRule[1]+(defaultRule[2].length()>0 ? (",  #"+defaultRule[2]) : ""));
+					pw.println(defaultRule[0] + ", weight="+defaultRule[1]+(defaultRule[2].length()>0 ? (",  <-"+defaultRule[2])+"->" : ""));
 					caRules.add(BuildingCellularAutomaton.parseCARule(defaultRule[0],lw));
 					caRuleWeights.add(Integer.parseInt(defaultRule[1]));
 				}
@@ -309,6 +306,14 @@ public class mod_CARuins extends BuildingExplorationHandler{
 						
 						TemplateRule blockRule=blockRules[Building.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(i0,k0))];
 						
+						//can use this to test out new Building classes
+						/*
+						BuildingSpiralStaircase bss=new BuildingSpiralStaircase(this,blockRule,random.nextInt(4),2*random.nextInt(2)-1,false,-(random.nextInt(10)+1),new int[]{i0,j0,k0});
+						bss.build(0,0);
+						bss.bottomIsFloor();
+						return true;
+						*/
+
 						BuildingCellularAutomaton bca=new BuildingCellularAutomaton(this,blockRule,random.nextInt(4),1, false, 
 								                           ContainerWidth, th,ContainerLength,seed,caRule,new int[]{i0,j0,k0});
 						if(bca.plan(true,MinHeightBeforeOscillation) && bca.queryCanBuild(0,true)){
@@ -328,6 +333,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 							
 							return true;
 						}
+						
 						return false;
 					}
 				}

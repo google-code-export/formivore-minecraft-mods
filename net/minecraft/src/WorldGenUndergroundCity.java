@@ -87,7 +87,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 		if(!exploreArea(new int[]{i,0,k}, new int[]{i+diam,0,k+diam}, false)) return false;
 		hollows.add(new int[]{i,j,k,diam,0});
 		
-		if(diam==MAX_DIAM) wc.chatBuildingCity(null);
+		if(diam==MAX_DIAM) wc.chatBuildingCity("** Building underground city... **",null);
 		
 		for(int z1=0; z1<(diam+1)/2; z1++){
 			//top half

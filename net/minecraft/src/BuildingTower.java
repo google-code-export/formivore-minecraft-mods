@@ -118,8 +118,7 @@ public class BuildingTower extends Building
 	}
 
 	//****************************************  FUNCTION - build *************************************************************************************//
-	//builds a tower:   (if EW==1)   from (i1_,k1_) to (i1_ + TWidth, k1_ - TWidth)
-	//                  (if EW==0)   from (i1_,k1_) to (i1_ - TWidth, k1_ + TWidth)
+	//builds a tower:   
 	//PARAMETERS:
 	//doorOffset1,doorOffset2 - x-offset of the ground floor door from center
 	//hanging - if true, taper away tower base if hanging over air or water
@@ -285,9 +284,9 @@ public class BuildingTower extends Building
 				for(int m=0; m<bLength*bWidth/25; m++){ //scale to floor area
 					if(!undeadTower && random.nextInt(BED_ODDS)==0) populateBeds(z1);
 					if(bHeight-baseHeight>8 && random.nextInt(BOOKSHELF_ODDS)==0) populateBookshelves(z1);
-					if(random.nextInt(CAULDRON_ODDS)==0) populateFurnitureBlock(z1,new int[]{CAULDRON_BLOCK_ID,random.nextInt(4)});
-					if(z1>12 && random.nextInt(BREWING_STAND_ODDS)==0) populateFurnitureBlock(z1,new int[]{BREWING_STAND_BLOCK_ID,random.nextInt(2)+1});
-					if(z1>20 && random.nextInt(ENCHANTMENT_TABLE_ODDS)==0) populateFurnitureBlock(z1,new int[]{ENCHANTMENT_TABLE_ID,0});
+					if(random.nextInt(CAULDRON_ODDS)==0) populateFurnitureColumn(z1,new int[][]{{CAULDRON_BLOCK_ID,random.nextInt(4)}});
+					if(z1>12 && random.nextInt(BREWING_STAND_ODDS)==0) populateFurnitureColumn(z1,new int[][]{bRule.primaryBlock,{BREWING_STAND_BLOCK_ID,random.nextInt(2)+1}});
+					if(z1>20 && random.nextInt(ENCHANTMENT_TABLE_ODDS)==0) populateFurnitureColumn(z1,new int[][]{{ENCHANTMENT_TABLE_ID,0}});
 				}
 				if(z1==baseHeight) z1++;
 			}
@@ -346,11 +345,12 @@ public class BuildingTower extends Building
 		}
 	}
 	
-	private void populateFurnitureBlock(int z, int[] block){
+	private void populateFurnitureColumn(int z, int[][] block){
 		int x1=random.nextInt(bWidth-2)+1;
 		int y1=random.nextInt(bLength-2)+1;
 		if(isFloor(x1,z,y1) && !isNextToDoorway(x1,z,y1)){
-			setBlockLocal(x1,z,y1,block);
+			for(int z1=0; z1<block.length; z1++)
+				setBlockLocal(x1,z+z1,y1,block[z1]);
 		}
 	}
 	

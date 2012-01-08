@@ -26,6 +26,7 @@ public class TemplateRule {
     
     public final static TemplateRule AIR_RULE=new TemplateRule(Building.AIR_BLOCK);
     public final static TemplateRule STONE_RULE=new TemplateRule(Building.STONE_BLOCK);
+    public final static TemplateRule NETHER_BRICK_RULE=new TemplateRule(new int[]{Building.NETHER_BRICK_ID,0});
     
     private int[] blockIDs, blockMDs;
     public int chance = 100, condition = 0;
