@@ -57,7 +57,7 @@ public abstract class WorldGeneratorThread extends Thread {
 		TriesPerChunk=TriesPerChunk_;
 		ChunkTryProb=ChunkTryProb_;
 		master=master_;
-		max_spawn_height=world.field_35472_c-1;
+		max_spawn_height=world.worldMaxY;
 	}
 	
 	//****************************  FUNCTION - abstract and stub functions  *************************************************************************************//
@@ -80,7 +80,7 @@ public abstract class WorldGeneratorThread extends Thread {
 					i0=chunkI+random.nextInt(16) + 8;
 					k0=chunkK  + random.nextInt(16) + 8;
 					if(spawn_surface){
-						j0=Building.findSurfaceJ(world,i0,k0,world.field_35472_c-1,true,3)+1;
+						j0=Building.findSurfaceJ(world,i0,k0,world.worldMaxY,true,3)+1;
 					}else{
 						j0=min_spawn_height+random.nextInt(max_spawn_height - min_spawn_height +1);
 					}
@@ -110,34 +110,9 @@ public abstract class WorldGeneratorThread extends Thread {
 		int incI=Building.signum(pt2[0]-pt1[0],0), incK=Building.signum(pt2[2]-pt1[2],0);
 		for(int chunkI=pt1[0]>>4; ((pt2[0]>>4)-chunkI)*incI > 0; chunkI+=incI)
 			for(int chunkK=pt1[2]>>4; ((pt2[2]>>4)-chunkK)*incK > 0; chunkK+=incK)
-				if(!queryExplorationHandler(chunkI<<4, chunkK<<4) && !ignoreTerminate) return false;
+				if(!master.queryExplorationHandlerForChunk(chunkI, chunkK, this) && !ignoreTerminate) return false;
 		return true;
 	}
-	
-	//****************************  FUNCTION - queryExplorationHandler *************************************************************************************//
-	public boolean queryExplorationHandler(int i, int k) throws InterruptedException {
-    	if(world.blockExists(i,0,k)) return true;
-    	
-    	//else this chunk does not exist
-    	int threadAction=master.queryChunk(i>>4, k>>4);
-    	if(threadAction==BuildingExplorationHandler.THREAD_TERMINATE) return false;
-    	if(threadAction==BuildingExplorationHandler.THREAD_SUSPEND){
-    		//suspend this thread
-    		suspendGen();
-    	}
-    	
-    	//check if we are trying to build in a chunk in middle of generation, if so terminate
-    	if(master.flushCallChunk!=BuildingExplorationHandler.NO_CALL_CHUNK){
-    		if(i>>4==master.flushCallChunk[0] && k>>4==master.flushCallChunk[1])
-    			return false;
-    	}
-    		
-    	//MP PORT
-    	//world.getChunkProvider().loadChunk(i>>4, k>>4);
-    	world.getBlockId(i,0,k); //force world to load this chunk
-    	
-    	return true;
-    }
 	
 	//****************************  FUNCTION - suspendGen *************************************************************************************//
 	public void suspendGen() throws InterruptedException{

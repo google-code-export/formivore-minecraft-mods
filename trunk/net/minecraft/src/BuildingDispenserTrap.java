@@ -1,4 +1,20 @@
 package net.minecraft.src;
+/*
+ *  Source code for the Walled City Generator and CARuins Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * BuildingDispenserTrap generates a redstone activated dispenser trap
+ */
 
 public class BuildingDispenserTrap extends Building{
 	public final static int ARROW_MISSILE=0, DAMAGE_POTION_MISSILE=1;

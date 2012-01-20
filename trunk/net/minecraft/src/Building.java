@@ -203,8 +203,8 @@ public class Building
 		return yI*(pt[0]-i0) + yK*(pt[2]-k0);
     }
     
-    protected final boolean queryExplorationHandler(int x, int z, int y) throws InterruptedException{
-    	return wgt.queryExplorationHandler(getI(x,y),getK(x,y));
+    protected final boolean queryExplorationHandlerForChunk(int x, int z, int y) throws InterruptedException{
+    	return wgt.master.queryExplorationHandlerForChunk(getI(x,y)>>4, getK(x,y)>>4, wgt);
     }
     
     protected final int getBlockIdLocal(int x, int z, int y){
@@ -507,7 +507,7 @@ public class Building
  			
  		EntityPainting entitypainting = new EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir]);
         if(entitypainting.canStay() && !world.multiplayerWorld)
-            world.entityJoinedWorld(entitypainting);
+            world.spawnEntityInWorld(entitypainting);
         
  	}
  	
@@ -529,7 +529,7 @@ public class Building
     		Object retobj = wgt.master.updateFlagMethod.invoke(h_EntityFlagObj,new Object[]{});
     		if(((Boolean)retobj).booleanValue()){
     			if(!world.multiplayerWorld){
-    				world.entityJoinedWorld((Entity)h_EntityFlagObj);
+    				world.spawnEntityInWorld((Entity)h_EntityFlagObj);
     			}
     		}
     		
@@ -639,7 +639,7 @@ public class Building
 
 	   int oldSurfaceBlockId=world.getBlockId(lowPt[0], lowPt[1], lowPt[2]);
 	   if(IS_ORE_BLOCK[oldSurfaceBlockId]) oldSurfaceBlockId=STONE_ID;
-	   if(oldSurfaceBlockId==DIRT_ID || (lowPt[1] < world.field_35472_c/2 && oldSurfaceBlockId==SAND_ID))
+	   if(oldSurfaceBlockId==DIRT_ID || (lowPt[1] <= world.seaLevel && oldSurfaceBlockId==SAND_ID))
 		   oldSurfaceBlockId=GRASS_ID;
 	   if(oldSurfaceBlockId==0) oldSurfaceBlockId= world.worldProvider.isHellWorld ? NETHERRACK_ID : GRASS_ID;
 	   int fillBlockId=oldSurfaceBlockId==GRASS_ID ? DIRT_ID : oldSurfaceBlockId;
@@ -694,14 +694,14 @@ public class Building
    //******************** STATIC FUNCTIONS ******************************************************************************************************************************************//
    
    public static void setBlockNoLighting(World world, int i, int j, int k, int blockId){
-       if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= world.field_35472_c)
+       if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= world.worldHeight )
            return;
        
        world.getChunkFromChunkCoords(i >> 4, k >> 4).setBlockID(i & 0xf, j, k & 0xf, blockId);
    }
    
    public static void setBlockAndMetaNoLighting(World world, int i, int j, int k, int blockId, int meta){
-	   if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= world.field_35472_c)
+	   if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= world.worldHeight)
            return;
 
        world.getChunkFromChunkCoords(i >> 4, k >> 4).setBlockIDWithMetadata(i & 0xf, j, k & 0xf, blockId, meta);
@@ -770,14 +770,14 @@ public class Building
     	int blockId;
 		if(world.worldProvider.isHellWorld) {
 			if( (i%2==1) ^ (k%2==1) ) {
-				for(int j=world.field_35472_c-1; j>-1; j--) {
+				for(int j=world.worldMaxY; j>-1; j--) {
 					if(world.getBlockId(i,j,k)==0) 
 						for(; j>-1; j--) 
 							if(!IS_WALLABLE[world.getBlockId(i,j,k)])
 								return j;
 				}
 			}else {
-				for(int j=0; j<world.field_35472_c; j++) 
+				for(int j=0; j<=world.worldMaxY; j++) 
 					if(world.getBlockId(i,j,k)==0 )
 								return j;
 			}
@@ -1647,7 +1647,9 @@ public class Building
  			randLightingHash[m]=rand.nextInt(LIGHTING_INVERSE_DENSITY)==0;
  	}
  	
-	public final static String[] BIOME_NAMES={"Ocean",
+	public final static String[] BIOME_NAMES={
+		"Underground",
+		"Ocean",
 		"Plains",
 		"Desert",
 		"Hills",
@@ -1657,36 +1659,41 @@ public class Building
 		"River",
 		"Hell",
 		"Sky",
-		"Frozen Ocean",
-		"Frozen River",
 		"Ice Plains",
 		"Ice Mountains",
 		"Mushroom Island",
-		"Mushroom Island Shore",
-		"Underground"};
+		"Beach"
+		};
+
+	public final static int NATURAL_BIOMES_START=1;
+	public final static int BIOME_UNDERGROUND=0, BIOME_OCEAN=1, BIOME_PLAINS=2, BIOME_DESERT=3, BIOME_EXTREME_HILLS=4, BIOME_FOREST=5,BIOME_TAIGA=6,
+							BIOME_SWAMPLAND=7, BIOME_RIVER=8, BIOME_HELL=9, BIOME_SKY=10, BIOME_ICE_PLAINS=11, BIOME_ICE_MOUNTAINS=12,
+							BIOME_MUSHROOM_ISLAND=13, BIOME_BEACH=14;
 	
-	public final static int BIOME_OCEAN=0, BIOME_PLAINS=1, BIOME_DESERT=2, BIOME_HILLS=3, BIOME_FOREST=4,BIOME_TAIGA=5, BIOME_SWAMPLAND=6, 
-							BIOME_RIVER=7, BIOME_HELL=8, BIOME_SKY=9, BIOME_FROZEN_OCEAN=10, BIOME_FROZEN_RIVER=11, BIOME_ICE_PLAINS=12,
-							BIOME_ICE_MOUNTAINS=13,BIOME_MUSHROOM_ISLAND=14, BIOME_MUSHROOM_ISLAND_SHORE=15, BIOME_UNDERGROUND=16;
  	
  	public static int getBiomeNum( BiomeGenBase biomeCheck ) {
-        if( biomeCheck == BiomeGenBase.ocean) 						return BIOME_OCEAN;
+        if(   biomeCheck == BiomeGenBase.ocean
+           || biomeCheck == BiomeGenBase.frozenOcean) 				return BIOME_OCEAN;
         else if( biomeCheck == BiomeGenBase.plains)	 				return BIOME_PLAINS;
-        else if( biomeCheck == BiomeGenBase.desert ) 				return BIOME_DESERT;
-        else if( biomeCheck == BiomeGenBase.hills ) 				return BIOME_HILLS;   //MP PORT change to BiomeGenBase.extremeHills
-        else if( biomeCheck == BiomeGenBase.forest ) 				return BIOME_FOREST;
-        else if( biomeCheck == BiomeGenBase.taiga ) 				return BIOME_TAIGA;
+        else if( biomeCheck == BiomeGenBase.desert 
+        		||biomeCheck == BiomeGenBase.field_46049_s ) 		return BIOME_DESERT;
+        else if( biomeCheck == BiomeGenBase.extremeHills
+        		|| biomeCheck == BiomeGenBase.field_46046_v ) 		return BIOME_EXTREME_HILLS;   //MP PORT change to BiomeGenBase.extremeHills
+        else if( biomeCheck == BiomeGenBase.forest
+        		|| biomeCheck == BiomeGenBase.field_46048_t ) 		return BIOME_FOREST;
+        else if( biomeCheck == BiomeGenBase.taiga
+        		|| biomeCheck == BiomeGenBase.field_46047_u ) 		return BIOME_TAIGA;
         else if( biomeCheck == BiomeGenBase.swampland) 				return BIOME_SWAMPLAND;
-        else if( biomeCheck == BiomeGenBase.river) 					return BIOME_RIVER;
+        else if( biomeCheck == BiomeGenBase.river
+        		|| biomeCheck == BiomeGenBase.frozenRiver) 			return BIOME_RIVER;
         else if( biomeCheck == BiomeGenBase.hell ) 					return BIOME_HELL;
         else if( biomeCheck == BiomeGenBase.sky ) 					return BIOME_SKY;
-        else if( biomeCheck == BiomeGenBase.frozenOcean) 			return BIOME_FROZEN_OCEAN;
-        else if( biomeCheck == BiomeGenBase.frozenRiver) 			return BIOME_FROZEN_RIVER;
+        else if( biomeCheck == BiomeGenBase.mushroomIsland
+        		|| biomeCheck == BiomeGenBase.mushroomIslandShore ) return BIOME_MUSHROOM_ISLAND;
         else if( biomeCheck == BiomeGenBase.icePlains) 				return BIOME_ICE_PLAINS;
         else if( biomeCheck == BiomeGenBase.iceMountains) 			return BIOME_ICE_MOUNTAINS;
-        else if( biomeCheck == BiomeGenBase.mushroomIsland) 		return BIOME_MUSHROOM_ISLAND;
-        else if( biomeCheck == BiomeGenBase.mushroomIslandShore ) 	return BIOME_MUSHROOM_ISLAND_SHORE;
-		
+        else if( biomeCheck == BiomeGenBase.field_46050_r ) 		return BIOME_BEACH;
+   
 		return BIOME_FOREST;
 	}
  	

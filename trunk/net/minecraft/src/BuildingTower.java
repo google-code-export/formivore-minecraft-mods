@@ -81,11 +81,11 @@ public class BuildingTower extends Building
 	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
 	public boolean queryCanBuild(int ybuffer, boolean overlapTowers) throws InterruptedException{
 		int rooftopJ=j0 + bHeight + (roofStyle==ROOF_CONE ? minHorizDim : minHorizDim/2)+2; 
-		if(rooftopJ >= world.field_35472_c) bHeight-= world.field_35472_c - rooftopJ;
+		if(rooftopJ > world.worldMaxY) bHeight-= world.worldMaxY - rooftopJ;
 		if(bHeight < baseHeight + 4) 
 			return false;
 		
-		if(!( queryExplorationHandler(0,0,bLength-1) && queryExplorationHandler(bWidth-1,0,0) && queryExplorationHandler(bWidth-1,0,bLength-1) )){
+		if(!( queryExplorationHandlerForChunk(0,0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0,0) && queryExplorationHandlerForChunk(bWidth-1,0,bLength-1) )){
 			return false;
 		}
 		

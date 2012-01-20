@@ -209,7 +209,7 @@ public class BuildingWall extends Building
 			failCode=NO_FAIL;
 
 			//query the exploration handler to see if we have reached limit, if so then terminate
-			if(!(queryExplorationHandler(-1,0,0) && queryExplorationHandler(bWidth,0,0))) {
+			if(!(queryExplorationHandlerForChunk(-1,0,0) && queryExplorationHandlerForChunk(bWidth,0,0))) {
 				failCode=FAIL_CANNOT_EXPLORE;
 				break; 
 			}
@@ -731,19 +731,19 @@ public class BuildingWall extends Building
 						int ngw1=n0-gateWidth, ngw2=n0+1;
 						int x2=(flankTHand==0 || flankTHand==bHand) ? 1-ws.TowerXOffset : bWidth-2+ws.TowerXOffset;
 						
-						//preceding stairway
 						for(int n1=ngw1; n1>ngw1-5; n1--){
-							if(zArray[n1-2]==zArray[n1+1] && xArray[n1-3]==xArray[ngw1+1]){
-								new BuildingSpiralStaircase(wgt,bRule,flipDir(bDir),-bHand,false,-WalkHeight,
-										getIJKPtAtN(n1,x2,WalkHeight-2,-1)).build(1,n1-ngw1-2);
+							if(zArray[n1-3]==zArray[n1] && xArray[n1-3]==xArray[ngw1+1]){
+								new BuildingSpiralStaircase(wgt,bRule,bDir,bHand,false,-WalkHeight,
+										getIJKPtAtN(n1,x2,WalkHeight-2,-3)).build(1,ngw1-n1+4);
 								gatewayStart=n1-3;
 								break;
-						}}	
-						//following stairway
+						}}
+						
+						
 						for(int n1=ngw2; n1<ngw2+5; n1++){
-							if(zArray[n1+2]==zArray[n1-1] && xArray[n1+3]==xArray[ngw2-1]){
-								new BuildingSpiralStaircase(wgt,bRule,bDir,bHand,false,-WalkHeight,
-										getIJKPtAtN(n1,x2,WalkHeight-2,1)).build(1,ngw2-n1-2);
+							if(zArray[n1+3]==zArray[n1] && xArray[n1+3]==xArray[ngw2-1]){
+								new BuildingSpiralStaircase(wgt,bRule,flipDir(bDir),-bHand,false,-WalkHeight,
+										getIJKPtAtN(n1,x2,WalkHeight-2,3)).build(1,n1-ngw2+5);
 								gatewayEnd=n1+3;
 								break;
 						}}
