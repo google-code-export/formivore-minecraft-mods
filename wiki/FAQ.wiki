@@ -22,8 +22,8 @@ Finally the city/wall <a href=http://code.google.com/p/formivore-minecraft-mods/
 <font color=#632423>*_Q: Will the mod work on old saves?_*</font><br>
 Yes, but you will have to explore new terrain. There’s no way to generate structures with origins in terrain you’ve already explored. However, structures are huge and so can originate in virgin terrain but cross over onto already explored land. Backup your saves!
 
-<font color=#632423>*_Q: Can I run both mods at once?_*</font><br>
-Yes.  When you install both mods you will be overwriting a lot of the code that they share in common, but there should be no problem as long as both mods are from the same version.
+<font color=#632423>*_Q: Can I run the Walled City Generator/CARuins/Great Wall MOd all at once?_*</font><br>
+Yes.  When you install these mods you will be overwriting a lot of the code that they share in common, but there should be no problem as long as both mods are from the same version.
 
 <font color=#632423>*_Q: The mod crashed!_*</font><br>
 I’m very interested in receiving crash reports so I can fix bugs. Post crash reports on the forum. I need the following information if I can respond to a report:
