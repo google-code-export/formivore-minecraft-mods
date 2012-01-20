@@ -85,7 +85,7 @@ import net.minecraft.client.Minecraft;
  */
 
 public abstract class BuildingExplorationHandler extends BaseMod {
-	public final static int THREAD_CONTINUE=0, THREAD_SUSPEND=1, THREAD_TERMINATE=2;
+	//public final static int THREAD_CONTINUE=0, THREAD_SUSPEND=1, THREAD_TERMINATE=2;
 	protected final static int MAX_TRIES_PER_CHUNK=10;
 	protected final static int CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=1;
@@ -272,7 +272,8 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	}
 	
 	//****************************  FUNCTION - queryChunk *************************************************************************************//
-	public int queryChunk(int chunkI,int chunkK) {
+	//query chunk should be called from the WorldGeneratorThread wgt.
+	public boolean queryExplorationHandlerForChunk(int chunkI,int chunkK, WorldGeneratorThread wgt) throws InterruptedException{
 		//MP PORT
 		/*
 		if(chunksExploredFromStart==0) {
@@ -288,22 +289,35 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		int kChunkHome=(isCreatingDefaultChunks || mc.thePlayer==null) ? 0 : (int)mc.thePlayer.posZ>>4;
 		if((Math.abs(chunkI - iChunkHome) > max_exploration_distance 
 		 || Math.abs(chunkK - kChunkHome) > max_exploration_distance)){
-				return THREAD_TERMINATE;
+				return false;
 		}
 		if(mc.thePlayer!=null){
 			if(Math.abs(chunkI-((int)mc.thePlayer.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
 			&& Math.abs(chunkK-((int)mc.thePlayer.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
-				System.out.println("Terminating generation thread. Player=("+(((int)mc.thePlayer.posX)>>4)+","+(((int)mc.thePlayer.posZ)>>4)+"), queriedChunk=("+chunkI+","+chunkK+").");
-				return THREAD_TERMINATE;
+				System.out.println("Terminating "+Thread.currentThread().getName()+"generation thread "+Thread.currentThread().getId()+". Player=("+(((int)mc.thePlayer.posX))+","+(((int)mc.thePlayer.posZ))+"), queriedChunk=("+chunkI+","+chunkK+").");
+				return false;
 			}
 		}
-
 		
-		if(chunksExploredThisTick > (isFlushingGenThreads ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK)){
-			return THREAD_SUSPEND;
+		
+		if(!world.chunkProvider.chunkExists(chunkI, chunkK)){
+			//suspend the thread if we've exceeded our quota of chunks to load for this tick
+			if(chunksExploredThisTick > (isFlushingGenThreads ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK)){
+				wgt.suspendGen();
+			}
+			chunksExploredThisTick++;
+
+			
+			if(flushCallChunk!=NO_CALL_CHUNK){
+	    		if(chunkI==flushCallChunk[0] && chunkK==flushCallChunk[1])
+	    			return false;
+	    	}
+			
+			//MP PORT - WARNING WARNING, look at the MP code to see if we really want to call loadChunk, is there some way to see if chunk is already loaded?
+	    	//world.getChunkProvider().loadChunk(i>>4, k>>4);
+	    	world.chunkProvider.provideChunk(chunkI, chunkK);
 		}
-		chunksExploredThisTick++;
-		return THREAD_CONTINUE;
+		return true;
 	}
 	
 	//****************************  FUNCTION - flushGenThreads *************************************************************************************//

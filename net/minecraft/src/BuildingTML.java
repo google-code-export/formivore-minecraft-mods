@@ -31,7 +31,7 @@ public class BuildingTML extends Building
 	   public boolean queryCanBuild(int ybuffer) throws InterruptedException{
 		   if(j0<=0) return false;
 		   
-	    	if(!( queryExplorationHandler(0,0,bLength-1) && queryExplorationHandler(bWidth-1,0,0) && queryExplorationHandler(bWidth-1,0,bLength-1) )){
+	    	if(!( queryExplorationHandlerForChunk(0,0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0,0) && queryExplorationHandlerForChunk(bWidth-1,0,bLength-1) )){
 				return false;
 			}
 	    	

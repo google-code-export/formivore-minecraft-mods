@@ -1,4 +1,20 @@
 package net.minecraft.src;
+/*
+ *  Source code for the Walled City Generator and CARuins Mods for the game Minecraft
+ *  Copyright (C) 2011 by formivore
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * BuildingSpiralStaircase plans and builds a 3x3 spiral staircase down from origin.
+ */
 
 public class BuildingSpiralStaircase  extends Building {
 	public BuildingSpiralStaircase(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, boolean centerAligned_,int height,int[] sourcePt){
@@ -23,7 +39,8 @@ public class BuildingSpiralStaircase  extends Building {
 	}
 	
    //builds a clockwise down spiral staircase with central column at (x,z,y) with end at top going in local direction topDir
-   //z is fixed at top and bottom z varies depending on BottomPassageX
+   //yP is the y-value of the endpoint of a potential bottom passage link. If yP==0, then no bottom passage.
+   //z is fixed at top and bottom z varies depending on yP
    //
    // Example, bheight=-7
    //
@@ -68,7 +85,7 @@ public class BuildingSpiralStaircase  extends Building {
 		   }
 		   buildHallwaySegment(x,z,y,3);
 		   
-		   //Bottom stair can star from 3 out of 4 positions
+		   //Bottom stair can start from 3 out of 4 positions
 		   // pYInc
 		   //  ^
 		   //  s3 > s0 

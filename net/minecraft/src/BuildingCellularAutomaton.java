@@ -8,7 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 /*
- *  Source code for the The Great Wall Mod and Walled City Generator Mods for the game Minecraft
+ *  Source code for the Walled City Generator and CARuins Mods for the game Minecraft
  *  Copyright (C) 2011 by formivore
 
     This program is free software: you can redistribute it and/or modify
@@ -51,7 +51,7 @@ public class BuildingCellularAutomaton extends Building {
 	
 	//unlike other Buildings, this should be called after plan()
 	public boolean queryCanBuild(int ybuffer,boolean nonLayoutFrameCheck) throws InterruptedException{
-		if(!( queryExplorationHandler(0,0,bLength-1) && queryExplorationHandler(bWidth-1,0,0) && queryExplorationHandler(bWidth-1,0,bLength-1) )){
+		if(!( queryExplorationHandlerForChunk(0,0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0,0) && queryExplorationHandlerForChunk(bWidth-1,0,bLength-1) )){
 			return false;
 		}
 		
@@ -173,7 +173,7 @@ public class BuildingCellularAutomaton extends Building {
 			for(int height : heights) hitWater |= height==HIT_WATER;
 		}
 		
-		if(j0+bHeight>=world.field_35472_c) j0=world.field_35472_c-bHeight-1;
+		if(j0+bHeight>world.worldMaxY-1) j0=world.worldMaxY-bHeight-1; //stay 1 below top to avoid lighting problems
 		if(bury && !hitWater){
 			zGround= caRule[0][2]==ALIVE ? Math.max(0,bHeight-bWidth/3-random.nextInt(bWidth))  
 										 : random.nextInt(3*bHeight/4);
@@ -408,7 +408,7 @@ public class BuildingCellularAutomaton extends Building {
 					int lightVal=world.getSavedLightValue(EnumSkyBlock.Sky, pt[0], pt[1], pt[2]);
 					
 					//Choose spawner types. There is some kind of bug where where lightVal coming up as zero, even though it is not
-					if(lightVal<5 && !(lightVal==0 && j0+z>world.field_35472_c>>1)) 
+					if(lightVal<5 && !(lightVal==0 && j0+z>world.seaLevel)) 
 						spawnerSelection=LOW_LIGHT_SPAWNERS;
 					else if(lightVal<10)
 						spawnerSelection = floorBlocks > 70 ? MEDIUM_LIGHT_WIDE_SPAWNERS : MEDIUM_LIGHT_SPAWNERS;

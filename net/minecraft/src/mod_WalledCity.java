@@ -142,7 +142,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 			
 			//MP PORT
 			//cityLocationsSaveFile=new File(BASE_DIRECTORY,"citylocations.txt");
-			cityLocationsSaveFile=new File(((SaveHandler)world.func_40479_y()).getSaveDirectory(),"citylocations.txt"); //classy
+			cityLocationsSaveFile=new File(((SaveHandler)world.getSaveHandler()).getSaveDirectory(),"citylocations.txt"); //classy
 			
 			//clear city locations, read in saved locations if they exist
 			cityLocations=new ArrayList<int[]>();
@@ -219,7 +219,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 		}
 		if(undergroundCityStyles.size() > 0 && cityIsSeparated(i,k,CITY_TYPE_UNDERGROUND) && random.nextFloat() < UndergroundGlobalFrequency){
 			WorldGeneratorThread wgt=new WorldGenUndergroundCity(this, world, random, i, k,1, UndergroundGlobalFrequency);
-			int maxSpawnHeight=Building.findSurfaceJ(world,i,k,world.field_35472_c-1,false,Building.IGNORE_WATER)- WorldGenUndergroundCity.MAX_DIAM/2 - 5; //44 at sea level
+			int maxSpawnHeight=Building.findSurfaceJ(world,i,k,world.worldMaxY,false,Building.IGNORE_WATER)- WorldGenUndergroundCity.MAX_DIAM/2 - 5; //44 at sea level
 			int minSpawnHeight=MAX_FOG_HEIGHT+WorldGenUndergroundCity.MAX_DIAM/2 - 8; //34, a pretty thin margin. Too thin for underocean cities?
 			if(minSpawnHeight<=maxSpawnHeight)
 				wgt.setSpawnHeight(minSpawnHeight, maxSpawnHeight, false);

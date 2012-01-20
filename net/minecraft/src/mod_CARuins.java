@@ -31,7 +31,27 @@ import java.util.Random;
 public class mod_CARuins extends BuildingExplorationHandler{
 	private final static int MAX_EXPLORATION_DISTANCE=30;
 	private final static String AUTOMATA_RULES_STRING="AUTOMATA RULES",LINEAR_STR="linear",SYMMETRIC_STR="symmetric", BOTH_STR="both";
+	
+	public final static String[] BIOME_NAMES={
+		"Underground",
+		"Ocean",
+		"Plains",
+		"Desert",
+		"Hills",
+		"Forest",
+		"Taiga",
+		"Swampland",
+		"River",
+		"Hell",
+		"Sky",
+		"Ice Plains",
+		"Ice Mountains",
+		"Mushroom Island",
+		"Beach"
+		};
+	
 	private final static TemplateRule[] DEFAULT_BLOCK_RULES = new TemplateRule[]{
+		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),			//Underground, unused
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),			//Ocean
 		new TemplateRule(new int[]{1,98,98},new int[]{0,1,2},100),    		//Plains                
 		new TemplateRule(new int[]{24},new int[]{0},100),          			//Desert            
@@ -41,13 +61,12 @@ public class mod_CARuins extends BuildingExplorationHandler{
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //Swampland         
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //River             
 		new TemplateRule(new int[]{112},new int[]{0,},100),          		//Nether            
-		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //Sky               
-		new TemplateRule(new int[]{98,98,98},new int[]{0,1,2},100),         //FrozenOcean       
-		new TemplateRule(new int[]{98,98,98},new int[]{0,1,2},100),         //FrozenRiver       
+		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //Sky                     
 		new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100),         //IcePlains         
 		new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100),         //IceMountains      
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),        	//MushroomIsland    
-		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100)};     	//MushroomIslandShore 
+		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100)     	    //Beach
+	};
 	
 	//WARNING! Make sure the first DEFAULT_BLOCK_RULES.length biome Strings in Building are the ones we want here.
 	private final static String[] BLOCK_RULE_NAMES; 
@@ -57,24 +76,6 @@ public class mod_CARuins extends BuildingExplorationHandler{
 			BLOCK_RULE_NAMES[m]=Building.BIOME_NAMES[m].replaceAll("\\s", "") + "BlockRule";
 		}
 	}
-	
-	private final static String[] DEFAULT_BLOCK_RULE_VARIABLE_STRINGS = new String[]{
-		"OceanBlockRule",
-		"PlainsBlockRule",
-		"DesertBlockRule",
-		"HillsBlockRule",
-		"ForestBlockRule",
-		"TaigaBlockRule",
-		"SwamplandBlockRule",
-		"RiverBlockRule",
-		"NetherBlockRule",
-		"SkyBlockRule",
-		"FrozenOceanBlockRule",
-		"FrozenRiverBlockRule",
-		"IcePlainsBlockRule",
-		"IceMountainsBlockRule",
-		"MushroomIslandBlockRule",
-		"MushroomIslandShoreBlockRule"};
 	
 	private final static String SETTINGS_FILE_NAME="CARuinsSettings.txt",
 								LOG_FILE_NAME="caruins_log.txt";
@@ -191,7 +192,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 						if(read.startsWith(SEED_TYPE_STRINGS[m] )) seedTypeWeights[m] = readIntParam(lw,seedTypeWeights[m],":",read);
 					}
 					
-					for(int m=0; m<DEFAULT_BLOCK_RULES.length; m++){
+					for(int m=Building.NATURAL_BIOMES_START; m<DEFAULT_BLOCK_RULES.length; m++){
 						try{ 
 							if(read.startsWith(BLOCK_RULE_NAMES[m])) 
 								blockRules[m]=readRuleIdOrRule(":",read,null); 
@@ -251,7 +252,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 				
 				pw.println();
 				pw.println("<-BlockRule is the template rule that controls what blocks the structure will be made out of.->");
-				for(int m=0; m<DEFAULT_BLOCK_RULES.length; m++){
+				for(int m=Building.NATURAL_BIOMES_START; m<DEFAULT_BLOCK_RULES.length; m++){
 					pw.println(BLOCK_RULE_NAMES[m]+":"+DEFAULT_BLOCK_RULES[m].toString());
 				}
 				pw.println();
@@ -325,7 +326,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 									int[] pt=new int[]{i0+(2*random.nextInt(2)-1)*(ContainerWidth + random.nextInt(ContainerWidth)),
 												   	   0,
 												       k0+(2*random.nextInt(2)-1)*(ContainerWidth + random.nextInt(ContainerWidth))};
-									pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.field_35472_c-1,true,3)+1;
+									pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.worldMaxY,true,3)+1;
 									if(generate(pt[0], pt[1], pt[2])) 
 										break;
 								}

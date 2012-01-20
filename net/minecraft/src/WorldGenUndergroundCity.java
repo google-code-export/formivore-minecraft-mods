@@ -83,7 +83,7 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	//hollows out a nearly spherical void as part of the cavern structure
 	private boolean hollow(int i,int j,int k,int diam) throws InterruptedException{
 		if(diam < MIN_DIAM) return false;
-		if(j-diam/2<10 || j+diam/2 > Building.findSurfaceJ(world, i+diam/2, k+diam/2, world.field_35472_c-1, false,Building.IGNORE_WATER) - 3) return false;
+		if(j-diam/2<10 || j+diam/2 > Building.findSurfaceJ(world, i+diam/2, k+diam/2, world.worldMaxY, false,Building.IGNORE_WATER) - 3) return false;
 		if(!exploreArea(new int[]{i,0,k}, new int[]{i+diam,0,k+diam}, false)) return false;
 		hollows.add(new int[]{i,j,k,diam,0});
 		
@@ -155,7 +155,8 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	private ArrayList<BuildingUndergroundEntranceway> buildEntranceways() throws InterruptedException{
 		if(!pws.MakeUndergroundEntranceways) return new ArrayList<BuildingUndergroundEntranceway>();
 		
-		int[] center=new int[]{(int)(cavernMass_i/cavernMass),world.field_35472_c,(int)(cavernMass_k/cavernMass)}; 
+		
+		int[] center=new int[]{(int)(cavernMass_i/cavernMass),world.worldHeight,(int)(cavernMass_k/cavernMass)}; 
 		int[] pole=new int[]{center[0]+100,center[1],center[2]};
 		ArrayList<BuildingUndergroundEntranceway> entranceways = new ArrayList<BuildingUndergroundEntranceway>();
 
