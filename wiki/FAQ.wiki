@@ -22,7 +22,7 @@ Finally the city/wall <a href=http://code.google.com/p/formivore-minecraft-mods/
 <font color=#632423>*_Q: Will the mod work on old saves?_*</font><br>
 Yes, but you will have to explore new terrain. There’s no way to generate structures with origins in terrain you’ve already explored. However, structures are huge and so can originate in virgin terrain but cross over onto already explored land. Backup your saves!
 
-<font color=#632423>*_Q: Can I run the Walled City Generator/CARuins/Great Wall MOd all at once?_*</font><br>
+<font color=#632423>*_Q: Can I run the Walled City Generator/CARuins/Great Wall Mod all at once?_*</font><br>
 Yes.  When you install these mods you will be overwriting a lot of the code that they share in common, but there should be no problem as long as both mods are from the same version.
 
 <font color=#632423>*_Q: The mod crashed!_*</font><br>
@@ -44,8 +44,10 @@ The Walled City Generator in particular can cause bad slowdowns because of the l
 <font color=#632423>*_Q: How can I create custom walls and cities?*_</font><br>
 All the walls and cities you see are generated from template (.tml) files located in the resources folder. You can edit these files using a text editor. Note that cities are comprised of two wall templates, one for the outer walls and one for the inner streets. The TemplateFormat is a modified version of the format used in the ruins mod and is described in the template format documentation. Try just making some minor modifications to the materials or ornamentation of a building to learn the format.
 
-<font color=#632423>*_Q: Wow, I love this one city/wall, how do I get it to spawn all the time?*_</font><br> 
-Each structure has a <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Variables#Standard_Variables>weight </a> listed in the first line of its template file that controls how likely it is to spawn relative to other structures. Change the weight of the structure you like to something big like 1000 and it will always be chosen. If there's a structure you don't want to spawn, set its weight to zero. For cities, the template file you want to modify are the city/outer wall templates in the /resources/walledcity folder. Note that the absolute frequency that any type of walls/cities will spawn are controlled by the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/GlobalSettingFiles>`GlobalFrequency` </a>values in the global settings file, the weights control how much of this absolute frequency is taken up by a single type of wall/city.
+<font color=#632423>*_Q: Wow, I love this one city/wall/CARuin rule, how do I get it to spawn all the time?*_</font><br> 
+Each wall or city has a <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Variables#Standard_Variables>weight </a> listed in the first line of its template file that controls how likely it is to spawn relative to other structures. Change the weight of the structure you like to something big like 1000 and it will always be chosen. If there's a structure you don't want to spawn, set its weight to zero. For cities, the template file you want to modify are the city/outer wall templates in the /resources/walledcity folder. Note that the absolute frequency that any type of walls/cities will spawn are controlled by the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/GlobalSettingFiles>`GlobalFrequency` </a>values in the global settings file, the weights control how much of this absolute frequency is taken up by a single type of wall/city.
+
+Weights that you can adjust for the CARuins rules are in given in `CARuinsSetting.txt`.
 
 <font color=#632423>*_Q: How can I change the materials a wall or building is made from?*_</font><br>
 The materials a wall or building template is built from are given in the BlockRules. You will first need to locate the rule that’s used as the majority block for the template (if that’s what you want to change). You can do this by scanning the layers at the bottom of the template. For walls, the other important block rule is the one used for the <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/Variables#Default_Tower_Variables>tower_block </a>variable which controls the body of the towers. Once you have found the block rule, change the third number in the rule to the <a href=http://www.minecraftwiki.net/wiki/Data_values>block ID</a> you want. For example, change:
@@ -78,9 +80,6 @@ An infinite city means a city that stretches on forever; these are created using
    * <font color= #800080>`weight `</font>`= 1000` #only if you have other templates in the /resources/greatwall/ folder that you want to be ignored for your city.
   #3Place the road templates for your infinite city in the /resources/greatwall/ folder.
   #4In `GreatWallModSettings.txt` set <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/GlobalSettingFiles>`GlobalFrequency` </a> to 0.5 or higher. You can try increasing <a href=http://code.google.com/p/formivore-minecraft-mods/wiki/GlobalSettingFiles>`TriesPerChunk` </a> as well to get even denser cities.
-
-<font color=#632423>*_Q: If infinite dragons devour infinite cities, how many cities do I have left?*_</font><br>
-Undefined.
 
 <font color=#632423>*_Q: Is there any way I can import buildings from MCEdit schematics?*_</font><br>
 If you want to import Minecraft structures from the popular MCEdit schematic format, you can use this <a href=http://code.google.com/p/formivore-minecraft-mods/downloads/detail?name=schematic%20converter.zip&can=2&q=>script </a> written by the creator of the ruins mod.
