@@ -292,9 +292,10 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 				return false;
 		}
 		if(mc.thePlayer!=null){
-			if(Math.abs(chunkI-((int)mc.thePlayer.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
-			&& Math.abs(chunkK-((int)mc.thePlayer.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
-				System.out.println("Terminating "+Thread.currentThread().getName()+"generation thread "+Thread.currentThread().getId()+". Player=("+(((int)mc.thePlayer.posX))+","+(((int)mc.thePlayer.posZ))+"), queriedChunk=("+chunkI+","+chunkK+").");
+			//System.out.println("Thread "+Thread.currentThread().getName()+"player=("+(((int)mc.thePlayer.posX)>>4)+","+(((int)mc.thePlayer.posZ)>>4)+"), chunk=("+chunkI+","+chunkK+").");
+			if( Math.abs(chunkI-((int)mc.thePlayer.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
+			 && Math.abs(chunkK-((int)mc.thePlayer.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
+				System.out.println("Terminating "+Thread.currentThread().getName()+" generation thread "+Thread.currentThread().getId()+". Player=("+(((int)mc.thePlayer.posX>>4))+","+(((int)mc.thePlayer.posZ>>4))+"), queriedChunk=("+chunkI+","+chunkK+").");
 				return false;
 			}
 		}

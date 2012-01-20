@@ -30,7 +30,7 @@ import java.io.*;
 
 public class mod_GreatWall extends BuildingExplorationHandler
 {
-	private final static int MAX_EXPLORATION_DISTANCE=30;
+	private final static int MAX_EXPLORATION_DISTANCE=30, HIGH_DENSITY_MAX_EXPLORATION_DISTANCE=12;
 	public final static float ACCEPT_ALPHA=50.0F;
 	private final static String SETTINGS_FILE_NAME="GreatWallSettings.txt",
 								LOG_FILE_NAME="great_wall_log.txt",
@@ -176,7 +176,9 @@ public class mod_GreatWall extends BuildingExplorationHandler
 			}
 			catch(Exception e) { lw.println(e.getMessage()); }
 			finally{ if(pw!=null) pw.close();}
-
+			
+			//reduce max exploration distance for infinite cities to improve performance
+			if(GlobalFrequency > 0.05) max_exploration_distance=HIGH_DENSITY_MAX_EXPLORATION_DISTANCE;
 		}
 
 	}
