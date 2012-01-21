@@ -65,6 +65,14 @@ These are block IDs that instead of creating the correspondingly numbered block 
   * 330 = Mob Spawner (Villager)
   * 331 = Mob Spawner (Snow Golem)
   * 332 = Mob Spawner (Mushroom Cow)
+  * 333 = Mob Spawner (Sheep)
+  * 334 = Mob Spawner (Cow)
+  * 335 = Mob Spawner (Chicken)
+  * 336 = Mob Spawner (Squid)
+  * 337 = Mob Spawner (Wolf)
+  * 338 = Mob Spawner (Giant Zombie)
+  * 339 = Mob Spawner (Silverfish)
+  * 340 = Mob Spawner (Dragon)
 
 ==Rule Examples==
 *Example 1*, this spawns either air, cobblestone, or a mossy cobblestone 100% of the time:
