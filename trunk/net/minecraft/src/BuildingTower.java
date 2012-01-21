@@ -77,6 +77,21 @@ public class BuildingTower extends Building
 		MakeDoors=wall.ws.MakeDoors;
 		if(circular) bLength=bWidth=minHorizDim; //enforce equal horizontal dimensions if circular
 	}
+	
+	public BuildingTower(int ID_,Building parent,boolean circular_,int roofStyle_,int dir_,int axXHand_, boolean centerAligned_,int TWidth_, int THeight_,int TLength_, int[] sourcePt){
+		super(ID_,parent.wgt, parent.bRule,dir_,axXHand_,centerAligned_,new int[]{TWidth_,THeight_,TLength_},sourcePt);
+		baseHeight=0;
+		roofStyle=roofStyle_;
+		minHorizDim=Math.min(bWidth, bLength);
+		circle_shape=CIRCLE_SHAPE[minHorizDim];
+		circular= circular_;
+		ChestRule=TemplateRule.RULE_NOT_PROVIDED;
+		roofRule= bRule;
+		SpawnerRule=TemplateRule.RULE_NOT_PROVIDED;
+		PopulateFurniture=false;
+		MakeDoors=false;
+		if(circular) bLength=bWidth=minHorizDim; //enforce equal horizontal dimensions if circular
+	}
 
 	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
 	public boolean queryCanBuild(int ybuffer, boolean overlapTowers) throws InterruptedException{
@@ -296,7 +311,7 @@ public class BuildingTower extends Building
 
 		//*** debug signs ***
 		if(BuildingWall.DEBUG_SIGNS){
-			String[] lines=new String[]{IDString().split(" ")[0],IDString().split(" ")[1],globalCoordString(bWidth/2,baseHeight,bLength/2)};
+			String[] lines=new String[]{IDString().split(" ")[0],IDString().split(" ")[1],localCoordString(bWidth/2,baseHeight,bLength/2)};
 			setSignOrPost(bWidth/2,baseHeight,bLength/2,true,12,lines);
 		}
 		

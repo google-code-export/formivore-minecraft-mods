@@ -84,7 +84,10 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	private boolean hollow(int i,int j,int k,int diam) throws InterruptedException{
 		if(diam < MIN_DIAM) return false;
 		if(j-diam/2<10 || j+diam/2 > Building.findSurfaceJ(world, i+diam/2, k+diam/2, world.worldMaxY, false,Building.IGNORE_WATER) - 3) return false;
-		if(!exploreArea(new int[]{i,0,k}, new int[]{i+diam,0,k+diam}, false)) return false;
+		if(!exploreArea(new int[]{i,0,k}, new int[]{i+diam,0,k+diam}, false)){
+			wc.logOrPrint("Could not explore new chunks while generating underground city at ("+i+","+k+"). Terminating this hollow.");
+			return false;
+		}
 		hollows.add(new int[]{i,j,k,diam,0});
 		
 		if(diam==MAX_DIAM) wc.chatBuildingCity("** Building underground city... **",null);

@@ -617,9 +617,17 @@ public class Building
     }
     
     
-    public final String globalCoordString(int x, int z, int y){
+    public final String localCoordString(int x, int z, int y){
     	int[] pt=getIJKPt(x,z,y);
     	return "("+pt[0]+","+pt[1]+","+pt[2]+")";
+    }
+    
+    public final static String globalCoordString(int[] pt){
+    	return "("+pt[0]+","+pt[1]+","+pt[2]+")";
+    }
+    
+    public final static String globalCoordString(int i, int j, int k){
+    	return "("+i+","+j+","+k+")";
     }
     
     //replaces orientationString
