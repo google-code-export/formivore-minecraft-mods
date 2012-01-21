@@ -2,15 +2,18 @@
 *WalledCitySettings.txt* and *GreatWallModSettings.txt* are the global settings files for the Walled City Generator and the Great Wall Mod respectively. These files are located in the main Minecraft directory and will be automatically generated if not present. If you have both mods installed frequencies/chest contents/etc. for each mod will be controlled by its own settings file. Below is a description of the different settings.
 
 *`GlobalFrequency`*<br>
-*`UndergroundGlobalFrequency`*(Walled City Mod)<br>
+*`UndergroundGlobalFrequency`*(Walled City Generator)<br>
 *`TriesPerChunk`*<br>
 These settings control how frequently walls or cities will be generated in Minecraft. `GlobalFrequency` takes a value 0.0 and 1.0. Lower it make less common. `UndergroundGlobalFrequency` is for underground cities. You should always first try to control frequency with `GlobalFrequency`. `TriesPerChunk` is only provided in case you want very dense generation, increasing it can have a large effect on performance.
 
-*`MinCitySeparation`*(Walled City Mod)<br>
-*`MinUndergroundCitySeparation`*(Walled City Mod)<br>
-The minimum separation allowed between above-ground and underground city spawns. Note however that city locations will not be remembered after you quit Minecraft.
+*`MinCitySeparation`*(Walled City Generator)<br>
+*`MinUndergroundCitySeparation`*(Walled City Generator)<br>
+The minimum separation allowed between above-ground and underground city spawns. Note however that city locations will not be remembered after you quit Minecraft.<br>
 
-*`CityBuiltMessage`* (Walled City Mod)<br>
+*`RejectOnPreexistingArtifacts`*(Walled City Generator)
+Control whether a city site will be rejected because in contains blocks that are not created as a part of vanilla Minecraft terrain generation. This is to avoid building over NPC villages, player structures, or blocks from other mods. If you are having trouble generating cities due to world generation blocks from other mods you can try setting this to `0`.
+
+*`CityBuiltMessage`* (Walled City Generator)<br>
 Toggles whether you receive a chat message when a city spawns.
 
 *`ConcaveSmoothingScale`*<br>
