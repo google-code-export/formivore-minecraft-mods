@@ -195,7 +195,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		willBuild=true;
 		if(!master.isFlushingGenThreads) suspendGen();
 		
-		wc.chatBuildingCity("** Building city... **","\n***** Building "+ows.name+" city"+", ID="+ID+" in "+Building.BIOME_NAMES[Building.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(walls[0].i1,walls[0].k1))]+" biome between "+walls[0].globalCoordString(0,0,0)+" and "+walls[2].globalCoordString(0,0,0) + " ******\n");
+		wc.chatBuildingCity("** Building city... **","\n***** Building "+ows.name+" city"+", ID="+ID+" in "+Building.BIOME_NAMES[Building.getBiomeNum(world.getWorldChunkManager().getBiomeGenAt(walls[0].i1,walls[0].k1))]+" biome between "+walls[0].localCoordString(0,0,0)+" and "+walls[2].localCoordString(0,0,0) + " ******\n");
 		if(ows.LevelInterior) levelCity();
 		
 		TemplateWall avenueWS=TemplateWall.pickBiomeWeightedWallStyle(ows.streets,world,i0,k0,random,false);

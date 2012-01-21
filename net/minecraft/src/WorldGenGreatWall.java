@@ -61,7 +61,8 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 				curviness+= (dw.wall2.xArray[m]==dw.wall2.xArray[m-1] ? 0:1)+(dw.wall2.zArray[m]==dw.wall2.zArray[m-1] ? 0:1);
 			curviness/=(double)(2*(dw.wall1.bLength+dw.wall2.bLength - 1));
 			
-			double p=gw.ACCEPT_ALPHA*(4.0*gw.CurveBias+1.0)*Math.pow(curviness,4.0*gw.CurveBias)*(dw.wall1.bLength+dw.wall1.bLength)/gw.LengthBiasNorm;
+			//alpha*(4*curvebias+1)*curviness^(4*curvebias)*(length/lengthbiasnorm)
+			double p=gw.ACCEPT_ALPHA*(4.0*gw.CurveBias+1.0)*Math.pow(curviness,4.0*gw.CurveBias)*(dw.wall1.bLength+dw.wall2.bLength)/gw.LengthBiasNorm;
 			
 			//if(BuildingWall.DEBUG>1)
 				System.out.println("Curviness="+curviness+", Length="+(dw.wall1.bLength+dw.wall1.bLength - 1)+", P="+p); 
@@ -70,7 +71,7 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 				return false;
 		}
 
-			dw.build(LAYOUT_CODE_NOCODE);
+		dw.build(LAYOUT_CODE_NOCODE);
 		dw.buildTowers(true,true,ws.MakeGatehouseTowers,false,false);
 		return true;
 	}

@@ -85,14 +85,13 @@ import net.minecraft.client.Minecraft;
  */
 
 public abstract class BuildingExplorationHandler extends BaseMod {
-	//public final static int THREAD_CONTINUE=0, THREAD_SUSPEND=1, THREAD_TERMINATE=2;
 	protected final static int MAX_TRIES_PER_CHUNK=10;
 	protected final static int CHUNKS_AT_WORLD_START=256;
 	public final static int MAX_CHUNKS_PER_TICK=1;
 	public final static int[] NO_CALL_CHUNK=null;
 	private final static int MIN_CHUNK_SEPARATION_FROM_PLAYER=6;
 	
-	public final static String VERSION_STRING="v2.2.0";
+	public final static String VERSION_STRING="v2.3.0";
 	public final static String GREAT_WALL_MOD_STRING="mod_GreatWall "+VERSION_STRING;
 	public final static String WALLED_CITY_MOD_STRING="mod_WalledCity "+VERSION_STRING;
 	
@@ -276,13 +275,17 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	public boolean queryExplorationHandlerForChunk(int chunkI,int chunkK, WorldGeneratorThread wgt) throws InterruptedException{
 		//MP PORT
 		/*
+		//SMP - world.chunkProvider.chunkExists(chunkI, chunkK) calls ChunkProviderServer.java which returns id2ChunkMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
+		//check world.chunkProvider.chunkExists before doing explrStartChunk check for SMP.
+		//not sure why, but if we do it after we are unable to build at all, or unable to build away from origin??
+		if(world.chunkProvider.chunkExists(chunkI, chunkK)) return true;
 		if(chunksExploredFromStart==0) {
 			explrStartChunkI=chunkI;
 			explrStartChunkK=chunkK;
 		}
 		if(Math.abs(chunkI - explrStartChunkI) > max_exploration_distance
 		   || Math.abs(chunkK - explrStartChunkK) > max_exploration_distance){
-			return THREAD_TERMINATE;
+			return false;
 		}
 		 */
 		int iChunkHome=(isCreatingDefaultChunks || mc.thePlayer==null) ? 0 : (int)mc.thePlayer.posX>>4;
@@ -295,29 +298,37 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 			//System.out.println("Thread "+Thread.currentThread().getName()+"player=("+(((int)mc.thePlayer.posX)>>4)+","+(((int)mc.thePlayer.posZ)>>4)+"), chunk=("+chunkI+","+chunkK+").");
 			if( Math.abs(chunkI-((int)mc.thePlayer.posX)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER 
 			 && Math.abs(chunkK-((int)mc.thePlayer.posZ)>>4) < MIN_CHUNK_SEPARATION_FROM_PLAYER){ //try not to bury the player alive
-				System.out.println("Terminating "+Thread.currentThread().getName()+" generation thread "+Thread.currentThread().getId()+". Player=("+(((int)mc.thePlayer.posX>>4))+","+(((int)mc.thePlayer.posZ>>4))+"), queriedChunk=("+chunkI+","+chunkK+").");
+				System.out.println("Terminating "+Thread.currentThread().getName()+" generation thread, too close to player.\n "+Thread.currentThread().getId()+". Player=("+(((int)mc.thePlayer.posX>>4))+","+(((int)mc.thePlayer.posZ>>4))+"), queriedChunk=("+chunkI+","+chunkK+").");
 				return false;
 			}
 		}
+		//SSP - world.chunkProvider.chunkExists calls ChunkProvider.java which returns chunkMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
+		if(world.chunkProvider.chunkExists(chunkI, chunkK)) return true;
 		
 		
-		if(!world.chunkProvider.chunkExists(chunkI, chunkK)){
+		//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+		//OK, we've now failed world.chunkProvider.chunkExists(chunkI, chunkK), so we will have to load or generate this chunk
+		//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+		
+		if(chunksExploredThisTick > (isFlushingGenThreads ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK)){
 			//suspend the thread if we've exceeded our quota of chunks to load for this tick
-			if(chunksExploredThisTick > (isFlushingGenThreads ? CHUNKS_AT_WORLD_START : MAX_CHUNKS_PER_TICK)){
-				wgt.suspendGen();
-			}
-			chunksExploredThisTick++;
-
-			
-			if(flushCallChunk!=NO_CALL_CHUNK){
-	    		if(chunkI==flushCallChunk[0] && chunkK==flushCallChunk[1])
-	    			return false;
-	    	}
-			
-			//MP PORT - WARNING WARNING, look at the MP code to see if we really want to call loadChunk, is there some way to see if chunk is already loaded?
-	    	//world.getChunkProvider().loadChunk(i>>4, k>>4);
-	    	world.chunkProvider.provideChunk(chunkI, chunkK);
+			wgt.suspendGen();
 		}
+		chunksExploredThisTick++;
+
+		
+		if(flushCallChunk!=NO_CALL_CHUNK){
+    		if(chunkI==flushCallChunk[0] && chunkK==flushCallChunk[1])
+    			return false;
+    	}
+		
+		//SSP - world.chunkProvider.provideChunk calls ChunkProvider.java which returns (Chunk)chunkMap.getValueByKey(ChunkCoordIntPair.chunkXZ2Int(i, j));
+		//       or loadChunk(i, j); if lookup fails. Since we already failed chunkExists(chunkI, chunkK) we could go directly to loadChunk(i,j);
+		//SMP - world.chunkProvider.loadChunk calls ChunkProviderServer.java which looks up id2ChunkMap.getValueByKey(l), 
+		//       returns this if it exists else calls serverChunkGenerator.provideChunk(i, j);
+		//OK we are going to use world.chunkProvider.loadChunk for both SSP and SMP, should test to see if this works
+    	world.chunkProvider.loadChunk(chunkI, chunkK);
+    	//world.chunkProvider.provideChunk(chunkI, chunkK);
 		return true;
 	}
 	

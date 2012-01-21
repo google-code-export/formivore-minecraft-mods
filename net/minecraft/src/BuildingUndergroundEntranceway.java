@@ -46,11 +46,16 @@ public class BuildingUndergroundEntranceway extends Building{
 			}
 		}
 		
+		//build a tower to mark top
+		BuildingTower tower=new BuildingTower(0,this,true,4,bDir, bHand, false, 10, 7, 10,getIJKPt(-3,bLength,bLength-7));
+		tower.build(0,0,true);
+		
+		//entranceway
 		for(int z=0; z<bLength;z++){
 			for(int x=-1; x<=PASSAGE_WIDTH; x++){
 				for(int z1=1; z1<=PASSAGE_HEIGHT; z1++) {
 					if(x==-1 || x==PASSAGE_WIDTH || z1==PASSAGE_HEIGHT){
-						if(IS_LOAD_TRASMITER_BLOCK[getBlockIdLocal(x,z+z1,z)])
+						if(IS_FLOWING_BLOCK[getBlockIdLocal(x,z+z1,z)])
 							setBlockLocal(x,z+z1,z,STONE_ID);
 					}
 					else setBlockLocal(x,z+z1,z,AIR_ID);
@@ -59,9 +64,10 @@ public class BuildingUndergroundEntranceway extends Building{
 				setBlockLocal(x, z, z, random.nextInt(100) < bRule.chance ? stairsID : 0,STAIRS_DIR_TO_META[DIR_NORTH]);
 				buildDown(x, z-1, z, STONE_RULE,20,0,3);
 			}
+			flushDelayed();
 			
 			if(z%SUPPORT_INTERVAL==0 && z<=bLength-PASSAGE_HEIGHT){
-				for(int z1=0; z1<PASSAGE_HEIGHT; z1++) {
+				for(int z1=-1; z1<PASSAGE_HEIGHT; z1++) {
 					setBlockLocal(0,z+z1,z,bRule);
 					setBlockLocal(PASSAGE_WIDTH-1,z+z1,z,bRule);
 				}
@@ -74,21 +80,17 @@ public class BuildingUndergroundEntranceway extends Building{
 			}
 		}
 		
-		for(int y=bLength; y>=bLength-PASSAGE_HEIGHT-2; y--){
-			buildDown(-1, bLength-1, y, STONE_RULE,20,4,3);
-			buildDown(PASSAGE_WIDTH, bLength-1, y, STONE_RULE,20,4,3);
-			if(y>=bLength-PASSAGE_HEIGHT){
-				for(int x=-1; x<=PASSAGE_WIDTH; x++)
-					for(int z1=0; z1<PASSAGE_HEIGHT; z1++)
-						setBlockLocal(x,bLength+z1,y,AIR_ID);
-			}else{
+		//reinforce start of entrance
+		for(int y=bLength; y>=bLength-PASSAGE_HEIGHT-4; y--){
+			buildDown(-1, y>=bLength-PASSAGE_HEIGHT-1 ? bLength-1 : y+PASSAGE_HEIGHT, y, bRule,20,7,3);
+			buildDown(PASSAGE_WIDTH, y>=bLength-PASSAGE_HEIGHT-1 ? bLength-1 : y+PASSAGE_HEIGHT, y, bRule,20,7,3);
+			if(y<bLength-PASSAGE_HEIGHT){
 				for(int x=0; x<PASSAGE_WIDTH; x++)
-					for(int z=bLength-1; z>=y+PASSAGE_HEIGHT; z--)
-						setBlockLocal(x,z,y,STONE_ID);
+					setBlockLocal(x,y+PASSAGE_HEIGHT,y,bRule);
 			}
 			
 		}
-		for(int x=0; x<PASSAGE_WIDTH; x++) buildDown(x, bLength-1, bLength, STONE_RULE,20,4,3);
+		//for(int x=0; x<PASSAGE_WIDTH; x++) buildDown(x, bLength-1, bLength, bRule,20,4,3);
 		
 		flushDelayed();
 		

@@ -31,15 +31,15 @@ import java.io.*;
 public class mod_GreatWall extends BuildingExplorationHandler
 {
 	private final static int MAX_EXPLORATION_DISTANCE=30, HIGH_DENSITY_MAX_EXPLORATION_DISTANCE=12;
-	public final static float ACCEPT_ALPHA=50.0F;
+	public final static float ACCEPT_ALPHA=25.0F;
 	private final static String SETTINGS_FILE_NAME="GreatWallSettings.txt",
 								LOG_FILE_NAME="great_wall_log.txt",
 								CITY_TEMPLATES_FOLDER_NAME="greatwall";
 
 	//USER MODIFIABLE PARAMETERS, values below are defaults
-	public float GlobalFrequency=0.001F;
+	public float GlobalFrequency=0.0005F;
 	public int TriesPerChunk=1;
-	public float CurveBias=0.0F;
+	public float CurveBias=0.5F;
 	public int LengthBiasNorm=200;
 	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
 

@@ -40,7 +40,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 								STREET_TEMPLATES_FOLDER_NAME="streets";
 	
 	//USER MODIFIABLE PARAMETERS, values here are defaults
-	public float GlobalFrequency=0.025F, UndergroundGlobalFrequency=0.002F;
+	public float GlobalFrequency=0.025F, UndergroundGlobalFrequency=0.0015F;
 	public int TriesPerChunk=1;
 	public int MinCitySeparation=900, UndergroundMinCitySeparation=500;
 	public boolean CityBuiltMessage=true;

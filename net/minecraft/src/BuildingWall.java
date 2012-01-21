@@ -167,9 +167,10 @@ public class BuildingWall extends Building
 			x_targ=getX(targ);
 			z_targ=getZ(targ);
 			y_targ=getY(targ);
-			if(DEBUG>1) System.out.println("Set target for "+IDString()+"to "+globalCoordString(x_targ,z_targ,y_targ)+"!");
+			if(DEBUG>1) System.out.println("Set target for "+IDString()+"to "+localCoordString(x_targ,z_targ,y_targ)+"!");
 		}
-		else System.out.println("Could not set target for "+IDString());
+		else 
+			System.out.println("Could not set target for "+IDString()+", targ="+globalCoordString(targ)+" (i,j,k)="+globalCoordString(i1,j1,k1));
 		return target;
 	}
 	
@@ -199,7 +200,7 @@ public class BuildingWall extends Building
 		setOriginLocal(i1,j1,k1,xArray[startN-1],zArray[startN-1],startN);
 		bLength=startN;
 		
-		if(DEBUG>1 && depth > 0) System.out.println("planWall "+IDString()+", depth="+depth+" n="+startN+" maxlLen="+maxLength+" at ("+i0+","+j0+","+k0+")");
+		if(DEBUG>1 && depth > 0) System.out.println("planWall "+IDString()+", depth="+depth+" n="+startN+" maxlLen="+maxLength+" at "+globalCoordString(i0,j0,k0));
 		//int searchUp=Math.min(Math.max(MIN_SEARCHUP,WalkHeight+1),MAX_SEARCHUP);
 		int searchUp=MIN_SEARCHUP;
 		int obstructionHeight=WalkHeight >4 ? WalkHeight+1 : bHeight+1;
@@ -371,9 +372,9 @@ public class BuildingWall extends Building
 		setCursor(0);
 
 		if(DEBUG>0){
-			if(bLength>0) System.out.println("**** Built "+ws.name+" wall "+IDString()+", length " + (bLength) + " from "+globalCoordString(xArray[0], zArray[0], 0)+
-					" to "+globalCoordString(xArray[bLength-1], zArray[bLength-1], bLength-1)+" ****");
-			else System.out.println("**** Wall too short to build! "+IDString()+"length="+bLength+" at "+globalCoordString(0,0,0)+" ****");
+			if(bLength>0) System.out.println("**** Built "+ws.name+" wall "+IDString()+", length " + (bLength) + " from "+localCoordString(xArray[0], zArray[0], 0)+
+					" to "+localCoordString(xArray[bLength-1], zArray[bLength-1], bLength-1)+" ****");
+			else System.out.println("**** Wall too short to build! "+IDString()+"length="+bLength+" at "+localCoordString(0,0,0)+" ****");
 			System.out.println("Wall planning was terminated due to: "+failString()+"\n");
 		}
 
@@ -456,7 +457,7 @@ public class BuildingWall extends Building
 			//DEBUGGING, creates signs with ID/distance info
 			if(DEBUG_SIGNS && (n0) % 10==0){
 				//String[] lines=new String[]{IDString().split(" ")[0],IDString().split(" ")[1],"Dist:"+n+ " / "+planL,globalCoordString(1,WalkHeight,0)};
-				String[] lines=new String[]{IDString().split(" ")[0],j1+"","Dist:"+n0+ " / "+bLength,globalCoordString(1,WalkHeight,0)};
+				String[] lines=new String[]{IDString().split(" ")[0],j1+"","Dist:"+n0+ " / "+bLength,localCoordString(1,WalkHeight,0)};
 				setSignOrPost(1,WalkHeight,0,true,8,lines);
 				setSignOrPost(-1,WalkHeight-1,0,false,3,lines);
 				setSignOrPost(bWidth,WalkHeight-1,0,false,2,lines);

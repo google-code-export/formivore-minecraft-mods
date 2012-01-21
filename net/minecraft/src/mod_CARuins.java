@@ -129,7 +129,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 	//****************************   FUNCTION - updateWorldExplored *************************************************************************************//
 	public synchronized void updateWorldExplored(World world_) {
 		if(Building.getWorldCode(world_)!=explrWorldCode){
-			setNewWorld(world_,"Starting to survey a world for wall generation...");
+			setNewWorld(world_,"Starting to survey a world for automata generation...");
 			
 			if(this==master){
 				//kill zombies
@@ -358,7 +358,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 		{"B356/S16",      "5", "fuzzy with spurs"},
 		{"B3468/S123",    "3", "towers with arches"},
 		{"B35678/S015678","2", "checkerboard"},
-		{"B35678/S0156",  "12", "spermatazoa"},
+		{"B35678/S0156",  "15", "spermatazoa"},
 		//2-rule
 		{"B26/S12368",    "1", "mayan pyramid"},
 		{"B248/S45",      "1", "gaudi pyramid"},
