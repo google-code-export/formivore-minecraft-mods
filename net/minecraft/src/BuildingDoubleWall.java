@@ -23,6 +23,8 @@ public class BuildingDoubleWall extends Building
 	public TemplateWall ws;
 	public boolean isAvenue=false;
 	
+	public final static int LATERAL_SMOOTHING_SCALE=10, CONCAVE_UP_SMOOTHING_SCALE=10, CONCAVE_DOWN_SMOOTHING_SCALE=20;  
+	
 	//****************************  CONSTRUCTOR - BuildingDoubleWall *************************************************************************************//
 	public BuildingDoubleWall(int ID_, WorldGeneratorThread wgt_,TemplateWall ws_,int dir_,int axXHand_,int[] sourcePt){
 		super(ID_,wgt_,ws_.TowerRule,dir_,axXHand_,false,new int[]{ws_.WWidth,ws_.WHeight,0},sourcePt);
@@ -57,14 +59,14 @@ public class BuildingDoubleWall extends Building
 		//
 		int[] tempx=new int[a+b];
 		int[] tempz=new int[a+b];
-		for(int m=0;m<b;m++) { tempx[m]=-wall2.xArray[b-m-1]; tempz[m]=wall2.zArray[b-m-1];}
+		for(int m=0;m<b;m++) { tempx[m]=wall2.xArray[b-m-1]; tempz[m]=wall2.zArray[b-m-1];}
 		for(int m=0;m<a;m++) { tempx[m+b]=wall1.xArray[m];  tempz[m+b]=wall1.zArray[m]; }
 
 		if(BuildingWall.DEBUG>1) System.out.println("\nSMOOTHING X");
-		BuildingWall.smooth(tempx,0,a+b-1,wgt.ConcaveSmoothingScale,wgt.ConcaveSmoothingScale,true);
+		BuildingWall.smooth(tempx,0,a+b-1,ws.LateralSmoothingScale,ws.LateralSmoothingScale,true);
 		if(BuildingWall.DEBUG>1) System.out.println("\nSMOOTHING Z");
-		BuildingWall.smooth(tempz,0,a+b-1,wgt.ConcaveSmoothingScale,wgt.ConvexSmoothingScale,true);
-		for(int m=0;m<b;m++) { wall2.xArray[b-m-1]=-tempx[m]; wall2.zArray[b-m-1]=tempz[m];}
+		BuildingWall.smooth(tempz,0,a+b-1,ws.ConcaveDownSmoothingScale,ws.ConcaveUpSmoothingScale,true);
+		for(int m=0;m<b;m++) { wall2.xArray[b-m-1]=tempx[m]; wall2.zArray[b-m-1]=tempz[m];}
 		for(int m=0;m<a;m++) { wall1.xArray[m]=tempx[m+b]; wall1.zArray[m]=tempz[m+b]; }
 		return true;
 	}

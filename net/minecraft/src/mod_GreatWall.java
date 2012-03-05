@@ -41,7 +41,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 	public int TriesPerChunk=1;
 	public float CurveBias=0.5F;
 	public int LengthBiasNorm=200;
-	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
+	public int BacktrackLength=9;
 
 	//DATA VARIABLES
 	public ArrayList<TemplateWall> wallStyles=null;
@@ -130,8 +130,6 @@ public class mod_GreatWall extends BuildingExplorationHandler
 					if(read.startsWith( "TriesPerChunk" )) TriesPerChunk = readIntParam(lw,TriesPerChunk,":",read);
 					if(read.startsWith( "CurveBias" )) CurveBias = readFloatParam(lw,CurveBias,":",read);
 					if(read.startsWith( "LengthBiasNorm" )) LengthBiasNorm = readIntParam(lw,LengthBiasNorm,":",read);
-					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = readIntParam(lw,ConcaveSmoothingScale,":",read);
-					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = readIntParam(lw,ConvexSmoothingScale,":",read);
 					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
 					
 					readChestItemsList(lw,read,br);
@@ -157,12 +155,9 @@ public class mod_GreatWall extends BuildingExplorationHandler
 				pw.println("TriesPerChunk:"+TriesPerChunk);
 				pw.println();
 				pw.println("<-Wall Pathfinding->");
-				pw.println("<-ConcaveSmoothingScale and ConvexSmoothingScale specifiy the maximum length that can be smoothed away in walls for cocave/convex curves respectively.->");
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
 				pw.println("<-CurveBias - strength of the bias towards curvier walls. Value should be between 0.0 and 1.0.->");
 				pw.println("<-LengthBiasNorm - wall length at which there is no penalty for generation>");
-				pw.println("ConcaveSmoothingScale:"+ConcaveSmoothingScale);
-				pw.println("ConvexSmoothingScale:"+ConvexSmoothingScale);
 				pw.println("BacktrackLength:"+BacktrackLength);
 				pw.println("CurveBias:"+CurveBias);
 				pw.println("LengthBiasNorm:"+LengthBiasNorm);

@@ -112,7 +112,7 @@ public class BuildingWall extends Building
 			if(roofRule!=TemplateRule.RULE_NOT_PROVIDED) roofRule=roofRule.getFixedRule(random);
 			if(endTowers && ws.MakeEndTowers){
 				endBTemplate=ws.buildings.get(Building.pickWeightedOption(random,ws.buildingWeights[0],ws.buildingWeights[1]));
-				endBLength = endBTemplate== ws.makeDefaultTower ? ws.pickTWidth(circular,random)
+				endBLength = endBTemplate== ws.makeDefaultTower ? ws.pickTWidth(circular,random)+1 //+1 allows some extra wiggle room for roof edges etc.
 							:(endBTemplate== ws.makeCARuin      ? ws.CARuinContainerWidth
 							:									  endBTemplate.length);
 			}
@@ -457,7 +457,7 @@ public class BuildingWall extends Building
 			//DEBUGGING, creates signs with ID/distance info
 			if(DEBUG_SIGNS && (n0) % 10==0){
 				//String[] lines=new String[]{IDString().split(" ")[0],IDString().split(" ")[1],"Dist:"+n+ " / "+planL,globalCoordString(1,WalkHeight,0)};
-				String[] lines=new String[]{IDString().split(" ")[0],j1+"","Dist:"+n0+ " / "+bLength,localCoordString(1,WalkHeight,0)};
+				String[] lines=new String[]{IDString().split(" ")[0],xArray[n0]+"","Dist:"+n0+ " / "+bLength,localCoordString(1,WalkHeight,0)};
 				setSignOrPost(1,WalkHeight,0,true,8,lines);
 				setSignOrPost(-1,WalkHeight-1,0,false,3,lines);
 				setSignOrPost(bWidth,WalkHeight-1,0,false,2,lines);
@@ -578,6 +578,7 @@ public class BuildingWall extends Building
 		if(template==ws.makeDefaultTower){
 			int maxBL = bDir==dir ? endBLength 
 							      : circular ? tw: ws.pickTWidth(circular,random);
+			//System.out.println("Querying "+(circular? "circular " : "square ")+(bDir==dir ? "end" : "side")+" tower, ybuffer="+ybuffer+".");
 			for(int tl=maxBL; tl>=ws.getTMinWidth(circular); tl--){
 				BuildingTower tower=new BuildingTower(bID+n0,this,dir,1,true,circular ? tl:tw,ws.pickTHeight(circular,random),tl,pt);
 				if(tower.queryCanBuild(ybuffer,overlapTowers)){
@@ -830,31 +831,36 @@ public class BuildingWall extends Building
 	
 	//smooth(int[] arry, int a, int b,int convexWindow, int concaveWindow)
 	public static void smooth(int[] arry, int a, int b,int convexWindow, int concaveWindow, boolean flattenEnds){
-		int n, convexWinStart=a, concaveWinStart=a, smoothStart=-1, leadSlope;
-		for(int winEnd=a+2;winEnd<=b;winEnd++){
-			if(winEnd>=a+convexWindow) convexWinStart++;
-			if(winEnd>=a+concaveWindow) concaveWinStart++;
-			n=winEnd-1;
-			leadSlope=arry[winEnd] - arry[n];
+		int n, smoothStart=-1, leadSlope, shorterWinStart=a, longerWinStart=a;
+		int shorterWinInitEnd = a + Math.min(concaveWindow, convexWindow),
+			longerWinInitEnd = a + Math.max(concaveWindow, convexWindow);
+		
+		for(int winEnd=a+2; winEnd<=b; winEnd++){
+			if(winEnd>=shorterWinInitEnd) shorterWinStart++;
+			if(winEnd>=longerWinInitEnd) longerWinStart++;	
+			
+			n = winEnd-1;
+			leadSlope = arry[winEnd] - arry[n];
 
 			//check the smaller window in both directions, and the larger only in the given direction
-			if(leadSlope*(arry[n] - arry[Math.max(convexWinStart,concaveWinStart)])<0 )
-				smoothStart=Math.max(convexWinStart,concaveWinStart);
-			else if( leadSlope*(arry[n] - arry[Math.min(convexWinStart,concaveWinStart)])<0 && leadSlope*(convexWindow-concaveWindow) > 0)
-				smoothStart=Math.min(convexWinStart,concaveWinStart);
+			if(leadSlope*(arry[n] - arry[shorterWinStart])<0 )
+				smoothStart=shorterWinStart;
+			else if( leadSlope*(arry[n] - arry[longerWinStart]) < 0 
+				  && leadSlope*(convexWindow - concaveWindow) < 0 )
+				smoothStart=longerWinStart;
 			else
 				smoothStart=-1;
 			if(smoothStart>=0){
-				if(DEBUG>1){
-					System.out.print("smoothing: ");
-					for(int m=smoothStart; m<= winEnd; m++) System.out.print(arry[m]+",");
-					System.out.println();
-				}
+				//if(DEBUG>1){
+				//	System.out.print("smoothing: ");
+				//	for(int m=smoothStart; m<= winEnd; m++) System.out.print(arry[m]+",");
+				//	System.out.println();
+				//}
 				do {
 					//System.out.println("smoothing n="+n+" "+arry[n-1] +" "+ arry[n] +" "+ arry[winEnd]);
 					arry[n]=arry[winEnd];
 					n--;
-				} while(n>smoothStart&& arry[n]!=arry[winEnd]);
+				} while(n>smoothStart && arry[n]!=arry[winEnd]);
 			}
 
 		}

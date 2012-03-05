@@ -57,8 +57,8 @@ import org.bukkit.inventory.Inventory;
 public class Building
 {
 		public final static int HIT_WATER=-666; //, HIT_SWAMP=-667;
-		public final static int EASY_CHEST=0,MEDIUM_CHEST=1,HARD_CHEST=2,TOWER_CHEST=3;
-		public final static int DIR_NORTH=0,DIR_EAST=1,DIR_SOUTH=2,DIR_WEST=3;
+		public final static int EASY_CHEST=0, MEDIUM_CHEST=1, HARD_CHEST=2, TOWER_CHEST=3;
+		public final static int DIR_NORTH=0, DIR_EAST=1, DIR_SOUTH=2, DIR_WEST=3;
 		public final static int DIR_WEST_EAST=1, DIR_SOUTH_NORTH=0;
 		public final static int ROT_R=1,ROT_L=-1,ROT_180=2;
 		public final static int R_HAND=1,L_HAND=-1;
@@ -681,21 +681,33 @@ public class Building
    		//	if(isWallBlock(x1,z1,y1))
    		//		return true;
    		
-   		for(int x1=0; x1<bWidth; x1++)
-   			if(isArtificialWallBlock(x1,z1,bLength-1)) return true;
+   		for(int x1=0; x1<bWidth; x1++){
+   			if(isArtificialWallBlock(x1,z1,bLength-1)){
+   				setBlockLocal(x1,z1+1,bLength-1,WOOL_ID,1);
+   				return true;
+   			}}
    		for(int y1=ybuffer; y1<bLength-1;y1++){
-   			if(isArtificialWallBlock(0,z1,y1)) return true;
-   			if(isArtificialWallBlock(bWidth-1,z1,y1)) return true;
+   			if(isArtificialWallBlock(0,z1,y1)){ 
+   				setBlockLocal(0,z1+1,y1,WOOL_ID,1);
+   				return true;
+   			}
+   			if(isArtificialWallBlock(bWidth-1,z1,y1)) {
+   				setBlockLocal(bWidth-1,z1+1,y1,WOOL_ID,1);
+   				return true;
+   			}
    		}
    	}
    	return false;
    }
    
    protected boolean isObstructedSolid(int pt1[],int pt2[]){
-   	for(int x1=pt1[0]; x1<=pt2[0]; x1++)
-   		for(int z1=pt1[1]; z1<=pt2[1]; z1++)
-   			for(int y1=pt1[2]; y1<=pt2[2]; y1++)
-				if(!isWallable(x1,z1,y1)) return true;
+   	for(int x1=pt1[0]; x1<=pt2[0]; x1++){
+   		for(int z1=pt1[1]; z1<=pt2[1]; z1++){
+   			for(int y1=pt1[2]; y1<=pt2[2]; y1++){
+				if(!isWallable(x1,z1,y1)){
+					setBlockLocal(x1,z1+1,y1,GOLD_BLOCK_ID);
+					return true;
+   	}}}}
    	return false;
    }  
 	  
@@ -1743,11 +1755,12 @@ public class Building
 			{9,COMPASS_ID,0,1,1,1},
 			{10,IRON_INGOT_ID,0,1,5,8},
 			{11,ENDER_PEARL_ID,0,1,1,3},
-			{12,GOLD_NUGGET_ID,0,2,8,15},
-			{13,POTION_ID,2,1,1,1},
-			{14,POTION_ID,37,3,1,1}, //healing II
-			{15,POTION_ID,34,1,1,1}, //swiftness II
-			{16,POTION_ID,9,1,1,1}}, //strength
+			{12,OBSIDIAN_ID,0,1,1,4},
+			{13,GOLD_NUGGET_ID,0,2,8,15},
+			{14,POTION_ID,2,1,1,1},
+			{15,POTION_ID,37,3,1,1}, //healing II
+			{16,POTION_ID,34,1,1,1}, //swiftness II
+			{17,POTION_ID,9,1,1,1}}, //strength
 			
 		{	//Hard
 			{0,STICKY_PISTON_ID,0,2,6,12},  
@@ -1758,7 +1771,7 @@ public class Building
 			{5,SLIME_BALL_ID,0,2,12,24},
 			{6,LAVA_BUCKET_ID,0,2,1,1},
 			{7,CHAINMAIL_CHESTPLATE_ID,0,1,1,1},
-			{8,MOB_SPAWNER_ID,0,2,2,4},
+			{8,MOB_SPAWNER_ID,0,1,2,4},
 			{9,THIRTEEN_DISC_ID,0,1,1,1},
 			{10,GOLDEN_APPLE_ID,0,1,4,8},
 			{11,TNT_ID,0,2,8,20},
