@@ -43,8 +43,8 @@ public class mod_WalledCity extends BuildingExplorationHandler
 	public float GlobalFrequency=0.025F, UndergroundGlobalFrequency=0.0015F;
 	public int TriesPerChunk=1;
 	public int MinCitySeparation=900, UndergroundMinCitySeparation=500;
-	public boolean CityBuiltMessage=true;
-	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
+	public boolean CityBuiltMessage=true; 
+	public int BacktrackLength=9;
 	public boolean RejectOnPreexistingArtifacts=true;
 	
 	//DATA VARIABLES
@@ -245,9 +245,9 @@ public class mod_WalledCity extends BuildingExplorationHandler
 					if(read.startsWith( "MinCitySeparation" )) MinCitySeparation= readIntParam(lw,MinCitySeparation,":",read);
 					if(read.startsWith( "MinUndergroundCitySeparation" )) UndergroundMinCitySeparation= readIntParam(lw,UndergroundMinCitySeparation,":",read);
 		
-					if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = readIntParam(lw,ConcaveSmoothingScale,":",read);
-					if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = readIntParam(lw,ConvexSmoothingScale,":",read);
-					if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
+					//if(read.startsWith( "ConcaveSmoothingScale" )) ConcaveSmoothingScale = readIntParam(lw,ConcaveSmoothingScale,":",read);
+					//if(read.startsWith( "ConvexSmoothingScale" )) ConvexSmoothingScale = readIntParam(lw,ConvexSmoothingScale,":",read);
+					//if(read.startsWith( "BacktrackLength" )) BacktrackLength = readIntParam(lw,BacktrackLength,":",read);
 					if(read.startsWith( "CityBuiltMessage" )) CityBuiltMessage = readIntParam(lw,1,":",read)==1;
 					if(read.startsWith( "RejectOnPreexistingArtifacts" )) RejectOnPreexistingArtifacts = readIntParam(lw,1,":",read)==1;
 					//if(read.startsWith( "GlobalChallengeSlider" )) GlobalChallengeSlider = readFloatParam(lw,GlobalChallengeSlider,":",read);
@@ -272,12 +272,9 @@ public class mod_WalledCity extends BuildingExplorationHandler
 				pw.println("MinUndergroundCitySeparation:"+UndergroundMinCitySeparation);
 				pw.println();
 				pw.println("<-Wall Pathfinding->");
-				pw.println("<-ConcaveSmoothingScale and ConvexSmoothingScale specifiy the maximum length that can be smoothed away in walls for cocave/convex curves respectively.->");
 				pw.println("<-BacktrackLength - length of backtracking for wall planning if a dead end is hit->");
 				pw.println("<-CityBuiltMessage controls whether the player receives message when a city is building. Set to 1 to receive message, 0 for no messages.->");
 				pw.println("<-RejectOnPreexistingArtifacts determines whether the planner rejects city sites that contain preexiting man-made blocks. Set to 1 to do this check.->");
-				pw.println("ConcaveSmoothingScale:"+ConcaveSmoothingScale);
-				pw.println("ConvexSmoothingScale:"+ConvexSmoothingScale);
 				pw.println("BacktrackLength:"+BacktrackLength);
 				pw.println("CityBuiltMessage:"+(CityBuiltMessage ? 1:0));
 				pw.println("RejectOnPreexistingArtifacts:"+(RejectOnPreexistingArtifacts ? 1:0));

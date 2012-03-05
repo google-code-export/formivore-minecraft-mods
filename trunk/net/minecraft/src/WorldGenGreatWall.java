@@ -32,8 +32,6 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 	public WorldGenGreatWall (mod_GreatWall gw_, BuildingExplorationHandler master,World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
 		super(master, world_, random_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
 		gw=gw_;
-		ConcaveSmoothingScale=gw.ConcaveSmoothingScale;
-		ConvexSmoothingScale=gw.ConcaveSmoothingScale;
 		BacktrackLength=gw.BacktrackLength;
 		chestTries=gw.chestTries;
 		chestItems=gw.chestItems;
@@ -52,7 +50,7 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 
 		//calculate the integrated curvature
 		if(gw.CurveBias>0.01){
-			//Perform a probabalistic test
+			//Perform a probabilistic test
 			//Test formula considers both length and curvature, bias is towards longer and curvier walls.
 			double curviness=0;
 			for(int m=1;m<dw.wall1.bLength;m++) 
@@ -61,14 +59,23 @@ public class WorldGenGreatWall extends WorldGeneratorThread
 				curviness+= (dw.wall2.xArray[m]==dw.wall2.xArray[m-1] ? 0:1)+(dw.wall2.zArray[m]==dw.wall2.zArray[m-1] ? 0:1);
 			curviness/=(double)(2*(dw.wall1.bLength+dw.wall2.bLength - 1));
 			
-			//alpha*(4*curvebias+1)*curviness^(4*curvebias)*(length/lengthbiasnorm)
-			double p=gw.ACCEPT_ALPHA*(4.0*gw.CurveBias+1.0)*Math.pow(curviness,4.0*gw.CurveBias)*(dw.wall1.bLength+dw.wall2.bLength)/gw.LengthBiasNorm;
+			//R plotting - sigmoid function
+			/*
+				pwall<-function(curviness,curvebias) 1/(1+exp(-30*(curviness-(curvebias/5))))
+				plotpwall<-function(curvebias){
+					plot(function(curviness) pwall(curviness,curvebias),ylim=c(0,1),xlim=c(0,0.5),xlab="curviness",ylab="p",main=paste("curvebias=",curvebias))
+				}
+				plotpwall(0.5)
+			 */
+
+			double p=1.0/(1.0+Math.exp(-30.0*(curviness-(gw.CurveBias/5.0))));
 			
-			//if(BuildingWall.DEBUG>1)
-				System.out.println("Curviness="+curviness+", Length="+(dw.wall1.bLength+dw.wall1.bLength - 1)+", P="+p); 
+			//System.out.println("Curviness="+curviness+", Length="+(dw.wall1.bLength+dw.wall1.bLength - 1)+", P="+p); 
 			
-			if(random.nextFloat() > p)
+			if(random.nextFloat() > p){
+				System.out.println("Rejected great wall, curviness="+curviness+", length="+(dw.wall1.bLength+dw.wall1.bLength - 1)+", P="+p);
 				return false;
+			}
 		}
 
 		dw.build(LAYOUT_CODE_NOCODE);

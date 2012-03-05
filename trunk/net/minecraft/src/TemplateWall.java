@@ -52,6 +52,7 @@ public class TemplateWall extends TemplateTML{
 						ChestRule=TemplateRule.RULE_NOT_PROVIDED, CARuinRule=TemplateRule.RULE_NOT_PROVIDED;
 	public boolean MakeBuildings=true,MergeWalls=false, MakeEndTowers=true, MakeGatehouseTowers=true,
 					MakeUndergroundEntranceways=true,PopulateFurniture=false, MakeDoors=false;
+	public int LateralSmoothingScale=20, ConcaveUpSmoothingScale=20, ConcaveDownSmoothingScale=10;
 	public int BuildingInterval=75;
 	private int DefaultTowerWeight=1; 
 	public int TowerXOffset=0;
@@ -108,6 +109,9 @@ public class TemplateWall extends TemplateTML{
 		if(extraOptions.containsKey("make_end_towers")) MakeEndTowers=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("make_end_towers")) == 1;
 		if(extraOptions.containsKey("make_underground_entranceways")) MakeUndergroundEntranceways=BuildingExplorationHandler.readIntParam(lw,1,"=",(String)extraOptions.get("make_underground_entranceways")) == 1;
 		if(extraOptions.containsKey("merge_walls")) MergeWalls=BuildingExplorationHandler.readIntParam(lw,0,"=",(String)extraOptions.get("merge_walls")) == 1;
+		if(extraOptions.containsKey("lateral_smoothing_scale")) LateralSmoothingScale=BuildingExplorationHandler.readIntParam(lw,LateralSmoothingScale,"=",(String)extraOptions.get("lateral_smoothing_scale"));
+		if(extraOptions.containsKey("concave_up_smoothing_scale")) ConcaveUpSmoothingScale=BuildingExplorationHandler.readIntParam(lw,ConcaveUpSmoothingScale,"=",(String)extraOptions.get("concave_up_smoothing_scale"));
+		if(extraOptions.containsKey("concave_down_smoothing_scale")) ConcaveDownSmoothingScale=BuildingExplorationHandler.readIntParam(lw,ConcaveDownSmoothingScale,"=",(String)extraOptions.get("concave_down_smoothing_scale"));
 		
 		//default tower variables
 		if(extraOptions.containsKey("default_tower_weight")) DefaultTowerWeight=BuildingExplorationHandler.readIntParam(lw,DefaultTowerWeight,"=",(String)extraOptions.get("default_tower_weight"));

@@ -96,16 +96,22 @@ public class BuildingTower extends Building
 	//****************************************  FUNCTION - queryCanBuild *************************************************************************************//
 	public boolean queryCanBuild(int ybuffer, boolean overlapTowers) throws InterruptedException{
 		int rooftopJ=j0 + bHeight + (roofStyle==ROOF_CONE ? minHorizDim : minHorizDim/2)+2; 
-		if(rooftopJ > world.worldMaxY) bHeight-= world.worldMaxY - rooftopJ;
-		if(bHeight < baseHeight + 4) 
+		if(rooftopJ > world.worldMaxY) bHeight-= rooftopJ - world.worldMaxY;
+		if(bHeight < baseHeight + 4){
 			return false;
+		}
 		
-		if(!( queryExplorationHandlerForChunk(0,0,bLength-1) && queryExplorationHandlerForChunk(bWidth-1,0,0) && queryExplorationHandlerForChunk(bWidth-1,0,bLength-1) )){
+		if(!( queryExplorationHandlerForChunk(0,0,bLength-1) 
+		   && queryExplorationHandlerForChunk(bWidth-1,0,0) 
+		   && queryExplorationHandlerForChunk(bWidth-1,0,bLength-1) )) {
 			return false;
 		}
 		
 		//check if obstructed at roof
-		if(isObstructedRoof(ybuffer)) return false;
+		if(isObstructedRoof(ybuffer)){
+			//System.out.println("Tower blocked in roof.");
+			return false;
+		}
 		
 		//check if obstructed on body
 		if(wgt.isLayoutGenerator()){
@@ -113,10 +119,13 @@ public class BuildingTower extends Building
 				  pt2=getIJKPt(overlapTowers ? 3*bWidth/4-1:bWidth-1, 0, overlapTowers ? 3*bLength/4-1:bLength-1);
 		    if(wgt.layoutIsClear(pt1,pt2,WorldGeneratorThread.LAYOUT_CODE_TOWER)){
 	    	   wgt.setLayoutCode(pt1,pt2,WorldGeneratorThread.LAYOUT_CODE_TOWER);
-	    	} else return false;
+	    	} else 
+	    		return false;
 		}else if(!overlapTowers){
-			if(isObstructedFrame(3,ybuffer)) return false;
-		}
+			if(isObstructedFrame(3,ybuffer)) {
+				//System.out.println("Tower blocked in frame.");
+				return false;
+		}}
 		
 		return true;
 	}
@@ -126,7 +135,7 @@ public class BuildingTower extends Building
 		int rHeight=(roofStyle==ROOF_CRENEL ? 2 : minHorizDim/2);
 		if(isObstructedSolid(new int[]{rBuffer,bHeight,Math.max(rBuffer, ybuffer)},
 				             new int[]{bWidth-1-rBuffer,bHeight+rHeight,bLength-1-rBuffer}) ) {
-			if(BuildingWall.DEBUG>0) System.out.println("Cannot build Tower "+IDString()+". Obstructed!");
+			//if(BuildingWall.DEBUG>0) System.out.println("Cannot build Tower "+IDString()+". Obstructed!");
 			return true;
 		}
 		return false;

@@ -38,8 +38,6 @@ public class WorldGenUndergroundCity extends WorldGeneratorThread{
 	public WorldGenUndergroundCity (mod_WalledCity wc_,World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_) { 
 		super(wc_, world_, random_, chunkI_, chunkK_, TriesPerChunk_, ChunkTryProb_);
 		wc=wc_;
-		ConcaveSmoothingScale=wc.ConcaveSmoothingScale;
-		ConvexSmoothingScale=wc.ConcaveSmoothingScale;
 		BacktrackLength=wc.BacktrackLength;
 		chestTries=wc.chestTries;
 		chestItems=wc.chestItems;

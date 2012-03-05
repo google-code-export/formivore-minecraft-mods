@@ -46,7 +46,8 @@ public abstract class WorldGeneratorThread extends Thread {
 	//All WorldGeneratorThreads will have these, even if not used.
 	int[] chestTries=null;
 	int[][][] chestItems=null;
-	public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, BacktrackLength=9;
+	//public int ConcaveSmoothingScale=10, ConvexSmoothingScale=20, 
+	public int BacktrackLength=9;
 	
 	//****************************  CONSTRUCTOR - WorldGeneratorThread *************************************************************************************//
 	public WorldGeneratorThread(BuildingExplorationHandler master_, World world_, Random random_, int chunkI_, int chunkK_, int TriesPerChunk_, double ChunkTryProb_){
