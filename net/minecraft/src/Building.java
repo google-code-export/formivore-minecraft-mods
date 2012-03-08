@@ -62,6 +62,9 @@ public class Building
 		public final static int DIR_WEST_EAST=1, DIR_SOUTH_NORTH=0;
 		public final static int ROT_R=1,ROT_L=-1,ROT_180=2;
 		public final static int R_HAND=1,L_HAND=-1;
+		public final static int SEA_LEVEL=63;
+		public final static int WORLD_MAX_Y=255;
+		public final static int WORLD_HEIGHT=256;
 		
 		//**** WORKING VARIABLES **** 
 		protected World world;
@@ -647,7 +650,7 @@ public class Building
 
 	   int oldSurfaceBlockId=world.getBlockId(lowPt[0], lowPt[1], lowPt[2]);
 	   if(IS_ORE_BLOCK[oldSurfaceBlockId]) oldSurfaceBlockId=STONE_ID;
-	   if(oldSurfaceBlockId==DIRT_ID || (lowPt[1] <= world.seaLevel && oldSurfaceBlockId==SAND_ID))
+	   if(oldSurfaceBlockId==DIRT_ID || (lowPt[1] <= SEA_LEVEL && oldSurfaceBlockId==SAND_ID))
 		   oldSurfaceBlockId=GRASS_ID;
 	   if(oldSurfaceBlockId==0) oldSurfaceBlockId= world.worldProvider.isHellWorld ? NETHERRACK_ID : GRASS_ID;
 	   int fillBlockId=oldSurfaceBlockId==GRASS_ID ? DIRT_ID : oldSurfaceBlockId;
@@ -714,14 +717,14 @@ public class Building
    //******************** STATIC FUNCTIONS ******************************************************************************************************************************************//
    
    public static void setBlockNoLighting(World world, int i, int j, int k, int blockId){
-       if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= world.worldHeight )
+       if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= Building.WORLD_HEIGHT )
            return;
        
        world.getChunkFromChunkCoords(i >> 4, k >> 4).setBlockID(i & 0xf, j, k & 0xf, blockId);
    }
    
    public static void setBlockAndMetaNoLighting(World world, int i, int j, int k, int blockId, int meta){
-	   if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= world.worldHeight)
+	   if(i < 0xfe363c80 || k < 0xfe363c80 || i >= 0x1c9c380 || k >= 0x1c9c380 || j < 0 || j >= Building.WORLD_HEIGHT)
            return;
 
        world.getChunkFromChunkCoords(i >> 4, k >> 4).setBlockIDWithMetadata(i & 0xf, j, k & 0xf, blockId, meta);
@@ -790,14 +793,14 @@ public class Building
     	int blockId;
 		if(world.worldProvider.isHellWorld) {
 			if( (i%2==1) ^ (k%2==1) ) {
-				for(int j=world.worldMaxY; j>-1; j--) {
+				for(int j=WORLD_MAX_Y; j>-1; j--) {
 					if(world.getBlockId(i,j,k)==0) 
 						for(; j>-1; j--) 
 							if(!IS_WALLABLE[world.getBlockId(i,j,k)])
 								return j;
 				}
 			}else {
-				for(int j=0; j<=world.worldMaxY; j++) 
+				for(int j=0; j<=WORLD_MAX_Y; j++) 
 					if(world.getBlockId(i,j,k)==0 )
 								return j;
 			}

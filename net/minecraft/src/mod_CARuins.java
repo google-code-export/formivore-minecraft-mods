@@ -326,7 +326,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 									int[] pt=new int[]{i0+(2*random.nextInt(2)-1)*(ContainerWidth + random.nextInt(ContainerWidth)),
 												   	   0,
 												       k0+(2*random.nextInt(2)-1)*(ContainerWidth + random.nextInt(ContainerWidth))};
-									pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.worldMaxY,true,3)+1;
+									pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],Building.WORLD_MAX_Y,true,3)+1;
 									if(generate(pt[0], pt[1], pt[2])) 
 										break;
 								}

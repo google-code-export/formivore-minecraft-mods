@@ -173,7 +173,7 @@ public class BuildingCellularAutomaton extends Building {
 			for(int height : heights) hitWater |= height==HIT_WATER;
 		}
 		
-		if(j0+bHeight>world.worldMaxY-1) j0=world.worldMaxY-bHeight-1; //stay 1 below top to avoid lighting problems
+		if(j0+bHeight>WORLD_MAX_Y-1) j0=WORLD_MAX_Y-bHeight-1; //stay 1 below top to avoid lighting problems
 		if(bury && !hitWater){
 			zGround= caRule[0][2]==ALIVE ? Math.max(0,bHeight-bWidth/3-random.nextInt(bWidth))  
 										 : random.nextInt(3*bHeight/4);
@@ -408,7 +408,7 @@ public class BuildingCellularAutomaton extends Building {
 					int lightVal=world.getSavedLightValue(EnumSkyBlock.Sky, pt[0], pt[1], pt[2]);
 					
 					//Choose spawner types. There is some kind of bug where where lightVal coming up as zero, even though it is not
-					if(lightVal<5 && !(lightVal==0 && j0+z>world.seaLevel)) 
+					if(lightVal<5 && !(lightVal==0 && j0+z>Building.SEA_LEVEL)) 
 						spawnerSelection=LOW_LIGHT_SPAWNERS;
 					else if(lightVal<10)
 						spawnerSelection = floorBlocks > 70 ? MEDIUM_LIGHT_WIDE_SPAWNERS : MEDIUM_LIGHT_SPAWNERS;
