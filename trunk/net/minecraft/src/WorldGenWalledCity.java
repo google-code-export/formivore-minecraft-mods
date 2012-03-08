@@ -69,7 +69,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		if(!wc.cityIsSeparated(i0,k0,cityType)) return false;
 		
 		int ID=(random.nextInt(9000)+1000)*100;
-		int minJ=ows.LevelInterior ? world.seaLevel-1 : BuildingWall.NO_MIN_J;
+		int minJ=ows.LevelInterior ? Building.SEA_LEVEL-1 : BuildingWall.NO_MIN_J;
 		//boolean circular=random.nextFloat() < ows.CircularProb;
 		chooseDirection(i0 >> 4, k0 >>4);
 
@@ -156,7 +156,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 				boolean enclosed=true;
 				for(BuildingWall w : walls) if(w.ptIsToXHand(new int[]{i2,0,k2},1)) enclosed=false;
 				if(enclosed){
-					int j2=Building.findSurfaceJ(world,i2,k2,world.worldMaxY,true,3);
+					int j2=Building.findSurfaceJ(world,i2,k2,Building.WORLD_MAX_Y,true,3);
 					cityArea++;
 					if(j2==Building.HIT_WATER) waterArea++;
 					if(wc.RejectOnPreexistingArtifacts && ows.LevelInterior && Building.IS_ARTIFICAL_BLOCK[world.getBlockId(i2,j2,k2)]){
@@ -182,7 +182,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		//We've passed all checks, register this city site
 		walls[0].setCursor(0);
 		int[] cityCenter=new int[]{(walls[0].i1+walls[1].i1+walls[2].i1+walls[3].i1)/4,0,(walls[0].k1+walls[1].k1+walls[2].k1+walls[3].k1)/4};
-		cityCenter[1]=Building.findSurfaceJ(world, cityCenter[0], cityCenter[1], world.worldMaxY, false, 3);
+		cityCenter[1]=Building.findSurfaceJ(world, cityCenter[0], cityCenter[1], Building.WORLD_MAX_Y, false, 3);
 		for(int w=0;w<4;w++) 
 			wc.cityLocations.add(new int[]{walls[w].i1,walls[w].k1,cityType});
 		wc.saveCityLocations();
@@ -225,7 +225,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 				//no gateway on this city side, try just building an interior avenue from midpoint
 				w.setCursor(startScan);
 				BuildingWall radialAvenue=new BuildingWall(0, this, sws, Building.rotDir(w.bDir,-axXHand), radialAvenueHand, ows.MaxL, false,
-						                                   w.getSurfaceIJKPt(-1, 0,world.worldMaxY,false,Building.IGNORE_WATER));
+						                                   w.getSurfaceIJKPt(-1, 0,Building.WORLD_MAX_Y,false,Building.IGNORE_WATER));
 				radialAvenue.setTarget(cityCenter);
 				radialAvenue.plan(1,0,BuildingWall.DEFAULT_LOOKAHEAD,true);
 				if(radialAvenue.bLength > 20){
@@ -408,7 +408,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		while(tries < 20){
 			pt[0]=mincorner[0] + random.nextInt( Math.abs(corner1[0]-corner2[0]));
 			pt[2]=mincorner[2] + random.nextInt(Math.abs(corner1[2]-corner2[2]));
-			pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.worldMaxY,true,3);
+			pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],Building.WORLD_MAX_Y,true,3);
 			boolean enclosed=true;
 			for(BuildingWall w : walls) if(w.ptIsToXHand(pt,-sws.WWidth)) enclosed=false;
 			if(enclosed) return pt;
@@ -430,10 +430,10 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 		for(BuildingWall w : walls) w.setCursor(0);
 		int incI=Building.signum(corner2[0]-corner1[0],0), incK=Building.signum(corner2[2]-corner1[2],0);
 		int[] pt=new int[3];
-		int jmin=world.worldProvider.isHellWorld ? jmean : Math.max(jmean, world.seaLevel);
+		int jmin=world.worldProvider.isHellWorld ? jmean : Math.max(jmean, Building.SEA_LEVEL);
 		for(BuildingWall w : walls){
 			for(int n=0;n<w.bLength;n++)
-				if(w.zArray[n]+w.j1+w.WalkHeight-1 < jmin && (world.worldProvider.isHellWorld || jmin >= world.seaLevel))
+				if(w.zArray[n]+w.j1+w.WalkHeight-1 < jmin && (world.worldProvider.isHellWorld || jmin >= Building.SEA_LEVEL))
 					jmin=w.zArray[n]+w.j1+w.WalkHeight-1;
 		}
 		int jmax=Math.max(jmean + Lmean/LEVELLING_DEVIATION_SLOPE, jmin);
@@ -444,7 +444,7 @@ public class WorldGenWalledCity extends WorldGeneratorThread
 				boolean enclosed=true;
 				for(BuildingWall w : walls) if(w.ptIsToXHand(pt,1)) enclosed=false;
 				if(enclosed){
-					pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],world.worldMaxY,false,Building.IGNORE_WATER);
+					pt[1]=Building.findSurfaceJ(world,pt[0],pt[2],Building.WORLD_MAX_Y,false,Building.IGNORE_WATER);
 					int oldSurfaceBlockId=world.getBlockId(pt[0], pt[1], pt[2]);
 					if(pt[1]>jmax) {
 						while(world.getBlockId(pt[0],pt[1]+1,pt[2])!=Building.AIR_ID) pt[1]++; //go back up to grab any trees or whatnot
