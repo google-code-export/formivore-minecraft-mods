@@ -154,8 +154,8 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//****************************  FUNCTION - OnTickInGame *************************************************************************************//
 	//MP PORT - comment out this function
 	@Override
-	public boolean OnTickInGame(float tick, net.minecraft.client.Minecraft game) {
-		doOnTick(game.theWorld);
+	public boolean onTickInGame(float f, Minecraft minecraft) {
+		doOnTick(minecraft.theWorld);
 		return true;
 	}
 	
@@ -173,7 +173,8 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//BUKKIT PORT
 	//public void populate(World world, Random random, Chunk source){
 	//	int chunkI=source.getX(), chunkK=source.getZ();
-	public void GenerateSurface( World world, Random random, int i, int k ) {
+	@Override
+	public void generateSurface( World world, Random random, int i, int k ) {
 		if(errFlag) return;
 		updateWorldExplored(world);
 		chunksExploredFromStart++;
@@ -186,15 +187,16 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		generate(world,random,i,k);
 	}
 	
-	public void GenerateNether( World world, Random random, int chunkI, int chunkK ) {
-		GenerateSurface(world,random,chunkI,chunkK);
+	@Override
+	public void generateNether( World world, Random random, int chunkI, int chunkK ) {
+		generateSurface(world,random,chunkI,chunkK);
 	}
 	
-	//****************************  FUNCTION - ModsLoaded *************************************************************************************//
+	//****************************  FUNCTION - modsLoaded *************************************************************************************//
 	//Load templates after mods have loaded so we can check whether any modded blockIDs are valid
-	//Do everything here instead of subclasses so it is easier to create new subclasses
 	//MP PORT - comment out this function
-	public void ModsLoaded(){
+	@Override
+	public void modsLoaded(){
 		if(this.toString().equals(WALLED_CITY_MOD_STRING)){
 			master=this;
 			if(!dataFilesLoaded){
@@ -207,7 +209,7 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 			for(BaseMod mod : (List<BaseMod>)ModLoader.getLoadedMods()){
 				if(mod.toString().equals(WALLED_CITY_MOD_STRING)){
 					BuildingExplorationHandler wcm=(BuildingExplorationHandler)mod;
-					if(!wcm.dataFilesLoaded) wcm.ModsLoaded();
+					if(!wcm.dataFilesLoaded) wcm.modsLoaded();
 					if(!wcm.errFlag){
 						master=wcm;
 						System.out.println("Combining chunk explorers for "+toString()+" and "+master.toString()+".");

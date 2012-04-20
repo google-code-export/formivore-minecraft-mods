@@ -56,7 +56,7 @@ public class mod_GreatWall extends BuildingExplorationHandler
 			
 		//ModLoader.AddRecipe(new ItemStack(surveyorsRod,8), new Object[]{ "##", "##", Character.valueOf('#'), Block.dirt});
 		
-		ModLoader.SetInGameHook(this,true,true);
+		ModLoader.setInGameHook(this,true,true);
 		loadingMessage="Generating walls";
 		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 		

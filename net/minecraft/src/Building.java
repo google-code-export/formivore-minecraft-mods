@@ -509,7 +509,7 @@ public class Building
  		
  			
  		EntityPainting entitypainting = new EntityPainting(world,pt[0],pt[1],pt[2],PAINTING_DIR_TO_FACEDIR[dir]);
-        if(entitypainting.canStay() && !world.multiplayerWorld)
+        if(entitypainting.onValidSurface() && !world.isRemote)
             world.spawnEntityInWorld(entitypainting);
         
  	}
@@ -531,7 +531,7 @@ public class Building
     		Object h_EntityFlagObj = wgt.master.h_EntityFlagConstr.newInstance(arglist);
     		Object retobj = wgt.master.updateFlagMethod.invoke(h_EntityFlagObj,new Object[]{});
     		if(((Boolean)retobj).booleanValue()){
-    			if(!world.multiplayerWorld){
+    			if(!world.isRemote){
     				world.spawnEntityInWorld((Entity)h_EntityFlagObj);
     			}
     		}
@@ -779,9 +779,7 @@ public class Building
 	public static long getWorldCode(World world){
 		//BUKKIT PORT
 		//return world.getUID().getLeastSignificantBits();
-		long foo=world.worldInfo.getRandomSeed();
-		int bar=world.worldProvider.worldType;
-		return world.worldInfo.getRandomSeed() + world.worldProvider.worldType;
+		return world.worldInfo.getSeed() + world.worldProvider.worldType;
 	}
     
 	//****************************************  CONSTRUCTOR - findSurfaceJ *************************************************************************************//
@@ -1548,7 +1546,7 @@ public class Building
     }
     
     public final static boolean isSolidBlock(int blockID){
-    	return blockID!=0 && Block.blocksList[blockID].blockMaterial.getIsSolid();
+    	return blockID!=0 && Block.blocksList[blockID].blockMaterial.isSolid();
     }
     
     public final static int[] STEP_TO_STAIRS={WOOD_STAIRS_ID,WOOD_STAIRS_ID,WOOD_STAIRS_ID,COBBLESTONE_STAIRS_ID,BRICK_STAIRS_ID,STONE_BRICK_STAIRS_ID,WOOD_STAIRS_ID };
@@ -1699,13 +1697,13 @@ public class Building
            || biomeCheck == BiomeGenBase.frozenOcean) 				return BIOME_OCEAN;
         else if( biomeCheck == BiomeGenBase.plains)	 				return BIOME_PLAINS;
         else if( biomeCheck == BiomeGenBase.desert 
-        		||biomeCheck == BiomeGenBase.field_46049_s ) 		return BIOME_DESERT;
+        		||biomeCheck == BiomeGenBase.desert ) 		return BIOME_DESERT;
         else if( biomeCheck == BiomeGenBase.extremeHills
-        		|| biomeCheck == BiomeGenBase.field_46046_v ) 		return BIOME_EXTREME_HILLS;   //MP PORT change to BiomeGenBase.extremeHills
+        		|| biomeCheck == BiomeGenBase.extremeHills ) 		return BIOME_EXTREME_HILLS;   //MP PORT change to BiomeGenBase.extremeHills
         else if( biomeCheck == BiomeGenBase.forest
-        		|| biomeCheck == BiomeGenBase.field_46048_t ) 		return BIOME_FOREST;
+        		|| biomeCheck == BiomeGenBase.forest ) 		return BIOME_FOREST;
         else if( biomeCheck == BiomeGenBase.taiga
-        		|| biomeCheck == BiomeGenBase.field_46047_u ) 		return BIOME_TAIGA;
+        		|| biomeCheck == BiomeGenBase.taiga ) 		return BIOME_TAIGA;
         else if( biomeCheck == BiomeGenBase.swampland) 				return BIOME_SWAMPLAND;
         else if( biomeCheck == BiomeGenBase.river
         		|| biomeCheck == BiomeGenBase.frozenRiver) 			return BIOME_RIVER;
@@ -1715,7 +1713,7 @@ public class Building
         		|| biomeCheck == BiomeGenBase.mushroomIslandShore ) return BIOME_MUSHROOM_ISLAND;
         else if( biomeCheck == BiomeGenBase.icePlains) 				return BIOME_ICE_PLAINS;
         else if( biomeCheck == BiomeGenBase.iceMountains) 			return BIOME_ICE_MOUNTAINS;
-        else if( biomeCheck == BiomeGenBase.field_46050_r ) 		return BIOME_BEACH;
+        else if( biomeCheck == BiomeGenBase.beach ) 		return BIOME_BEACH;
    
 		return BIOME_FOREST;
 	}
