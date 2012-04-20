@@ -30,23 +30,28 @@ public class BuildingCellularAutomaton extends Building {
 	private final static int HOLE_FLOOR_BUFFER=2;
 	private final static int UNREACHED=-1;
 	private final static int SYMMETRIC_SEED_MIN_WIDTH=4,CIRCULAR_SEED_MIN_WIDTH=4;
-	private final static int[] MEDIUM_LIGHT_SPAWNERS =    new int[]{BLAZE_SPAWNER_ID,BLAZE_SPAWNER_ID,BLAZE_SPAWNER_ID,SILVERFISH_SPAWNER_ID,SILVERFISH_SPAWNER_ID,LAVA_SLIME_SPAWNER_ID},
-							   MEDIUM_LIGHT_WIDE_SPAWNERS=new int[]{BLAZE_SPAWNER_ID,SILVERFISH_SPAWNER_ID,SILVERFISH_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID,SPIDER_SPAWNER_ID},
-							   LOW_LIGHT_SPAWNERS =       new int[]{UPRIGHT_SPAWNER_ID,UPRIGHT_SPAWNER_ID,SILVERFISH_SPAWNER_ID,LAVA_SLIME_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID};
+	private final static TemplateRule 	DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE =  new TemplateRule(new int[]{BLAZE_SPAWNER_ID,BLAZE_SPAWNER_ID,BLAZE_SPAWNER_ID,SILVERFISH_SPAWNER_ID,SILVERFISH_SPAWNER_ID,LAVA_SLIME_SPAWNER_ID}),
+										DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE=		new TemplateRule(new int[]{BLAZE_SPAWNER_ID,SILVERFISH_SPAWNER_ID,SILVERFISH_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID,SPIDER_SPAWNER_ID}),
+										DEFAULT_LOW_LIGHT_SPAWNER_RULE =       		new TemplateRule(new int[]{UPRIGHT_SPAWNER_ID,UPRIGHT_SPAWNER_ID,SILVERFISH_SPAWNER_ID,LAVA_SLIME_SPAWNER_ID,CAVE_SPIDER_SPAWNER_ID});
 	
 	private byte[][][] layers = null;
 	public byte[][] seed=null;
 	private byte[][] caRule=null;
+	private TemplateRule lowLightSpawnerRule, mediumLightNarrowSpawnerRule,mediumLightWideSpawnerRule;
 	int[][] fBB;
 	int zGround=0;
 	
 	
-	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, boolean centerAligned_,int width, int height, int length, byte[][] seed_, byte[][] caRule_, int[] sourcePt){
+	public BuildingCellularAutomaton(WorldGeneratorThread wgt_,TemplateRule bRule_,int bDir_,int axXHand_, boolean centerAligned_,int width, int height, int length, byte[][] seed_, byte[][] caRule_, TemplateRule[] spawnerRules, int[] sourcePt){
 		super(0,wgt_, bRule_, bDir_,axXHand_,centerAligned_,new int[]{width,height,length},sourcePt);
 		seed=seed_;
 		if((bWidth - seed.length)%2 !=0 ) bWidth++; //so seed can be perfectly centered
 		if((bLength - seed[0].length)%2 !=0 ) bLength++;
 		caRule=caRule_;
+		mediumLightNarrowSpawnerRule= spawnerRules!=null ? spawnerRules[0] : DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE;
+		mediumLightWideSpawnerRule=   spawnerRules!=null ? spawnerRules[1] : DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE;
+		lowLightSpawnerRule= 		  spawnerRules!=null ? spawnerRules[2] : DEFAULT_LOW_LIGHT_SPAWNER_RULE;
+		
 	}
 	
 	//unlike other Buildings, this should be called after plan()
@@ -394,7 +399,7 @@ public class BuildingCellularAutomaton extends Building {
 	}
 	
 	private void populateFloor(int z,int floorBlocks){
-		int[] spawnerSelection=null;
+		TemplateRule spawnerSelection=null;
 		int fWidth=fBB[1][z] - fBB[0][z], fLength=fBB[3][z] - fBB[2][z];
 		if(fWidth <=0 || fLength <= 0) return;
 		
@@ -407,14 +412,14 @@ public class BuildingCellularAutomaton extends Building {
 					int[] pt=getIJKPt(x,z,y);
 					int lightVal=world.getSavedLightValue(EnumSkyBlock.Sky, pt[0], pt[1], pt[2]);
 					
-					//Choose spawner types. There is some kind of bug where where lightVal coming up as zero, even though it is not
+					//Choose spawner types. There is some kind of bug where where lightVal coming up as zero, even though it is not.
 					if(lightVal<5 && !(lightVal==0 && j0+z>Building.SEA_LEVEL)) 
-						spawnerSelection=LOW_LIGHT_SPAWNERS;
+						spawnerSelection=lowLightSpawnerRule;
 					else if(lightVal<10)
-						spawnerSelection = floorBlocks > 70 ? MEDIUM_LIGHT_WIDE_SPAWNERS : MEDIUM_LIGHT_SPAWNERS;
+						spawnerSelection = floorBlocks > 70 ? mediumLightWideSpawnerRule : mediumLightNarrowSpawnerRule ;
 						
 					if(spawnerSelection!=null){
-						setBlockLocal(x,z,y,spawnerSelection[random.nextInt(spawnerSelection.length)]);
+						setBlockLocal(x,z,y,spawnerSelection);
 						break;
 					}
 				}

@@ -101,7 +101,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 	
 	//****************************  CONSTRUCTOR - mod_GreatWall*************************************************************************************//
 	public mod_CARuins() {	
-		ModLoader.SetInGameHook(this,true,true);
+		ModLoader.setInGameHook(this,true,true);
 		loadingMessage="Running automata";
 		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 		
@@ -316,7 +316,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 						*/
 
 						BuildingCellularAutomaton bca=new BuildingCellularAutomaton(this,blockRule,random.nextInt(4),1, false, 
-								                           ContainerWidth, th,ContainerLength,seed,caRule,new int[]{i0,j0,k0});
+								                           ContainerWidth, th,ContainerLength,seed,caRule,null,new int[]{i0,j0,k0});
 						if(bca.plan(true,MinHeightBeforeOscillation) && bca.queryCanBuild(0,true)){
 							bca.build(SmoothWithStairs,MakeFloors);
 							

@@ -57,7 +57,7 @@ public class mod_WalledCity extends BuildingExplorationHandler
 
 	//****************************  CONSTRUCTOR - mod_WalledCity  *************************************************************************************//
 	public mod_WalledCity() {
-		ModLoader.SetInGameHook(this,true,true);
+		ModLoader.setInGameHook(this,true,true);
 		loadingMessage="Generating cities";
 		max_exploration_distance=MAX_EXPLORATION_DISTANCE;
 		

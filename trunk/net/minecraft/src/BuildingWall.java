@@ -592,7 +592,7 @@ public class BuildingWall extends Building
 			for(int tries=0; tries < 10; tries++){
 				byte[][] seed = BuildingCellularAutomaton.makeSymmetricSeed(ws.CARuinContainerWidth,0.5F,random);
 				BuildingCellularAutomaton bca=new BuildingCellularAutomaton(wgt,ws.CARuinRule,dir,1,true,ws.CARuinContainerWidth,
-									ws.CARuinMinHeight+random.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight+1),ws.CARuinContainerWidth, seed,caRule,pt);
+									ws.CARuinMinHeight+random.nextInt(ws.CARuinMaxHeight - ws.CARuinMinHeight+1),ws.CARuinContainerWidth, seed,caRule,null,pt);
 				if(bca.plan(false,12) && bca.queryCanBuild(ybuffer,ws.CARuinContainerWidth<=15)){
 					bca.build(true,true);
 					return true;
