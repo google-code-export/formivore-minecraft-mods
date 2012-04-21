@@ -64,9 +64,9 @@ import net.minecraft.client.Minecraft;
         worldObj.populatorCARuins=new PopulatorCARuins();
         worldObj.populatorCARuins.master=worldObj.populatorWalledCity;
     }
-    worldObj.populatorWalledCity.GenerateSurface(worldObj, rand, k, l);
-    worldObj.populatorGreatWall.GenerateSurface(worldObj, rand, k, l);
-    worldObj.populatorCARuins.GenerateSurface(worldObj, rand, k, l);
+    worldObj.populatorWalledCity.generateSurface(worldObj, rand, par2, par3);
+    worldObj.populatorGreatWall.generateSurface(worldObj, rand, par2, par3);
+    worldObj.populatorCARuins.generateSurface(worldObj, rand, par2, par3);
     
     d)Add the following lines to the end of the populate() function in ChunkProviderHell.java.
     if(worldObj.populatorWalledCity==null) worldObj.populatorWalledCity=new PopulatorWalledCity();
@@ -78,9 +78,9 @@ import net.minecraft.client.Minecraft;
         worldObj.populatorCARuins=new PopulatorCARuins();
         worldObj.populatorCARuins.master=worldObj.populatorWalledCity;
     }
-    worldObj.populatorWalledCity.GenerateSurface(worldObj, hellRNG, k, l);
-    worldObj.populatorGreatWall.GenerateSurface(worldObj, hellRNG, k, l); 
-    worldObj.populatorCARuins.GenerateSurface(worldObj, hellRNG, k, l);
+    worldObj.populatorWalledCity.generateSurface(worldObj, hellRNG, par2, par3);
+    worldObj.populatorGreatWall.generateSurface(worldObj, hellRNG, par2, par3); 
+    worldObj.populatorCARuins.generateSurface(worldObj, hellRNG, par2, par3);
 
  */
 
@@ -173,7 +173,6 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 	//BUKKIT PORT
 	//public void populate(World world, Random random, Chunk source){
 	//	int chunkI=source.getX(), chunkK=source.getZ();
-	@Override
 	public void generateSurface( World world, Random random, int i, int k ) {
 		if(errFlag) return;
 		updateWorldExplored(world);
@@ -187,7 +186,6 @@ public abstract class BuildingExplorationHandler extends BaseMod {
 		generate(world,random,i,k);
 	}
 	
-	@Override
 	public void generateNether( World world, Random random, int chunkI, int chunkK ) {
 		generateSurface(world,random,chunkI,chunkK);
 	}

@@ -359,28 +359,6 @@ public class TemplateWall extends TemplateTML{
 	  	return null;
 	}
 	
-	//BUKKIT PORT
-	/*
-	public static int getBiomeNum( Biome biome ) {
-        if( biome == Biome.RAINFOREST ) 			return BIOME_RAINFOREST;
-        else if( biome == Biome.SWAMPLAND )	 		return BIOME_SWAMPLAND;
-        else if( biome == Biome.SEASONAL_FOREST ) 	return BIOME_SEASONALFOREST;
-        else if( biome == Biome.FOREST ) 			return BIOME_FOREST;
-        else if( biome == Biome.SAVANNA ) 			return BIOME_SAVANNA;
-        else if( biome == Biome.SHRUBLAND ) 		return BIOME_SHRUBLAND;
-        else if( biome == Biome.TAIGA ) 			return BIOME_TAIGA;
-		else if( biome == Biome.DESERT ) 			return BIOME_DESERT;
-        else if( biome == Biome.PLAINS ) 			return BIOME_PLAINS;
-        else if( biome == Biome.ICE_DESERT ) 		return BIOME_ICEDESERT;
-        else if( biome == Biome.TUNDRA ) 			return BIOME_TUNDRA;
-        else if( biome == Biome.HELL ) 				return BIOME_HELL;
-        else if( biome == Biome.SKY ) 				return BIOME_SKY;
-		
-		return BIOME_FOREST;
-	}
-	*/
-	
-	
 	
 
 	//****************************************  FUNCTION - loadStreets *************************************************************************************//

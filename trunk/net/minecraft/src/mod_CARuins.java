@@ -32,24 +32,6 @@ public class mod_CARuins extends BuildingExplorationHandler{
 	private final static int MAX_EXPLORATION_DISTANCE=30;
 	private final static String AUTOMATA_RULES_STRING="AUTOMATA RULES",LINEAR_STR="linear",SYMMETRIC_STR="symmetric", BOTH_STR="both";
 	
-	public final static String[] BIOME_NAMES={
-		"Underground",
-		"Ocean",
-		"Plains",
-		"Desert",
-		"Hills",
-		"Forest",
-		"Taiga",
-		"Swampland",
-		"River",
-		"Hell",
-		"Sky",
-		"Ice Plains",
-		"Ice Mountains",
-		"Mushroom Island",
-		"Beach"
-		};
-	
 	private final static TemplateRule[] DEFAULT_BLOCK_RULES = new TemplateRule[]{
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),			//Underground, unused
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),			//Ocean
@@ -60,12 +42,13 @@ public class mod_CARuins extends BuildingExplorationHandler{
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //Taiga             
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //Swampland         
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //River             
-		new TemplateRule(new int[]{112},new int[]{0,},100),          		//Nether            
+		new TemplateRule(new int[]{112},new int[]{0},100),          		//Nether            
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),          //Sky                     
 		new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100),         //IcePlains         
 		new TemplateRule(new int[]{98,98,98},new int[]{0,2,2},100),         //IceMountains      
 		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),        	//MushroomIsland    
-		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100)     	    //Beach
+		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100),     	    //Beach
+		new TemplateRule(new int[]{4,48,48},new int[]{0,0,0},100)     	    //Jungle
 	};
 	
 	//WARNING! Make sure the first DEFAULT_BLOCK_RULES.length biome Strings in Building are the ones we want here.
@@ -76,6 +59,7 @@ public class mod_CARuins extends BuildingExplorationHandler{
 			BLOCK_RULE_NAMES[m]=Building.BIOME_NAMES[m].replaceAll("\\s", "") + "BlockRule";
 		}
 	}
+	private final static String[] SPAWNER_RULE_NAMES=new String[]{"MediumLightNarrowFloorSpawnerRule","MediumLightWideFloorSpawnerRule","LowLightSpawnerRule"};
 	
 	private final static String SETTINGS_FILE_NAME="CARuinsSettings.txt",
 								LOG_FILE_NAME="caruins_log.txt";
@@ -93,6 +77,9 @@ public class mod_CARuins extends BuildingExplorationHandler{
 	public boolean SmoothWithStairs=true, MakeFloors=true;
 	
 	public TemplateRule[] blockRules=new TemplateRule[DEFAULT_BLOCK_RULES.length];
+	public TemplateRule[] spawnerRules=new TemplateRule[]{	BuildingCellularAutomaton.DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE, 
+															BuildingCellularAutomaton.DEFAULT_MEDIUM_LIGHT_WIDE_SPAWNER_RULE,
+															BuildingCellularAutomaton.DEFAULT_LOW_LIGHT_SPAWNER_RULE };
 	
 	ArrayList<byte[][]> caRules=null;
 	int[][] caRulesWeightsAndIndex=null;
@@ -192,15 +179,25 @@ public class mod_CARuins extends BuildingExplorationHandler{
 						if(read.startsWith(SEED_TYPE_STRINGS[m] )) seedTypeWeights[m] = readIntParam(lw,seedTypeWeights[m],":",read);
 					}
 					
+					for(int m=0; m<spawnerRules.length; m++){
+						if(read.startsWith(SPAWNER_RULE_NAMES[m])){
+							try{
+								spawnerRules[m]=readRuleIdOrRule(":",read,null);
+							}catch(Exception e ){  
+								spawnerRules[m]=BuildingCellularAutomaton.DEFAULT_MEDIUM_LIGHT_NARROW_SPAWNER_RULE; 
+								lw.println(e.getMessage());
+					}}}
+
+					
 					for(int m=Building.NATURAL_BIOMES_START; m<DEFAULT_BLOCK_RULES.length; m++){
-						try{ 
-							if(read.startsWith(BLOCK_RULE_NAMES[m])) 
+						if(read.startsWith(BLOCK_RULE_NAMES[m])) {
+							try{ 
 								blockRules[m]=readRuleIdOrRule(":",read,null); 
-						}catch(Exception e ){  
-							blockRules[m]=DEFAULT_BLOCK_RULES[m]; 
-							lw.println(e.getMessage());
-						}
-					}
+							}catch(Exception e ){  
+								blockRules[m]=DEFAULT_BLOCK_RULES[m]; 
+								lw.println(e.getMessage());
+					}}}
+					
 					
 					if(read.startsWith(AUTOMATA_RULES_STRING)){
 						for(read=br.readLine(); read!= null; read=br.readLine()){
@@ -249,6 +246,11 @@ public class mod_CARuins extends BuildingExplorationHandler{
 					pw.println(SEED_TYPE_STRINGS[m]+":"+seedTypeWeights[m]);
 				}
 				
+				pw.println();
+				pw.println("<-These spawner rule variables control what spawners will be used depending on the light level and floor width.->");
+				for(int m=0; m<spawnerRules.length; m++){
+					pw.println(SPAWNER_RULE_NAMES[m]+":"+spawnerRules[m].toString());
+				}
 				
 				pw.println();
 				pw.println("<-BlockRule is the template rule that controls what blocks the structure will be made out of.->");
