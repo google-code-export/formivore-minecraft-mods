@@ -399,6 +399,8 @@ public class Building
 			case GIANT_ZOMBIE_SPAWNER_ID: setMobSpawner(pt,1,19); return;
 			case SILVERFISH_SPAWNER_ID: setMobSpawner(pt,1,20); return;
 			case DRAGON_SPAWNER_ID: setMobSpawner(pt,1,21); return;
+			case OCELOT_SPAWNER_ID: setMobSpawner(pt,1,22); return;
+			case IRON_GOLEM_SPAWNER_ID: setMobSpawner(pt,1,23); return;
     	}
     	if(IS_HUMANS_PLUS_FLAG[blockID]) delayedBuildQueue.offer(new int[]{pt[0],pt[1],pt[2],blockID,metadata});
     }
@@ -426,10 +428,12 @@ public class Building
         	case 15: mob="Cow"; break;
         	case 16: mob="Chicken"; break;
         	case 17: mob="Squid"; break;
-        	case 18: mob="EntityWolf"; break;
-        	case 19: mob="GiantZombie"; break;
+        	case 18: mob="Wolf"; break;
+        	case 19: mob="Giant"; break;
         	case 20: mob="Silverfish"; break;
-        	case 21: mob="Dragon";
+        	case 21: mob="EnderDragon"; break;
+        	case 22: mob="Ozelot"; break;
+        	case 23: mob="VillagerGolem"; break;
         	default: mob="Skeleton"; break;
 		} 
         world.setBlock(pt[0],pt[1],pt[2],MOB_SPAWNER_ID);
@@ -686,16 +690,16 @@ public class Building
    		
    		for(int x1=0; x1<bWidth; x1++){
    			if(isArtificialWallBlock(x1,z1,bLength-1)){
-   				setBlockLocal(x1,z1+1,bLength-1,WOOL_ID,1);
+   				//setBlockLocal(x1,z1+1,bLength-1,WOOL_ID,1);
    				return true;
    			}}
    		for(int y1=ybuffer; y1<bLength-1;y1++){
    			if(isArtificialWallBlock(0,z1,y1)){ 
-   				setBlockLocal(0,z1+1,y1,WOOL_ID,1);
+   				//setBlockLocal(0,z1+1,y1,WOOL_ID,1);
    				return true;
    			}
    			if(isArtificialWallBlock(bWidth-1,z1,y1)) {
-   				setBlockLocal(bWidth-1,z1+1,y1,WOOL_ID,1);
+   				//setBlockLocal(bWidth-1,z1+1,y1,WOOL_ID,1);
    				return true;
    			}
    		}
@@ -708,7 +712,7 @@ public class Building
    		for(int z1=pt1[1]; z1<=pt2[1]; z1++){
    			for(int y1=pt1[2]; y1<=pt2[2]; y1++){
 				if(!isWallable(x1,z1,y1)){
-					setBlockLocal(x1,z1+1,y1,GOLD_BLOCK_ID);
+					//setBlockLocal(x1,z1+1,y1,GOLD_BLOCK_ID);
 					return true;
    	}}}}
    	return false;
@@ -1259,6 +1263,8 @@ public class Building
     public final static int END_PORTAL_FRAME_ID=120;
     public final static int END_STONE_ID=121;
     public final static int DRAGON_EGG_ID=122;
+    public final static int REDSTONE_LAMP_OFF_ID=123;
+    public final static int REDSTONE_LAMP_ON_ID=124;
     
     //Special Blocks
     public final static int SPECIAL_BLOCKID_START=299, SPECIAL_BLOCKID_END=340;
@@ -1302,6 +1308,8 @@ public class Building
 	public final static int GIANT_ZOMBIE_SPAWNER_ID=338;
 	public final static int SILVERFISH_SPAWNER_ID=339;
 	public final static int DRAGON_SPAWNER_ID=340;
+	public final static int OCELOT_SPAWNER_ID=341;
+	public final static int IRON_GOLEM_SPAWNER_ID=342; 
 	
 	
 	//Spawner Blocks from other mods
@@ -1435,6 +1443,8 @@ public class Building
     public final static int CAULDRON_ID=380;
     public final static int EYE_OF_ENDER_ID=381;
     public final static int GLISTERING_MELON_ID=382;
+    public final static int SPAWN_EGG_ID=383;
+    public final static int BOTTLE_O_ENCHANTING_ID=384;
     public final static int THIRTEEN_DISC_ID=2256;
     public final static int CAT_DISC_ID=2257;
     public final static int BLOCKS_DISC_ID=2258;
@@ -1449,13 +1459,13 @@ public class Building
     
     
 	//maps block metadata to a dir
-	public final static int[] 	BED_META_TO_DIR=new int[]	{	DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
+	public final static int[] 	BED_META_TO_DIR=new int[]	{		DIR_SOUTH,DIR_WEST,DIR_NORTH,DIR_EAST},
 							BUTTON_META_TO_DIR=new int[]	{0,		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
-							STAIRS_META_TO_DIR=new int[]{		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
-							LADDER_META_TO_DIR=new int[]{0,0,	DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
-							TRAPDOOR_META_TO_DIR=new int[]{		DIR_SOUTH,DIR_NORTH,DIR_EAST,DIR_WEST},
-							VINES_META_TO_DIR=new int[]{0,		DIR_SOUTH,DIR_WEST,0,DIR_NORTH,0,0,0,DIR_EAST},
-							DOOR_META_TO_DIR=new int[]{			DIR_EAST,DIR_SOUTH,DIR_WEST,DIR_NORTH};
+							STAIRS_META_TO_DIR=new int[]	{		DIR_EAST,DIR_WEST,DIR_SOUTH,DIR_NORTH},
+							LADDER_META_TO_DIR=new int[]	{0,0,	DIR_NORTH,DIR_SOUTH,DIR_WEST,DIR_EAST},
+							TRAPDOOR_META_TO_DIR=new int[]	{		DIR_SOUTH,DIR_NORTH,DIR_EAST,DIR_WEST},
+							VINES_META_TO_DIR=new int[]		{0,		DIR_SOUTH,DIR_WEST,0,DIR_NORTH,0,0,0,DIR_EAST},
+							DOOR_META_TO_DIR=new int[]		{		DIR_EAST,DIR_SOUTH,DIR_WEST,DIR_NORTH};
 	
 	//inverse map should be {North_inv,East_inv,dummy,West_inv,South_inv}
     //inverse map should be {North_inv,East_inv,South_inv, West_inv}
@@ -1683,13 +1693,14 @@ public class Building
 		"Ice Plains",
 		"Ice Mountains",
 		"Mushroom Island",
-		"Beach"
+		"Beach",
+		"Jungle"
 		};
 
 	public final static int NATURAL_BIOMES_START=1;
 	public final static int BIOME_UNDERGROUND=0, BIOME_OCEAN=1, BIOME_PLAINS=2, BIOME_DESERT=3, BIOME_EXTREME_HILLS=4, BIOME_FOREST=5,BIOME_TAIGA=6,
 							BIOME_SWAMPLAND=7, BIOME_RIVER=8, BIOME_HELL=9, BIOME_SKY=10, BIOME_ICE_PLAINS=11, BIOME_ICE_MOUNTAINS=12,
-							BIOME_MUSHROOM_ISLAND=13, BIOME_BEACH=14;
+							BIOME_MUSHROOM_ISLAND=13, BIOME_BEACH=14, BIOME_JUNGLE=15;
 	
  	
  	public static int getBiomeNum( BiomeGenBase biomeCheck ) {
@@ -1699,7 +1710,7 @@ public class Building
         else if( biomeCheck == BiomeGenBase.desert 
         		||biomeCheck == BiomeGenBase.desert ) 		return BIOME_DESERT;
         else if( biomeCheck == BiomeGenBase.extremeHills
-        		|| biomeCheck == BiomeGenBase.extremeHills ) 		return BIOME_EXTREME_HILLS;   //MP PORT change to BiomeGenBase.extremeHills
+        		|| biomeCheck == BiomeGenBase.extremeHills ) 		return BIOME_EXTREME_HILLS;
         else if( biomeCheck == BiomeGenBase.forest
         		|| biomeCheck == BiomeGenBase.forest ) 		return BIOME_FOREST;
         else if( biomeCheck == BiomeGenBase.taiga
@@ -1714,6 +1725,7 @@ public class Building
         else if( biomeCheck == BiomeGenBase.icePlains) 				return BIOME_ICE_PLAINS;
         else if( biomeCheck == BiomeGenBase.iceMountains) 			return BIOME_ICE_MOUNTAINS;
         else if( biomeCheck == BiomeGenBase.beach ) 		return BIOME_BEACH;
+        else if( biomeCheck == BiomeGenBase.jungle) 		return BIOME_JUNGLE;
    
 		return BIOME_FOREST;
 	}
