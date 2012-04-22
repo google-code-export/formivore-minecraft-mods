@@ -73,6 +73,8 @@ These are block IDs that instead of creating the correspondingly numbered block 
   * 338 = Mob Spawner (Giant Zombie)
   * 339 = Mob Spawner (Silverfish)
   * 340 = Mob Spawner (Dragon)
+  * 340 = Mob Spawner (Ocelot)
+  * 340 = Mob Spawner (Iron Golem)
 
 ==Rule Examples==
 *Example 1*, this spawns either air, cobblestone, or a mossy cobblestone 100% of the time:
